@@ -1,5 +1,13 @@
 # 智训引擎技术规范与实施架构
 
+## 2026-11-04 总结文档与 Mac 对齐
+
+`optimization/baselines` 增加惰性三档粗网格与资源策略。统一回归优化器增加 grid / successive_halving / hyperband；资源方法用随机候选、固定 study_name、Optuna 分层剪枝，runner 增加第三参数 report，仅此两种方法使用。`training.train` 增加可选 resource_callback(step, validation_mae)，其余调用兼容。完成记录与剪枝记录分别保存，剪枝不参与最佳选择；资源控制以模型 n_estimators 为上限，独立保留单模型早停。Config Schema 1 兼容增加 min_resource/reduction_factor，数据库不变。
+
+`data/quality_audit` 只用 train 数值特征拟合 IQR，审计 train/validation，保存源行标记，不变更数据、manifest 或特征。两类应用服务保存独立质量产物；数据页和工业页展示真实审计。分类评价增加各类别漏报/误报率，原指标不变。CLI/GUI 回归提供新方法，工业分类不增加资源剪枝。
+
+本机 Apple M5 / 10 核 / 16 GiB，CPU 原生 arm64；回归 4 线程、串行 trial。Mac Setup/Run-GUI.command 使用工程内环境与缓存、显式数据获取。详细边界及验证见 docs/SUMMARY_ALIGNMENT.md。
+
 ## 2026-10-31 工业数据与分类训练增量
 
 实施计划见 `docs/INDUSTRIAL_TRAINING_PLAN.md`，真实结果见 `docs/INDUSTRIAL_TRAINING_REPORT.md`。沿用 PreparedDataset，新增数据契约在 manifest 明确 task_type、data_origin、source_files、split_fingerprint；不改变旧回归对象与 SQLite Schema。

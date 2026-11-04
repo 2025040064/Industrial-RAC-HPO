@@ -77,6 +77,7 @@ def train(
     model_config: dict | None = None,
     cancel_check: Callable[[], bool] | None = None,
     evaluation_config: dict | None = None,
+    resource_callback: Callable[[int, float], None] | None = None,
 ) -> TrainingResult:
     """Train only on train and validate only on validation; never request test."""
     started = perf_counter()
@@ -98,9 +99,17 @@ def train(
         raise ValueError("feature order differs from the fixed dataset contract")
     if not np.isfinite(np.asarray(y_train, dtype=float)).all():
         raise ValueError("training targets must be finite")
+    def report_resource(environment):
+        if resource_callback is not None:
+            acknowledge_cancel()
+            resource_callback(int(environment.iteration + 1), float(environment.evaluation_result_list[0][2]))
+
+    report_resource.order = 20
+    callbacks = [acknowledge_cancel, report_resource,
+                 lgb.early_stopping(config["early_stopping_rounds"], verbose=False)]
     model.fit(
         X_train, y_train, eval_set=[(X_valid, y_valid)], eval_metric="mae",
-        callbacks=[acknowledge_cancel, lgb.early_stopping(config["early_stopping_rounds"], verbose=False)],
+        callbacks=callbacks,
     )
     acknowledge_cancel()
     predictions = model.predict(X_valid)

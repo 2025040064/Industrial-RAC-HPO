@@ -104,7 +104,8 @@ class DataPage(QWidget):
         self.manifest_panel.content_layout.addWidget(self.manifest_view)
         layout.addWidget(self.manifest_panel)
         self.quality_panel=CollapsiblePanel('数据质量与工艺分析')
-        self.quality_panel.content_layout.addWidget(secondary('尚未提供工业数据质量统计与过程序列。需要字段质量汇总、统计口径及带单位的时间序列；文件通过校验不代表已计算覆盖率或异常率。'))
+        self.quality_label = secondary('尚未计算数值特征审计；导入后显示。')
+        self.quality_panel.content_layout.addWidget(self.quality_label)
         layout.addWidget(self.quality_panel)
         layout.addStretch()
 
@@ -167,4 +168,9 @@ class DataPage(QWidget):
         )
         limitations = summary.get("limitations") or manifest.get("limitations") or []
         self.limitations_label.setText("限制：\n" + ("\n".join(map(str, limitations)) if limitations else "未提供额外限制说明"))
+        audit = summary.get("quality_audit")
+        self.quality_label.setText(
+            f"训练/验证共审计 {audit['audited_rows']} 行，标记 {len(audit['flagged_source_rows'])} 行。"
+            "仅用训练特征拟合 IQR 阈值；保留全部行，不裁剪、不自动增加特征。标记不代表故障；测试集未审计。详情见完整清单。"
+            if audit else "未提供数值特征审计；过程序列尚未接入。")
         self.manifest_view.setPlainText(json.dumps(summary, ensure_ascii=False, indent=2, default=str))

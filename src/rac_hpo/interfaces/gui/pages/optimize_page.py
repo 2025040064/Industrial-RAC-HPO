@@ -103,7 +103,7 @@ class OptimizePage(QWidget):
         form.setHorizontalSpacing(12)
         form.setVerticalSpacing(10)
         self.algorithm_combo = QComboBox()
-        for name, algorithm in (('Optuna TPE', 'tpe'), ('Random Search', 'random'), ('TPE + 固定鲁棒目标', 'tpe_robust'), ('RAC-HPO · 工况与成本', 'rac_hpo')):
+        for name, algorithm in (('Optuna TPE', 'tpe'), ('Random Search', 'random'), ('Grid · 粗网格', 'grid'), ('Successive Halving', 'successive_halving'), ('Hyperband', 'hyperband'), ('TPE + 固定鲁棒目标', 'tpe_robust'), ('RAC-HPO · 工况与成本', 'rac_hpo')):
             self.algorithm_combo.addItem(name, algorithm)
         self.algorithm_combo.setMinimumContentsLength(12)
         self.algorithm_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
@@ -265,6 +265,10 @@ class OptimizePage(QWidget):
         if algorithm == 'rac_hpo' and self.trials_spin.value() < 32:
             self.trials_spin.setValue(48)
         self.algorithm_note.setText('RAC-HPO 先完成 16 次初始化；证据或代理质量不足时回退 TPE。建议至少 32 次，真实诊断随试验保存。' if algorithm == 'rac_hpo' else 'Random / TPE 按验证 MAE 选择；固定鲁棒搜索按无量纲 J 选择。默认基线不计入次数上限。')
+        if algorithm in {'successive_halving', 'hyperband'}:
+            self.algorithm_note.setText('随机候选 + 跨配置分层淘汰，按验证 MAE 与迭代资源竞争；单模型早停另行保留。剪枝试验不参与最优选择。')
+        elif algorithm == 'grid':
+            self.algorithm_note.setText('每维低/中/高三档粗网格，步长对齐；笛卡尔积按固定顺序遍历，耗尽即停。预算截断可能只覆盖部分维度。')
 
     def set_busy(self, busy, cancellable=False):
         for widget in (self.start_button, self.algorithm_combo, self.trials_spin, self.timeout_spin, self.seed_spin):

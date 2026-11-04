@@ -371,7 +371,7 @@ class IndustrialPage(QWidget):
             _json(trial.get('params', {}))] for trial in trials])
         self.curve.set_trials(trials)
         self.learning_curve.set_learning_curve(metrics)
-        self.audit_view.setPlainText(_json(result.get('manifest', {})))
+        self.audit_view.setPlainText(_json({'manifest': result.get('manifest', {}), 'quality_audit': result.get('quality_audit')}))
         self.details_view.setPlainText(_json({key: result.get(key) for key in (
             'task_type', 'best_params', 'best_trial', 'best_value', 'config', 'artifacts', 'failure_reason')}))
         classification_metrics = {key: metrics[key] for key in (

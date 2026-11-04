@@ -36,6 +36,7 @@ class ApplicationService:
 
     def prepare_dataset(self, path=None, dataset_id=None) -> dict:
         dataset = self._prepare(path, dataset_id=dataset_id)
+        from rac_hpo.data.quality_audit import audit_dataset
         return {
             "dataset_id": dataset.dataset_id, "row_count": len(dataset.y),
             "target": dataset.target, "target_unit": dataset.target_unit,
@@ -43,7 +44,7 @@ class ApplicationService:
             "source_path": dataset.source_path, "source_sha256": dataset.source_sha256,
             "regimes": {str(key): int(value) for key, value in dataset.regimes.value_counts().items()},
             "split_counts": {key: len(value) for key, value in dataset.splits.items()},
-            "manifest": dataset.manifest,
+            "manifest": dataset.manifest, "quality_audit": audit_dataset(dataset),
             "limitations": dataset.manifest.get("limitations", [
                 "Calendar-only regression; no production schedule or electrical measurement inputs.",
                 "Date blocks are temporal groups, not proven independent production batches.",
@@ -57,8 +58,9 @@ class ApplicationService:
         from rac_hpo.optimization.robust_objective import apply_robust_metrics
         from rac_hpo.training.lightgbm_trainer import train
 
-        if algorithm not in {"baseline", "random", "tpe", "tpe_robust", "rac_hpo"}:
-            raise ValueError("Supported methods: baseline, random, tpe, tpe_robust, rac_hpo")
+        from rac_hpo.optimization.baselines import SEARCH_METHODS
+        if algorithm not in SEARCH_METHODS | {"baseline"}:
+            raise ValueError(f"Unsupported method: {algorithm}")
         config = load_config(self.config_path, overrides)
         if dataset_view_id is not None:
             from rac_hpo.data.loop_views import load_view
@@ -118,6 +120,10 @@ class ApplicationService:
             ))
 
         try:
+            from rac_hpo.data.quality_audit import audit_dataset
+            quality_path = directory / "quality_audit.json"
+            write_json(quality_path, audit_dataset(dataset))
+            detail["artifacts"]["quality_audit"] = str(quality_path)
             emit({"type": "started", "algorithm": algorithm, "message": "Preparing default baseline"})
             if cancel_check and cancel_check():
                 raise TaskCancelled("Cancelled before training")
@@ -161,8 +167,9 @@ class ApplicationService:
                 latest = {}
                 best_search_value = float("inf")
 
-                def runner(params, number):
-                    trained = train(dataset, params, seed, model_config, cancel_check, evaluation_config)
+                def runner(params, number, report=None):
+                    trained = train(dataset, params, seed, model_config, cancel_check, evaluation_config,
+                                    resource_callback=report)
                     latest.clear()
                     latest[number] = trained
                     return trained
@@ -182,7 +189,8 @@ class ApplicationService:
 
                 search_config = {**config["optimization"], **objective_controls, "seed": seed,
                                  "baseline_overall_mae": baseline.metrics["overall_mae"],
-                                 "minimum_independent_groups": robustness["minimum_independent_groups"]}
+                                 "minimum_independent_groups": robustness["minimum_independent_groups"],
+                                 "max_resource": model_config["n_estimators"]}
                 result = optimize(search_config, runner, progress, cancel_check)
                 detail.update(status=result.status, best_params=result.best_params,
                               best_value=result.best_value, best_trial=result.best_trial,

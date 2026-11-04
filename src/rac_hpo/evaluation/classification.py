@@ -32,6 +32,11 @@ def _metrics(truth, predictions, probabilities, labels):
                          for index, (label, count) in enumerate(zip(labels, counts))},
         "class_precision": {str(_scalar(label)): float(matrix[index, index] / count) if count else None
                             for index, (label, count) in enumerate(zip(labels, predicted_counts))},
+        "class_false_negative_rate": {str(_scalar(label)): float(1 - matrix[index, index] / count) if count else None
+                                      for index, (label, count) in enumerate(zip(labels, counts))},
+        "class_false_positive_rate": {
+            str(_scalar(label)): float((predicted_counts[index] - matrix[index, index]) / (len(truth) - count))
+            if len(truth) > count else None for index, (label, count) in enumerate(zip(labels, counts))},
         "missing_classes": [_scalar(label) for label, count in zip(labels, counts) if count == 0],
         "minority_class_samples": int(counts.min()),
         "sparse_class_warning": "at least one fixed class has fewer than five samples; descriptive evaluation only" if (counts < 5).any() else None,
@@ -77,6 +82,8 @@ def evaluate(y_true, predictions, probabilities, regimes=None, groups=None, *,
                   samples=len(truth), class_counts=overall["class_counts"],
                   missing_classes=overall["missing_classes"], confusion_matrix=overall["confusion_matrix"],
                   class_recall=overall["class_recall"], class_precision=overall["class_precision"],
+                  class_false_negative_rate=overall["class_false_negative_rate"],
+                  class_false_positive_rate=overall["class_false_positive_rate"],
                   minority_class_samples=overall["minority_class_samples"], sparse_class_warning=overall["sparse_class_warning"],
                   balanced_accuracy_scope=overall["balanced_accuracy_scope"], regimes={})
     for regime in sorted(set(regimes)):

@@ -21,7 +21,7 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--seed", type=int, default=42)
         command.add_argument("--estimators", type=int, default=300)
         if name == "optimize":
-            command.add_argument("--algorithm", choices=["random", "tpe", "tpe_robust", "rac_hpo"], default="tpe")
+            command.add_argument("--algorithm", choices=["random", "grid", "tpe", "tpe_robust", "rac_hpo", "successive_halving", "hyperband"], default="tpe")
             command.add_argument("--max-trials", type=int, default=12)
             command.add_argument("--timeout", type=float, default=120)
     commands.add_parser("list")

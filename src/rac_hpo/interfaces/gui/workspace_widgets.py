@@ -819,7 +819,7 @@ class RunDetailDrawer(QFrame):
         # Completed records include model construction, fitting and validation;
         # failed/cancelled records contain elapsed wall time up to termination.
         duration_caption = ("成功试验耗时包含模型构建、拟合与验证。" if trial.get("status") == "completed"
-                            else "失败或取消试验耗时为终止前实际经过的时间。")
+                            else "剪枝、失败或取消试验耗时为终止前实际经过的时间。")
         self.content_layout.addWidget(secondary(duration_caption))
         unit = experiment.get("target_unit") or "单位未记录"
         objective_name = "J（无量纲）" if experiment.get("algorithm") in {"tpe_robust", "rac_hpo"} else f"MAE ({unit})"
@@ -827,6 +827,10 @@ class RunDetailDrawer(QFrame):
         self._metrics(trial.get("metrics", {}), unit)
         self._section("超参数", trial.get("params", {}))
         self._section("候选选择", trial.get("selection", {}))
+        if trial.get("resource"):
+            self._section("资源调度", trial["resource"])
+        if trial.get("pruning_reason"):
+            self._section("剪枝原因", {"原因": trial["pruning_reason"]})
         if trial.get("selection_duration_seconds") is not None:
             self._section("选择耗时", {"耗时 (s)": trial["selection_duration_seconds"]})
         if trial.get("failure_reason"):

@@ -8,7 +8,7 @@
 
 | 你要解决的问题 | 使用入口 | 当前支持 |
 | --- | --- | --- |
-| 预测钢铁能耗或 CNC 剩余加工周期 | 数据管理 → 模型训练 → 超参数优化 | LightGBM 回归；四种搜索方法 |
+| 预测钢铁能耗或 CNC 剩余加工周期 | 数据管理 → 模型训练 → 超参数优化 | LightGBM 回归；七种搜索方法 |
 | 预测故障类别 | 工业训练 | AI4I、SECOM、Paderborn；三种分类模型、三种搜索方法 |
 | 演示发现退化后重新优化并审核候选 | 自主优化 | CNC 固定协议、单轮离线回放、本地模拟切换 |
 | 查看和保存已有结果 | 实验对比、运行日志及各任务历史 | 保留真实指标、模型、配置与日志 |
@@ -17,7 +17,9 @@ XJTU-SY 当前只有完整寿命 RUL 回归导入审计，不能通过分类训�
 
 ## 2. 安装与启动
 
-推荐 Windows 11、Python 3.11。所有命令在工程根目录的 PowerShell 中执行。
+当前本机为 Apple M5、10核、16 GiB 的 Mac，使用原生 arm64 Python 3.11、回归4线程与串行候选。先安装 uv 和 `brew install libomp`，运行 `./Setup.command`，随后双击 `Run-GUI.command` 或终端 `./Run-GUI.command`。Mac CLI 将下文 `.venv\Scripts\python.exe` 替换为 `.venv/bin/python`。安装不会自动下载数据；使用 fetch 显式获取。
+
+也支持 Windows 11。以下示例采用 Windows PowerShell 路径。
 
 已有环境时双击 `Run-GUI.cmd`，或运行：
 
@@ -74,7 +76,7 @@ CNC 数据预测 CycleToFailure，单位 cycles；观察当前周期信号后预
 .venv\Scripts\python.exe -m rac_hpo optimize --dataset cnc_milling_2025 --algorithm rac_hpo --max-trials 48 --timeout 120 --seed 42
 ```
 
-回归可用 `random`、`tpe`、`tpe_robust`、`rac_hpo`。前两种按总体 MAE 选最佳，后两种按固定 J 选最佳。因此“最佳 J”和“最佳 MAE”可能属于不同 Trial，不能混称一个最佳结果。
+回归可用 `random`、`grid`、`tpe`、`tpe_robust`、`rac_hpo`、`successive_halving`、`hyperband`。只有 `tpe_robust` / `rac_hpo` 按固定 J 选择，其余按总体 MAE 选择。Grid 为三档粗网格；资源方法在候选间分层剪枝，详情保留中间验证误差和资源，剪枝试验不参与最佳选择。因此“最佳 J”和“最佳 MAE”可能属于不同 Trial，不能混称一个最佳结果。
 
 默认基线为 trial -1，不占 `max_trials`。时间预算在启动下一试验前检查，当前试验可以运行结束；基线初始化另计，总用时可能超过设置的搜索秒数。取消需要后台进程确认，已完成结果保留。
 

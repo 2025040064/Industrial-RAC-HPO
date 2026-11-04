@@ -1,5 +1,12 @@
 # Changelog
 
+## 未发布 — 总结文档与 M5 Mac 对齐（2026-11-04）
+
+- 回归统一 runner 新增三档粗网格、随机候选 Successive Halving / Hyperband；保存每轮资源/MAE、剪枝原因、耗时，剪枝不参与最优选择。原四种方法语义不变。
+- 新增 train 特征 IQR 独立审计，只标记 train/validation 源行并保留极值；不使用 test，不修改既有 manifest。数据页、工业页及实验产物可查看。
+- 分类评价补充各类别漏报率与误报率；新增 Mac 安装/启动脚本。按 M5 / 10 核 / 16 GiB 采用 CPU 4 线程与串行 trial。
+- 配置兼容扩展，数据库 Schema 保持 1；未发布、未操作生产设备。实际验证与边界见 docs/SUMMARY_ALIGNMENT.md。
+
 ## 2026-11-04 — GitHub 仓库同步
 
 - 将当前项目源码、配置、测试和文档纳入版本管理，保留远端许可证与提交历史。

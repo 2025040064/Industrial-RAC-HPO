@@ -48,7 +48,9 @@ class IndustrialService:
         dataset = prepare(dataset_key, self._data_path(dataset_key, path),
                           self.root / "datasets/manifests/industrial",
                           archive_cache_dir=self.root / "datasets/processed/industrial")
+        from rac_hpo.data.quality_audit import audit_dataset
         return {"dataset_key": dataset_key, "dataset_id": dataset.dataset_id,
+                "quality_audit": audit_dataset(dataset),
                 "task_type": dataset.manifest["task_type"], "row_count": len(dataset.y),
                 "features": dataset.features, "target": dataset.target,
                 "source_sha256": dataset.source_sha256,
@@ -139,6 +141,11 @@ class IndustrialService:
             detail.update(dataset_id=dataset.dataset_id, data_sha256=dataset.source_sha256,
                           manifest=dataset.manifest)
             write_json(directory / "manifest.json", dataset.manifest)
+            from rac_hpo.data.quality_audit import audit_dataset
+            detail["quality_audit"] = audit_dataset(dataset)
+            quality_path = directory / "quality_audit.json"
+            write_json(quality_path, detail["quality_audit"])
+            detail["artifacts"]["quality_audit"] = str(quality_path)
             write_json(directory / "environment.json", environment_snapshot(self.root))
             if (self.root / "uv.lock").is_file():
                 shutil.copy2(self.root / "uv.lock", directory / "uv.lock")

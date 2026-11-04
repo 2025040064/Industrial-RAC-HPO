@@ -29,11 +29,13 @@ class ModelConfig(StrictModel):
 
 
 class OptimizationConfig(StrictModel):
-    algorithm: Literal["random", "tpe", "tpe_robust", "rac_hpo"] = "tpe"
+    algorithm: Literal["random", "grid", "tpe", "tpe_robust", "rac_hpo", "successive_halving", "hyperband"] = "tpe"
     max_trials: int = Field(default=12, ge=1, le=100000)
     timeout_seconds: float = Field(default=120, gt=0, allow_inf_nan=False)
     search_space: dict[str, dict] = Field(default_factory=dict)
     rac_hpo: dict = Field(default_factory=dict)
+    min_resource: int = Field(default=10, ge=1)
+    reduction_factor: int = Field(default=3, ge=2)
 
 
 class RobustnessConfig(StrictModel):
@@ -58,6 +60,8 @@ class AppConfig(StrictModel):
 
     @model_validator(mode="after")
     def validate_search_space(self):
+        if self.optimization.algorithm in {"successive_halving", "hyperband"} and self.optimization.min_resource > self.model.n_estimators:
+            raise ValueError("min_resource must not exceed model.n_estimators")
         if self.optimization.search_space:
             from rac_hpo.optimization.base import validate_search_space
             validate_search_space(self.optimization.search_space)

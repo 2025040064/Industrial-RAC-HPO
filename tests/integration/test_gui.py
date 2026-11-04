@@ -3,6 +3,7 @@
 import os
 import queue
 import shutil
+import sys
 import time
 from pathlib import Path
 
@@ -57,8 +58,9 @@ def test_gui_window_has_seven_working_pages(window):
     assert window.train_page.start_button.isEnabled()
     assert not window.train_page.cancel_button.isEnabled()
     assert not window.train_page.export_button.isEnabled()
-    assert window.optimize_page.algorithm_combo.count() == 4
-    assert "rac_hpo" in [window.optimize_page.algorithm_combo.itemData(index) for index in range(4)]
+    methods = {window.optimize_page.algorithm_combo.itemData(index)
+               for index in range(window.optimize_page.algorithm_combo.count())}
+    assert methods == {"random", "grid", "tpe", "tpe_robust", "rac_hpo", "successive_halving", "hyperband"}
     assert window.optimize_page.chart.values == []
     assert window.compare_page.history_table.rowCount() == 0
 
@@ -69,8 +71,13 @@ def test_gui_theme_has_real_text_glyphs(qt_app):
     assert font.supportsCharacter("A"), "UI text must contain real glyphs instead of empty squares"
     chinese_families = QFontDatabase.families(QFontDatabase.WritingSystem.SimplifiedChinese)
     assert chinese_families, "UI requires an installed font with Simplified Chinese glyphs"
-    chinese_font = QRawFont.fromFont(QFont(chinese_families[0], 10))
-    assert chinese_font.supportsCharacter("中")
+    # macOS can advertise CJK support for a family whose selected face lacks it.
+    # Check usable glyphs, not the alphabetical position of an installed family.
+    assert any(QRawFont.fromFont(QFont(family, 10)).supportsCharacter("中")
+               for family in chinese_families)
+    if sys.platform == "darwin":
+        assert "Heiti SC" in qt_app.font().families()
+        assert QRawFont.fromFont(QFont("Heiti SC", 10)).supportsCharacter("中")
 
 
 def test_gui_imports_real_dataset_in_background(window):

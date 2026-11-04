@@ -6,6 +6,7 @@ import math
 STATUS_LABELS = {
     "running": "运行中", "completed": "已完成", "COMPLETE": "已完成",
     "failed": "失败", "FAIL": "失败", "cancelled": "已取消", "cancelling": "取消中",
+    "pruned": "已剪枝", "PRUNED": "已剪枝",
     "idle": "就绪", "starting": "准备中",
 }
 

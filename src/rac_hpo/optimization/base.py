@@ -9,6 +9,7 @@ import optuna
 from optuna.trial import TrialState
 
 from rac_hpo.domain.schemas import OptimizationResult, TaskCancelled, TrainingResult
+from rac_hpo.optimization.baselines import SEARCH_METHODS, RESOURCE_METHODS, grid_candidates, resource_pruner
 from rac_hpo.optimization.robust_objective import apply_robust_metrics
 from rac_hpo.training.lightgbm_trainer import DEFAULT_PARAMS, validate_params
 
@@ -71,12 +72,13 @@ def optimize(
     """Check time budget before each trial; an already running trial may exceed it.
 
     Failed trials consume trial/time budget and are retained. Cancellation is
-    acknowledged separately from successful completion. No pruning is enabled.
+    acknowledged separately from successful completion. Resource methods require
+    a three-argument runner(params, number, report), reporting validation MAE.
     """
     config = deepcopy(task_config)
     algorithm = config.get("algorithm", "tpe")
-    if algorithm not in {"random", "tpe", "tpe_robust", "rac_hpo"}:
-        raise ValueError("algorithm must be random, tpe, tpe_robust or rac_hpo")
+    if algorithm not in SEARCH_METHODS:
+        raise ValueError(f"Unsupported algorithm: {algorithm}")
     max_trials = config.get("max_trials", 20)
     timeout = config.get("timeout_seconds", 300)
     seed = config.get("seed", 42)
@@ -96,8 +98,12 @@ def optimize(
         baseline_metrics = {key: {"mae": value, "samples": 1} for key, value in baseline.items()}
         apply_robust_metrics({"regimes": baseline_metrics}, baseline, config.get("alpha", 0.3),
                               config.get("weights"), config.get("epsilon", 1e-8))
-    sampler = optuna.samplers.RandomSampler(seed=seed) if algorithm == "random" else optuna.samplers.TPESampler(seed=seed)
-    study = optuna.create_study(direction="minimize", sampler=sampler)
+    sampler = (optuna.samplers.RandomSampler(seed=seed) if algorithm in {"random", "grid"} | RESOURCE_METHODS
+               else optuna.samplers.TPESampler(seed=seed))
+    pruner = resource_pruner(algorithm, config) if algorithm in RESOURCE_METHODS else optuna.pruners.NopPruner()
+    study = optuna.create_study(direction="minimize", sampler=sampler, pruner=pruner,
+                                study_name=f"rac-hpo-{algorithm}-{seed}")
+    grid = iter(grid_candidates(space)) if algorithm == "grid" else None
     policy = None
     if algorithm == "rac_hpo":
         from rac_hpo.optimization.rac_hpo.search import RACSearchPolicy
@@ -129,6 +135,11 @@ def optimize(
                 break
             if candidate is not None:
                 study.enqueue_trial(candidate)
+        if grid is not None:
+            candidate = next(grid, None)
+            if candidate is None:
+                break
+            study.enqueue_trial(candidate)
         optuna_trial = study.ask()
         params = _suggest(optuna_trial, space)
         record = {
@@ -140,8 +151,34 @@ def optimize(
             record.update(selection=selection, selection_duration_seconds=selection_seconds,
                           predicted_cost_seconds=selection.get("predicted_cost_seconds"))
         trial_started = perf_counter()
+        resource = {"unit": "boosting_iterations", "last_step": 0, "intermediate_values": [],
+                    "min_resource": config.get("min_resource", 10),
+                    "max_resource": config.get("max_resource", 300),
+                    "reduction_factor": config.get("reduction_factor", 3)}
+
+        def report(step, value):
+            if cancel_check is not None and cancel_check():
+                raise TaskCancelled("training cancelled before resource decision")
+            if (isinstance(step, bool) or not isinstance(step, int) or
+                    not resource["last_step"] < step <= resource["max_resource"]):
+                raise ValueError("resource steps must increase within max_resource")
+            value = float(value)
+            if not math.isfinite(value) or value < 0:
+                raise ValueError("intermediate validation MAE must be nonnegative and finite")
+            resource["last_step"] = step
+            resource["intermediate_values"].append({"step": step, "validation_mae": value})
+            optuna_trial.report(value, step)
+            # A full-resource model is eligible for selection, never pruned at the cap.
+            if step < resource["max_resource"] and optuna_trial.should_prune():
+                raise optuna.TrialPruned(f"{algorithm} pruned at boosting iteration {step}")
+
+        if algorithm in RESOURCE_METHODS:
+            record["resource"] = resource
         try:
-            trained = trial_runner(params, optuna_trial.number)
+            trained = (trial_runner(params, optuna_trial.number, report) if algorithm in RESOURCE_METHODS
+                       else trial_runner(params, optuna_trial.number))
+            if algorithm in RESOURCE_METHODS and not resource["last_step"]:
+                raise ValueError("resource runner did not report any validation iterations")
             record["duration_seconds"] = float(trained.duration_seconds)
             record["metrics"] = deepcopy(trained.metrics)
             if trained.status == "cancelled":
@@ -169,6 +206,9 @@ def optimize(
                 result.best_params = dict(params)
                 result.best_value = value
                 result.best_trial = optuna_trial.number
+        except optuna.TrialPruned as error:
+            record.update(status="pruned", failure_reason=None, pruning_reason=str(error))
+            study.tell(optuna_trial, state=TrialState.PRUNED)
         except TaskCancelled as error:
             record.update(status="cancelled", failure_reason=str(error))
             study.tell(optuna_trial, state=TrialState.FAIL)

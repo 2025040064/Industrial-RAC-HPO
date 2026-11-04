@@ -1,6 +1,7 @@
 """Shared design tokens for the desktop application."""
 
 import os
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt
@@ -46,12 +47,16 @@ def apply_theme(app):
             if path.is_file():
                 QFontDatabase.addApplicationFont(str(path))
     available = set(QFontDatabase.families())
+    preferred = (("SF Pro Text", "Helvetica Neue") if sys.platform == "darwin"
+                 else ("SF Pro Text", "Segoe UI Variable", "Segoe UI"))
     family = next(
-        (name for name in ("SF Pro Text", "Segoe UI Variable", "Segoe UI") if name in available),
+        (name for name in preferred if name in available),
         "sans-serif",
     )
     font = QFont(family, 10)
-    fallback = [name for name in ("Microsoft YaHei UI", "Microsoft YaHei", "SimSun") if name in available]
+    fallback_names = (("Heiti SC", "Songti SC") if sys.platform == "darwin"
+                      else ("Microsoft YaHei UI", "Microsoft YaHei", "SimSun"))
+    fallback = [name for name in fallback_names if name in available]
     font.setFamilies([family, *fallback])
     app.setFont(font)
     t = TOKENS

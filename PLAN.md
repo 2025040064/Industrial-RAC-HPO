@@ -126,3 +126,9 @@ PreparedDataset 保存实际数据、特征顺序、目标、工况、独立日�
 - 已按 `docs/INDUSTRIAL_ALGORITHM_OPTIMIZATION_PLAN.md` 复现 SECOM 与 Paderborn 零召回，新增仅训练期前向折选阈值的可选策略、跨组泄漏防护与各类别指标；旧默认行为保持不变。
 - SECOM 三种方法、三个种子、各 24 次试验已完成且资源一致；RAC 与 TPE 的最终结果相同，检出部分失效的同时误报较多。两个 Paderborn 工况仍受每工况只有 3 把验证轴承限制，官方额外数据请求超时；不声称已满足生产验收。
 - 完整工程回归 283 项通过，test 继续封存；原有及新增 45 个模型的哈希、重载和按配置重训验证预测一致。实验详情与限制见 `docs/INDUSTRIAL_ALGORITHM_OPTIMIZATION_REPORT.md`。
+
+## 2026-11-04 总结文档对齐与本机 Mac 适配
+
+- 按《总结与展望.md》核对真实接口；补粗网格、Successive Halving、Hyperband 回归对照和数值特征独立审计；分类增加漏报/误报率。文档中扰动训练、自动加入异常特征及性能领先不作为已实现事实。
+- 本机确认 Apple M5、10 核、16 GiB、macOS 26.6；配置原生 arm64 CPU，回归默认 4 线程、候选串行。增加 Mac 安装/启动脚本，保留 Windows 入口。
+- Python 3.11.18 原生环境及 libomp 已就绪。46项定向检查通过；修复原GUI方法数硬编码与Mac字体首项假设后，最终完整296项通过（81.29秒）。真实CNC七法各24候选完成，资源剪枝生效但MAE退化，test封存。原生1280×800 Retina窗口验证通过；完整证据与下一步见 docs/SUMMARY_ALIGNMENT.md。

@@ -32,6 +32,19 @@
 
 ## 环境与启动
 
+当前本机为 macOS 26.6 / Apple M5（arm64、10 核、16 GiB）。已采用原生 CPU 环境，回归默认每模型 4 线程、候选串行，工业分类默认 2 线程；不配置 GPU。首次需 uv 和 OpenMP（`brew install libomp`），然后运行：
+
+```sh
+./Setup.command
+./Run-GUI.command
+.venv/bin/python -m rac_hpo fetch --dataset cnc_milling_2025
+.venv/bin/python -m rac_hpo optimize --dataset cnc_milling_2025 --algorithm hyperband --max-trials 24
+```
+
+也可双击 `Run-GUI.command`。安装脚本按锁文件安装，环境/缓存/临时文件保存在工程内；数据下载为显式操作。以下 PowerShell 命令保留供 Windows 使用，Mac 对应解释器为 `.venv/bin/python`。
+
+回归新增粗网格 `grid`、`successive_halving` 和 `hyperband`；后两者按验证 MAE 在候选间做分层资源淘汰，与单模型早停分别记录。数值特征极值/缺失只标记审计，不自动删除或加入特征。分类增加各类别漏报/误报率。对齐范围、算法口径和实测见 [总结文档对齐记录](docs/SUMMARY_ALIGNMENT.md)。
+
 Windows 11、Python 3.11；依赖版本由 pyproject.toml 和 uv.lock 固定。已配置的本地环境可以直接双击 `Run-GUI.cmd`，或在项目目录运行：
 
 ```powershell
@@ -99,7 +112,7 @@ RAC-HPO 默认前 16 次使用 TPE 暖启动，之后用 ExtraTrees 分工况性
 
 五页采用固定56px图标导航和顶部上下文栏。导航只显示当前图标Tooltip；宽屏优化页为Trials+分析区，对比页为Runs+概览/并排查看，小窗口通过按钮打开列表。最小720×560，图表按容器宽度重排。
 
-数据管理保留真实导入、来源/字段/工况/固定划分。模型训练保留配置、基线、验证工况、取消、结果和导出。超参数优化提供当前四种方法、四项真实KPI、平行坐标与参数刷选、完整优化历史、过滤分布/参数散点、状态与RAC诊断。
+数据管理保留真实导入、来源/字段/工况/固定划分。模型训练保留配置、基线、验证工况、取消、结果和导出。超参数优化提供当前七种回归方法、四项真实KPI、平行坐标与参数刷选、完整优化历史、过滤分布/参数散点、状态与RAC诊断。
 
 列表搜索、状态筛选和brush统一联动，排序后分页。行点击高亮，勾选独立控制2–8条并排查看，详情通过显式按钮打开；过滤隐藏的勾选保留并提示。最佳objective和最佳MAE分别注明Trial，MAE使用目标真实单位，J无量纲。基线-1不进入搜索统计。
 
