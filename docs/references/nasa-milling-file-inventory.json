@@ -1,0 +1,40 @@
+{
+  "archive_sha256": "bdba8d52ec1a1baab24c2be58480e6ac62508c8cc1f8219f47ebde8fc9ebc474",
+  "mat_sha256": "71486a857939d1416c86c7cf0c469d5e69c7c30495e01ec8a0e13aafd2a313cb",
+  "records": 167,
+  "labeled_VB": 146,
+  "cases": [
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0,
+    9.0,
+    10.0,
+    11.0,
+    12.0,
+    13.0,
+    14.0,
+    15.0,
+    16.0
+  ],
+  "fields": [
+    "case",
+    "run",
+    "VB",
+    "time",
+    "DOC",
+    "feed",
+    "material",
+    "smcAC",
+    "smcDC",
+    "vib_table",
+    "vib_spindle",
+    "AE_table",
+    "AE_spindle"
+  ],
+  "case_is_physical_tool_identity_verified": false
+}
