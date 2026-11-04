@@ -25,7 +25,7 @@ class ComparePage(QWidget):
         self.refresh_button = QPushButton('刷新实验记录')
         self.refresh_button.clicked.connect(self.refresh_requested)
         history_layout.addWidget(self.refresh_button)
-        self.history_table = RecordTable([('id', '实验 ID'), ('created_at', '创建时间 / +08:00'), ('dataset_id', '数据集'), ('algorithm', '算法'), ('status', '状态'), ('overall_mae', '已选模型验证 MAE'), ('target_unit', '目标单位'), ('robust_objective', '固定 J · 无量纲'), ('duration_seconds', '总耗时 / s'), ('trial_count', '搜索试验数')], filter_fields=('algorithm', 'status'))
+        self.history_table = RecordTable([('id', '实验 ID'), ('created_at', '创建时间 / +08:00'), ('dataset_id', '数据集'), ('algorithm', '算法'), ('status', '状态'), ('overall_mae', '验证 MAE'), ('target_unit', '目标单位'), ('robust_objective', '固定 J · 无量纲'), ('duration_seconds', '总耗时 / s'), ('trial_count', '搜索试验数')], filter_fields=('algorithm', 'status'))
         self.history_table.enable_workbench(('id', 'algorithm', 'status'))
         self.history_table.checked_ids = self.view_state.selected_ids
         self.history_table.view.setColumnWidth(1, 150)
@@ -33,7 +33,7 @@ class ComparePage(QWidget):
         self.history_table.details_requested.connect(lambda r: self.detail_requested.emit(str(r['_id'])))
         self.history_table.checked_changed.connect(self._selection_changed)
         history_layout.addWidget(self.history_table, 1)
-        self.compare_button = QPushButton('并排查看所选 Runs')
+        self.compare_button = QPushButton('刷新并排对比（勾选后自动显示）')
         self.compare_button.setEnabled(False)
         self.compare_button.clicked.connect(self.compare_selected)
         history_layout.addWidget(self.compare_button)
@@ -45,7 +45,7 @@ class ComparePage(QWidget):
         layout = QVBoxLayout(content)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
-        self.header = WorkspaceHeader('实验对比', '浏览真实实验；勾选 2–8 条并排核对，选择行不自动打开详情。')
+        self.header = WorkspaceHeader('实验对比', '横向滚动左侧列表可直接看全部指标；点某行查看单条；勾选 2–8 条自动并排核对。')
         self.export_button = QPushButton('导出查看中的实验')
         self.export_button.setEnabled(False)
         self.export_button.clicked.connect(self._export_selected)
@@ -54,10 +54,12 @@ class ComparePage(QWidget):
         self.view_button.clicked.connect(lambda: self.view_experiment_requested.emit(self.experiment_id))
         self.header.actions.addWidget(self.export_button)
         layout.addWidget(self.header)
-        self.metrics = MetricsGrid([('dataset', '数据集'), ('algorithm', '算法'), ('mae', '已选模型验证 MAE'), ('j', '已选模型固定 J')])
+        self.metrics = MetricsGrid([('dataset', '数据集'), ('algorithm', '算法'), ('mae', '当前观察 · 验证 MAE'), ('j', '当前观察 · 固定 J')])
+        for _key in ('dataset', 'algorithm', 'mae', 'j'):
+            self.metrics.set_metric(_key, None, '点左侧行查看')
         layout.addWidget(self.metrics)
         self.overview = CollapsiblePanel('当前观察 Run')
-        self.overview_label = secondary('在左侧选择一条实验查看；窄窗口使用“浏览 Runs”。')
+        self.overview_label = secondary('尚未选择。点左侧列表的任意一行（点文字，不是方框）查看单条详情；勾选方框用于并排对比。')
         self.overview.content_layout.addWidget(self.overview_label)
         self.overview.actions.addWidget(self.view_button)
         self.detail_button = QPushButton('查看完整详情')
@@ -108,17 +110,22 @@ class ComparePage(QWidget):
         self.header.set_context(self.experiment_id + ' · ' + status_label(record.get('status')))
         metrics = record.get('metrics') or {}
         unit = record.get('target_unit') or '单位未记录'
-        self.metrics.set_metric('dataset', record.get('dataset_id'))
-        self.metrics.set_metric('algorithm', record.get('algorithm'))
-        self.metrics.set_metric('mae', metrics.get('overall_mae'), unit + ' · 已选模型')
-        self.metrics.set_metric('j', metrics.get('robust_objective'), '无量纲 · 已选模型')
+        self.metrics.set_metric('dataset', record.get('dataset_id'), '观察中')
+        self.metrics.set_metric('algorithm', record.get('algorithm'), '观察中')
+        self.metrics.set_metric('mae', metrics.get('overall_mae'), unit)
+        self.metrics.set_metric('j', metrics.get('robust_objective'), '无量纲')
         self.overview_label.setText(f"{self.experiment_id}\n创建时间：{record.get('created_at') or '—'}\n数据 SHA-256：{record.get('data_sha256') or '未提供'}")
         self.params.setPlainText(json.dumps({'best_params': record.get('best_params'), 'fixed_objective': record.get('fixed_objective'), 'config': record.get('config')}, ensure_ascii=False, indent=2, default=str))
 
     def _selection_changed(self):
-        self.compare_button.setEnabled(2 <= len(self.history_table.checked_ids) <= 8)
-        if self._comparing:
+        count = len(self.history_table.checked_ids)
+        self.compare_button.setEnabled(2 <= count <= 8)
+        if 2 <= count <= 8:
+            # Showing the table immediately removes the "I checked boxes but see nothing" trap.
             self.compare_selected()
+        elif count < 2:
+            self._comparing = False
+            self.comparison.hide()
 
     def compare_selected(self):
         self._comparing = True

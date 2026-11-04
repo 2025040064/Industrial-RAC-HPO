@@ -62,7 +62,8 @@ def test_startup_opens_latest_search_including_failed(tmp_path):
         service.repository.save_experiment(value)
     widget = MainWindow(tmp_path)
     try:
-        assert widget.pages.currentIndex() == 2
+        # Startup lands on 数据管理; the latest search stays loaded and one click away.
+        assert widget.pages.currentIndex() == 0
         assert widget.optimize_page.experiment_id == "new-failed"
         assert not widget.controller.running
         assert not widget.cancel_button.isEnabled()

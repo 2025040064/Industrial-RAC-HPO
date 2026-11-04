@@ -103,7 +103,7 @@ class OptimizePage(QWidget):
         form.setHorizontalSpacing(12)
         form.setVerticalSpacing(10)
         self.algorithm_combo = QComboBox()
-        for name, algorithm in (('Optuna TPE', 'tpe'), ('Random Search', 'random'), ('Grid · 粗网格', 'grid'), ('Successive Halving', 'successive_halving'), ('Hyperband', 'hyperband'), ('TPE + 固定鲁棒目标', 'tpe_robust'), ('RAC-HPO · 工况与成本', 'rac_hpo')):
+        for name, algorithm in (('Optuna TPE', 'tpe'), ('Random Search', 'random'), ('TPE + 固定鲁棒目标', 'tpe_robust'), ('RAC-HPO · 工况与成本', 'rac_hpo')):
             self.algorithm_combo.addItem(name, algorithm)
         self.algorithm_combo.setMinimumContentsLength(12)
         self.algorithm_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
@@ -128,8 +128,10 @@ class OptimizePage(QWidget):
         form.setColumnStretch(3, 1)
         self.config_panel.content_layout.addLayout(form)
         self.algorithm_note = secondary('')
+        self.algorithm_note.setWordWrap(True)
         self.config_panel.content_layout.addWidget(self.algorithm_note)
         self.algorithm_combo.currentIndexChanged.connect(self._algorithm_changed)
+        self.trials_spin.valueChanged.connect(self._update_algorithm_note)
         self._algorithm_changed()
         self.start_button = QPushButton('开始真实搜索')
         self.start_button.setObjectName('primary')
@@ -140,7 +142,7 @@ class OptimizePage(QWidget):
         self.config_panel.actions.addWidget(self.start_button)
         self.config_panel.actions.addWidget(self.cancel_button)
         self.config_panel.actions.addStretch()
-        self.config_panel.set_expanded(False)
+        self.config_panel.set_expanded(True)
         self.new_task_label = secondary('新任务数据：项目默认文件；查看历史不会更改新任务配置。')
         self.config_panel.layout().addWidget(self.new_task_label)
         layout.addWidget(self.config_panel)
@@ -264,11 +266,27 @@ class OptimizePage(QWidget):
         algorithm = self.algorithm_combo.currentData()
         if algorithm == 'rac_hpo' and self.trials_spin.value() < 32:
             self.trials_spin.setValue(48)
-        self.algorithm_note.setText('RAC-HPO 先完成 16 次初始化；证据或代理质量不足时回退 TPE。建议至少 32 次，真实诊断随试验保存。' if algorithm == 'rac_hpo' else 'Random / TPE 按验证 MAE 选择；固定鲁棒搜索按无量纲 J 选择。默认基线不计入次数上限。')
-        if algorithm in {'successive_halving', 'hyperband'}:
-            self.algorithm_note.setText('随机候选 + 跨配置分层淘汰，按验证 MAE 与迭代资源竞争；单模型早停另行保留。剪枝试验不参与最优选择。')
-        elif algorithm == 'grid':
-            self.algorithm_note.setText('每维低/中/高三档粗网格，步长对齐；笛卡尔积按固定顺序遍历，耗尽即停。预算截断可能只覆盖部分维度。')
+        self._update_algorithm_note()
+
+    def _update_algorithm_note(self):
+        """Make the warm-up budget visible: below 32 trials RAC-HPO is only TPE in disguise."""
+        algorithm = self.algorithm_combo.currentData()
+        trials = self.trials_spin.value()
+        if algorithm == 'rac_hpo':
+            if trials < 32:
+                self.algorithm_note.setText(
+                    f'当前 {trials} 次不够：RAC-HPO 前 16 次是暖启动（等同 TPE），'
+                    f'真正由 RAC 决策的只有 {max(0, trials - 16)} 次，结果不可用于比较。建议 48 次。'
+                )
+            else:
+                self.algorithm_note.setText(
+                    f'RAC-HPO 前 16 次为暖启动，第 17 次起才用自己的判断；'
+                    f'当前 {trials} 次中 {trials - 16} 次由 RAC 决策。证据不足时自动回退 TPE。'
+                )
+        else:
+            self.algorithm_note.setText(
+                'Random / TPE 按验证 MAE 选择；固定鲁棒搜索按无量纲 J 选择。默认基线不计入次数上限。'
+            )
 
     def set_busy(self, busy, cancellable=False):
         for widget in (self.start_button, self.algorithm_combo, self.trials_spin, self.timeout_spin, self.seed_spin):

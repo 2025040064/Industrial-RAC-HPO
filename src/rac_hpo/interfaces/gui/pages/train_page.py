@@ -45,7 +45,9 @@ class TrainPage(QWidget):
         form.addRow("最大树数量", self.rounds_spin)
         form.addRow("随机种子", self.seed_spin)
         self.config_panel.content_layout.addLayout(form)
-        self.config_panel.content_layout.addWidget(secondary("使用数据管理中选择的文件；实际训练配置随实验保存。"))
+        self.context_note = secondary("使用数据管理中选择的文件；实际训练配置随实验保存。")
+        self.context_note.setWordWrap(True)
+        self.config_panel.content_layout.addWidget(self.context_note)
         self.start_button = QPushButton("开始基线训练")
         self.start_button.setObjectName("primary")
         self.start_button.clicked.connect(self._start)
@@ -104,6 +106,16 @@ class TrainPage(QWidget):
         widget.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         widget.setMinimumHeight(0)
         widget.setFixedHeight(widget.horizontalHeader().height() + max(count, 1) * 32 + 8)
+
+    def set_baseline_count(self, count):
+        """Repeated baselines only clutter history; comparisons belong to the optimize page."""
+        if count <= 0:
+            self.context_note.setText("使用数据管理中选择的文件；实际训练配置随实验保存。")
+        else:
+            self.context_note.setText(
+                f"当前工作区已有 {count} 条基线记录。再跑一次只会新增一条雷同记录；"
+                f"要比较算法请到「超参数优化」页跑搜索。"
+            )
 
     def _start(self):
         self.error_label.hide()

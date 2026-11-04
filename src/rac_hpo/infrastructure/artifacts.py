@@ -45,10 +45,15 @@ def source_fingerprint(root: Path) -> str:
 
 
 def environment_snapshot(root: Path) -> dict:
-    commit = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, check=False,
-        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-    )
+    try:
+        commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, check=False,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        code_commit = commit.stdout.strip() if commit.returncode == 0 else "unversioned"
+    except OSError:
+        # git is absent from PATH on some installations; keep the snapshot usable.
+        code_commit = "unversioned"
     packages = ("numpy", "pandas", "scipy", "scikit-learn", "lightgbm", "optuna",
                 "PySide6", "matplotlib", "pydantic", "PyYAML")
     return {
@@ -58,7 +63,7 @@ def environment_snapshot(root: Path) -> dict:
         "all_distributions": {distribution.metadata["Name"]: distribution.version
                               for distribution in importlib.metadata.distributions()
                               if distribution.metadata["Name"]},
-        "code_commit": commit.stdout.strip() if commit.returncode == 0 else "unversioned",
+        "code_commit": code_commit,
         "source_sha256": source_fingerprint(root), "captured_at": utc_now(),
     }
 

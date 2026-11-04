@@ -8,8 +8,8 @@ from pathlib import Path
 
 from PySide6.QtCore import QElapsedTimer, QTimer
 from PySide6.QtWidgets import (
-    QApplication, QFileDialog, QHBoxLayout, QLabel, QMainWindow, QProgressBar,
-    QPushButton, QSizePolicy, QStackedWidget, QVBoxLayout, QWidget,
+    QApplication, QComboBox, QDoubleSpinBox, QFileDialog, QHBoxLayout, QLabel, QMainWindow,
+    QProgressBar, QPushButton, QSizePolicy, QSpinBox, QStackedWidget, QVBoxLayout, QWidget,
 )
 
 from rac_hpo.application.experiment_service import ApplicationService
@@ -26,7 +26,7 @@ from .pages.optimize_page import OptimizePage
 from .pages.train_page import TrainPage
 from .sidebar import RAIL_WIDTH, NavigationRail, build_sidebar_navigation
 from .theme import apply_theme
-from .widgets import secondary
+from .widgets import WheelGuard, secondary
 from .workspace_widgets import ElidedLabel
 from .workspace_state import completed_trials, objective_value, status_label
 from .workers import TaskController
@@ -152,7 +152,8 @@ class MainWindow(QMainWindow):
         self.navigation.currentRowChanged.connect(self.pages.setCurrentIndex)
         self.navigation.currentRowChanged.connect(self._update_context)
         self.compare_page.history_table.record_selected.connect(lambda record:self._update_context())
-        self.navigation.setCurrentRow(2)
+        # Start on 数据管理: the workflow begins with a verified dataset, not with a search.
+        self.navigation.setCurrentRow(0)
         self.data_page.import_requested.connect(self.import_dataset)
         self.train_page.start_requested.connect(lambda overrides: self.start_experiment("baseline", overrides))
         self.optimize_page.start_requested.connect(self.start_experiment)
@@ -184,6 +185,11 @@ class MainWindow(QMainWindow):
         self.refresh_history()
         self.refresh_loop_history()
         self.refresh_industrial_history()
+        # Scrolling a long page must never edit the algorithm or the trial budget.
+        self._wheel_guard = WheelGuard(self)
+        for widget_type in (QSpinBox, QDoubleSpinBox, QComboBox):
+            for widget in self.findChildren(widget_type):
+                widget.installEventFilter(self._wheel_guard)
 
     def start_industrial_operation(self, operation, arguments):
         if self.controller.running:
@@ -541,13 +547,17 @@ class MainWindow(QMainWindow):
             experiments = self.service.list_experiments()
             self.compare_page.show_experiments(experiments)
             self.optimize_page.set_history(experiments)
+            self.train_page.set_baseline_count(
+                sum(1 for item in experiments if item.get("algorithm") == "baseline")
+            )
             if not self._startup_history_loaded:
                 self._startup_history_loaded = True
                 latest = next((item for item in sorted(
                     experiments, key=lambda item: item.get("created_at", ""), reverse=True,
                 ) if item.get("algorithm") != "baseline"), None)
                 if latest:
-                    self.open_workspace(latest["id"])
+                    # Load the latest search so it is one click away, without stealing the landing page.
+                    self.open_workspace(latest["id"], navigate=False)
         except Exception as exc:
             self.logs_page.append(f"history_read_failed error={exc}")
             self.statusBar().showMessage(f"读取历史实验失败：{exc}")
@@ -558,7 +568,7 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             self._operation_error(f"读取实验失败：{exc}")
 
-    def open_workspace(self, experiment_id):
+    def open_workspace(self, experiment_id, navigate=True):
         try:
             if experiment_id == self.active_experiment_id and experiment_id in self._snapshots:
                 result = self._snapshots[experiment_id]
@@ -567,11 +577,13 @@ class MainWindow(QMainWindow):
                 self._snapshots[experiment_id] = deepcopy(result)
             if result.get("algorithm") == "baseline":
                 self.train_page.show_result(result)
-                self.navigation.setCurrentRow(1)
+                if navigate:
+                    self.navigation.setCurrentRow(1)
             else:
                 active = experiment_id == self.active_experiment_id and self.controller.running
                 self.optimize_page.show_result(result, historical=not active)
-                self.navigation.setCurrentRow(2)
+                if navigate:
+                    self.navigation.setCurrentRow(2)
         except Exception as exc:
             self._operation_error(f"打开工作区失败：{exc}")
         self._update_context()

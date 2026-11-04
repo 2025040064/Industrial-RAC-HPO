@@ -1,13 +1,67 @@
 """Small presentation widgets; no training or storage dependencies."""
 
 import math
+import time
 
+from PySide6.QtCore import QEvent, QObject
 from PySide6.QtWidgets import (
-    QAbstractItemView, QFrame, QHeaderView, QLabel, QScrollArea,
+    QAbstractItemView, QAbstractScrollArea, QFrame, QHeaderView, QLabel, QScrollArea,
     QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget,
 )
 
 from .theme import TOKENS
+
+
+class WheelGuard(QObject):
+    """Let the wheel scroll the page unless the pointer deliberately rests on an input.
+
+    Qt lets a spin box or combo box grab the wheel while merely hovered, so scrolling a
+    long page silently rewrites the search algorithm or the trial budget. Blocking the
+    wheel outright makes the page stutter whenever the cursor crosses an input, so this
+    guard waits for a short dwell instead: a passing cursor scrolls the page as usual,
+    a resting cursor may adjust the value.
+    """
+
+    DWELL_MS = 500
+
+    def __init__(self, parent=None, dwell_ms=None):
+        super().__init__(parent)
+        self.dwell_ms = self.DWELL_MS if dwell_ms is None else dwell_ms
+        self._entered_at = {}
+
+    def eventFilter(self, watched, event):
+        kind = event.type()
+        if kind == QEvent.Type.Enter:
+            self._entered_at[watched] = time.monotonic()
+        elif kind == QEvent.Type.Leave:
+            self._entered_at.pop(watched, None)
+        elif kind == QEvent.Type.Wheel:
+            # Dwell alone decides: a user who means to adjust the value keeps the pointer
+            # there, so focus is not needed and must not be trusted, because Qt can hand
+            # focus to an input on show or on Tab without the user ever touching it.
+            # Baymard and NN/g both put hover intent at 300-500 ms; the default sits at
+            # the conservative end of that band.
+            entered = self._entered_at.get(watched)
+            dwelled = entered is not None and (time.monotonic() - entered) * 1000.0 >= self.dwell_ms
+            if not dwelled:
+                self._scroll_ancestor(watched, event)
+                event.ignore()
+                return True
+        return super().eventFilter(watched, event)
+
+    @staticmethod
+    def _scroll_ancestor(watched, event):
+        """Hand the wheel to the enclosing scroll area so the page keeps moving."""
+        area = watched.parent()
+        while area is not None and not isinstance(area, QAbstractScrollArea):
+            area = area.parent()
+        if area is None:
+            return
+        steps = event.angleDelta().y() / 120.0
+        if not steps:
+            return
+        bar = area.verticalScrollBar()
+        bar.setValue(bar.value() - int(round(steps * bar.singleStep() * 3)))
 
 
 def secondary(text):
