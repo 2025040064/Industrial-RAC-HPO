@@ -13,6 +13,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def configure_qt_platform(native):
+    if native:
+        os.environ.pop("QT_QPA_PLATFORM", None)
+    else:
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--native", action="store_true")
@@ -26,7 +33,7 @@ def main():
     os.environ["TEMP"] = os.environ["TMP"] = str(session / "tmp")
     os.environ["MPLCONFIGDIR"] = str(session / "matplotlib")
     os.environ["QT_SCALE_FACTOR"]=str(args.scale)
-    os.environ["QT_QPA_PLATFORM"] = "windows" if args.native else "offscreen"
+    configure_qt_platform(args.native)
     sys.path.insert(0, str(ROOT / "src"))
     from PySide6.QtCore import QPoint, QTimer, Qt
     from PySide6.QtTest import QTest

@@ -103,7 +103,10 @@ class OptimizePage(QWidget):
         form.setHorizontalSpacing(12)
         form.setVerticalSpacing(10)
         self.algorithm_combo = QComboBox()
-        for name, algorithm in (('Optuna TPE', 'tpe'), ('Random Search', 'random'), ('TPE + 固定鲁棒目标', 'tpe_robust'), ('RAC-HPO · 工况与成本', 'rac_hpo')):
+        for name, algorithm in (('Optuna TPE', 'tpe'), ('Random Search', 'random'),
+                                ('Grid Search', 'grid'), ('Successive Halving', 'successive_halving'),
+                                ('Hyperband', 'hyperband'), ('TPE + 固定鲁棒目标', 'tpe_robust'),
+                                ('RAC-HPO · 工况与成本', 'rac_hpo')):
             self.algorithm_combo.addItem(name, algorithm)
         self.algorithm_combo.setMinimumContentsLength(12)
         self.algorithm_combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
@@ -285,7 +288,7 @@ class OptimizePage(QWidget):
                 )
         else:
             self.algorithm_note.setText(
-                'Random / TPE 按验证 MAE 选择；固定鲁棒搜索按无量纲 J 选择。默认基线不计入次数上限。'
+                'Random / Grid / TPE / 资源剪枝按验证 MAE 选择；固定鲁棒搜索按无量纲 J 选择。默认基线不计入次数上限。'
             )
 
     def set_busy(self, busy, cancellable=False):

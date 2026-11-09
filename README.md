@@ -32,7 +32,28 @@
 
 ## 环境与启动
 
-Windows 11、Python 3.11；依赖版本由 pyproject.toml 和 uv.lock 固定。已配置的本地环境可以直接双击 `Run-GUI.cmd`，或在项目目录运行：
+项目支持 Windows 和 macOS，使用 Python 3.11；依赖版本由 pyproject.toml 和 uv.lock 固定。
+
+### macOS
+
+首次使用需要联网、`uv` 和 LightGBM 依赖的 OpenMP 运行库。Apple Silicon 用户可先通过 Homebrew 安装：
+
+```bash
+brew install uv libomp
+```
+
+在项目目录运行一次安装脚本，再启动界面：
+
+```bash
+./Setup.command
+./Run-GUI.command
+```
+
+也可在 Finder 中双击这两个 `.command` 文件；若没有执行权限，在项目目录执行 `chmod +x Setup.command Run-GUI.command`。安装脚本使用项目内的 `.venv`、`.python` 和 `.cache`，会根据锁文件安装依赖；不自动下载数据。macOS 安装同版本的 PySide6 Essentials，包含程序使用的 Qt 核心、图形和控件，不下载未用到的 Qt 附加组件；Windows 依赖保持 PySide6 不变。已有项目内 `.cache/bootstrap/bin/uv` 时无需另行安装全局 uv。训练命令使用 `.venv/bin/python -m rac_hpo --help` 查看；数据通过 CLI 显式获取或在界面中导入。图形运行需 macOS 桌面会话，首次启动可能需要一些时间。
+
+### Windows
+
+已配置的本地环境可以直接双击 `Run-GUI.cmd`，或在项目目录运行：
 
 ```powershell
 .venv\Scripts\python.exe main.py
@@ -107,7 +128,7 @@ RAC-HPO 默认前 16 次使用 TPE 暖启动，之后用 ExtraTrees 分工况性
 
 跨Run并排表展示已选模型指标与数据、单位、预算和固定目标；当前接口缺少固定split及目标/特征版本证明，因此不生成排名。参数重要性、逐样本预测、残差、质量和过程统计缺少接口时显示清楚空态，不补造数据。日志页显示当前会话事件，支持搜索、复制、导出、手动滚动与清空显示。
 
-维护规范见[UI_DESIGN.md](UI_DESIGN.md)，当前验收见[五页工作台V2交付报告](docs/UI_WORKBENCH_V2_REPORT.md)。重现验证使用`scripts/verify_ui_workspace.py`：默认在隔离目录显示真实历史；`--exercise`执行真实训练、搜索、导出和取消；`--native`使用Windows原生Qt；`--scale 2`验证双倍缩放。验证不调用finalize。
+维护规范见[UI_DESIGN.md](UI_DESIGN.md)，当前验收见[五页工作台V2交付报告](docs/UI_WORKBENCH_V2_REPORT.md)。重现验证使用`scripts/verify_ui_workspace.py`：默认在隔离目录显示真实历史；`--exercise`执行真实训练、搜索、导出和取消；`--native`使用当前系统的原生 Qt；`--scale 2`验证双倍缩放。验证不调用finalize。
 
 ## 测试与后续
 

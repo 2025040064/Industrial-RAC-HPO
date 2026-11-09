@@ -12,6 +12,13 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/'src'))
 
 
+def configure_qt_platform(native):
+    if native:
+        os.environ.pop('QT_QPA_PLATFORM', None)
+    else:
+        os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--render-root', type=Path)
@@ -24,7 +31,7 @@ def main():
     (output/'tmp').mkdir(parents=True, exist_ok=True)
     os.environ['TEMP'] = os.environ['TMP'] = str(output/'tmp')
     os.environ['MPLCONFIGDIR'] = str(output/'matplotlib')
-    os.environ['QT_QPA_PLATFORM'] = 'windows' if args.native else 'offscreen'
+    configure_qt_platform(args.native)
     os.environ['QT_SCALE_FACTOR'] = str(args.scale)
     from rac_hpo.application.loop_service import LoopService
     from rac_hpo.infrastructure.artifacts import write_json, source_fingerprint

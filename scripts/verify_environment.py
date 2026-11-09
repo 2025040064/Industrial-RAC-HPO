@@ -14,7 +14,12 @@ packages = {
 versions = {}
 for package, module in packages.items():
     importlib.import_module(module)
-    versions[package] = importlib.metadata.version(package)
+    try:
+        versions[package] = importlib.metadata.version(package)
+    except importlib.metadata.PackageNotFoundError:
+        if package != "PySide6":
+            raise
+        versions[package] = importlib.metadata.version("PySide6-Essentials")
 print(json.dumps({"python": sys.version, "executable": sys.executable,
                   "platform": platform.platform(), "machine": platform.machine(),
                   "cpu_count": os.cpu_count(), "regression_threads": 4,

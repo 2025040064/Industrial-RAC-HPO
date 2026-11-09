@@ -56,10 +56,18 @@ def environment_snapshot(root: Path) -> dict:
         code_commit = "unversioned"
     packages = ("numpy", "pandas", "scipy", "scikit-learn", "lightgbm", "optuna",
                 "PySide6", "matplotlib", "pydantic", "PyYAML")
+    versions = {}
+    for name in packages:
+        try:
+            versions[name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            if name != "PySide6":
+                raise
+            versions[name] = importlib.metadata.version("PySide6-Essentials")
     return {
         "python": sys.version, "platform": platform.platform(),
         "processor": platform.processor(), "cpu_count": os.cpu_count(),
-        "packages": {name: importlib.metadata.version(name) for name in packages},
+        "packages": versions,
         "all_distributions": {distribution.metadata["Name"]: distribution.version
                               for distribution in importlib.metadata.distributions()
                               if distribution.metadata["Name"]},

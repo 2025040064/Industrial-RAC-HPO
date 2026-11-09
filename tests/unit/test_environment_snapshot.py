@@ -1,4 +1,5 @@
 import subprocess
+import importlib.metadata
 
 from rac_hpo.infrastructure.artifacts import environment_snapshot
 
@@ -25,3 +26,16 @@ def test_snapshot_records_commit_when_git_succeeds(monkeypatch, tmp_path):
     monkeypatch.setattr(subprocess, "run", lambda *args, **kwargs: Completed())
     snapshot = environment_snapshot(tmp_path)
     assert snapshot["code_commit"] == "deadbeef"
+
+
+def test_snapshot_accepts_pyside6_essentials(monkeypatch, tmp_path):
+    version = importlib.metadata.version
+
+    def essentials_only(name):
+        if name == "PySide6":
+            raise importlib.metadata.PackageNotFoundError(name)
+        return version(name)
+
+    monkeypatch.setattr(importlib.metadata, "version", essentials_only)
+    snapshot = environment_snapshot(tmp_path)
+    assert snapshot["packages"]["PySide6"] == version("PySide6-Essentials")

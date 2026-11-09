@@ -1,5 +1,9 @@
 # 智训引擎技术规范与实施架构
 
+## 2026-11-09 macOS 运行环境
+
+macOS 使用项目内 `.venv`、`.python` 和 `.cache`；Apple Silicon 的 LightGBM 依赖 Homebrew libomp。macOS 依赖 PySide6-Essentials 6.9.3（项目使用的 QtCore、QtGui、QtWidgets 和 QtTest 均包含在内），其他平台仍依赖原 PySide6 6.9.3；环境快照兼容两种发行包并保留 `PySide6` 键。原生界面验证脚本不再强制 Windows 平台插件：`--native` 由 Qt 自动选择当前系统平台，默认仍使用 offscreen。回归 GUI 恢复与后端一致的 Grid、Successive Halving 和 Hyperband 入口。安装不隐式下载数据。
+
 ## 2026-11-04 总结文档与 Mac 对齐
 
 `optimization/baselines` 增加惰性三档粗网格与资源策略。统一回归优化器增加 grid / successive_halving / hyperband；资源方法用随机候选、固定 study_name、Optuna 分层剪枝，runner 增加第三参数 report，仅此两种方法使用。`training.train` 增加可选 resource_callback(step, validation_mae)，其余调用兼容。完成记录与剪枝记录分别保存，剪枝不参与最佳选择；资源控制以模型 n_estimators 为上限，独立保留单模型早停。Config Schema 1 兼容增加 min_resource/reduction_factor，数据库不变。

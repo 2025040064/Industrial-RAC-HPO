@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-11-09 — macOS 环境与验证脚本
+
+- README 补充 macOS 环境安装、启动和显式数据获取说明。
+- macOS 使用同版本 PySide6-Essentials，Windows 保留完整 PySide6；环境验证与实验快照兼容两种发行包。
+- 两个 Qt 界面验证脚本的 `--native` 改为使用当前系统原生平台，避免在 macOS 加载 Windows 插件失败；默认离屏模式保持不变。
+- 恢复 GUI 中已有后端支持的 Grid、Successive Halving 和 Hyperband 算法入口。
+- 新增平台选择回归检查；本机环境和测试结果见 `docs/MAC_SETUP_REPORT.md`。
+
 ## 2026-11-04 — 输入防误触与手册配图
 
 - 「搜索配置」默认展开，改算法和次数不必先点开面板。
