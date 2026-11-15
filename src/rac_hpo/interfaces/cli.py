@@ -6,7 +6,9 @@ from pathlib import Path
 
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description="Industrial LightGBM training and reproducible HPO")
-    result.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[3])
+    result.add_argument("--root", type=Path, default=None,
+                        help="Workspace containing configs/default.yaml (default: this checkout, "
+                             "or ~/Library/Application Support/RAC-HPO for the packaged app)")
     commands = result.add_subparsers(dest="command", required=True)
     commands.add_parser("gui", help="Open the desktop application")
     fetch = commands.add_parser("fetch", help="Download a supported author-published dataset")
@@ -79,6 +81,9 @@ def main(argv=None) -> int:
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
     arguments = parser().parse_args(argv)
+    if arguments.root is None:
+        from rac_hpo.runtime import default_root
+        arguments.root = default_root()
     try:
         if arguments.command == "industrial":
             value = run_industrial_command(arguments)

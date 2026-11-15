@@ -48,6 +48,7 @@ macOS 使用项目内 `.venv`、`.python` 和 `.cache`；Apple Silicon 的 Light
 
 - `domain/schemas.py`：PreparedDataset、TrainingResult、OptimizationResult 与取消异常。
 - `data/loader.py`：UCI 钢铁能耗适配器，验证来源、固定特征和按日时间划分。
+- `runtime.py`：决定工作区位置。源码运行用检出目录；打包的 macOS 应用用 `~/Library/Application Support/RAC-HPO`，读取构建时写入的 `build_info.json`。核心算法不依赖它。`packaging/macos/` 含 PyInstaller spec、构建与自检脚本，不属于运行时包。
 - `data/cnc_milling.py`：作者 CNC Milling 2025 文件校验、分号/小数逗号解析、物理刀具分组与固定切深工况；`data/registry.py` 统一下载、识别和适配器分派。
 - `training/lightgbm_trainer.py`：训练折拟合模型、验证折早停，不读取测试集。
 - `training/model_export.py`：通过 UTF-8 文本加载模型，兼容 Windows 中文路径；最终重训复用 training.build_regressor 保持参数一致。

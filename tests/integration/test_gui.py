@@ -101,6 +101,46 @@ def test_gui_imports_real_dataset_in_background(window):
     assert window.train_page.start_button.isEnabled()
 
 
+def test_gui_downloads_official_data_without_a_terminal(window):
+    """Packaged-app users have no CLI: the data page fetches into the workspace."""
+    source = PROJECT_ROOT / "datasets/raw/steel_energy/Steel_industry_data.csv"
+    assert source.is_file()
+    target = window.root / "datasets/raw/steel_energy/Steel_industry_data.csv"
+    target.parent.mkdir(parents=True)
+    shutil.copy2(source, target)  # download_steel verifies the pinned hash and reuses it
+    failures = []
+    window.controller.failed.connect(lambda message, trace: failures.append(message))
+    window.data_page.dataset_combo.setCurrentIndex(0)
+    assert window.data_page.fetch_button.isEnabled()
+    window.data_page.fetch_button.click()
+    assert window.controller.running and window.controller.action == "fetch"
+    assert not window.data_page.fetch_button.isEnabled()
+    wait_for_idle(window)
+    assert not failures
+    assert window.data_page.path_edit.text() == str(target)
+    assert window.data_page.fetch_button.isEnabled()
+    assert "下载完成" in window.task_label.text()
+
+
+def test_gui_fetch_failure_is_reported_on_the_data_page(window):
+    target = window.root / "datasets/raw/steel_energy/Steel_industry_data.csv"
+    target.parent.mkdir(parents=True)
+    target.write_text("not the official file\n", encoding="utf-8")  # rejected, never overwritten
+    window.fetch_dataset("steel_energy")
+    wait_for_idle(window)
+    assert window.task_label.objectName() == "error"
+    assert "differs from the verified" in window.data_page.summary_label.text()
+    assert target.read_text(encoding="utf-8") == "not the official file\n"
+    assert window.latest_result is None
+
+
+def test_gui_default_dataset_path_is_inside_the_workspace(window):
+    window.data_page.dataset_combo.setCurrentIndex(1)
+    window.data_page.dataset_combo.setCurrentIndex(0)
+    assert Path(window.data_page.path_edit.text()) == (
+        window.root / "datasets/raw/steel_energy/Steel_industry_data.csv")
+
+
 def test_gui_reports_actual_backend_errors(window):
     window.import_dataset(str(window.root / "missing-industrial-data.csv"))
     wait_for_idle(window)

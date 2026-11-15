@@ -3,6 +3,7 @@
 .cache/
 .workbuddy/
 .firecrawl/
+.DS_Store
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -17,3 +18,4 @@ workspace/
 dist/
 build/
 .tmp-pytest/
+dist/

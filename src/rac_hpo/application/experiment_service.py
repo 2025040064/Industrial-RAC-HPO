@@ -95,9 +95,10 @@ class ApplicationService:
             shutil.copy2(self.root / "uv.lock", directory / "uv.lock")
         environment = environment_snapshot(self.root)
         if dataset_view_id is not None:
-            implementation_root = Path(__file__).resolve().parents[3]
+            from rac_hpo.runtime import implementation_fingerprint
+            implementation_root, implementation_sha256 = implementation_fingerprint()
             environment['implementation_root'] = str(implementation_root)
-            environment['implementation_source_sha256'] = source_fingerprint(implementation_root)
+            environment['implementation_source_sha256'] = implementation_sha256
         write_json(directory / "environment.json", environment)
         self.repository.save_experiment(detail)
         records = []

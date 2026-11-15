@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
@@ -12,9 +13,13 @@ from ..workspace_widgets import CollapsiblePanel, MetricsGrid, PanelGrid, Worksp
 
 class DataPage(QWidget):
     import_requested = Signal(object)
+    fetch_requested = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, root=None):
         super().__init__(parent)
+        # Default dataset paths are shown absolute so they never depend on the
+        # process working directory (a Finder-launched app starts in "/").
+        self.root = Path(root) if root is not None else None
         page, layout = page_layout("", "")
         for _ in range(2):
             layout.takeAt(0).widget().deleteLater()
@@ -47,6 +52,10 @@ class DataPage(QWidget):
         self.import_button = QPushButton("导入并校验数据")
         self.import_button.setObjectName("primary")
         self.import_button.clicked.connect(lambda: self.import_requested.emit(self.path_edit.text().strip() or None))
+        self.fetch_button = QPushButton("下载官方数据")
+        self.fetch_button.setToolTip("从数据集作者的官方地址下载并校验 SHA-256，保存到工作区 datasets/raw；已存在且校验一致时直接复用。")
+        self.fetch_button.clicked.connect(lambda: self.fetch_requested.emit(self.dataset_combo.currentData()))
+        actions.addWidget(self.fetch_button)
         actions.addWidget(self.import_button)
         actions.addStretch()
         source_layout.addLayout(actions)
@@ -122,10 +131,16 @@ class DataPage(QWidget):
 
     def _dataset_changed(self):
         from rac_hpo.data.registry import DEFAULT_PATHS
-        self.path_edit.setText(DEFAULT_PATHS[self.dataset_combo.currentData()])
+        path = DEFAULT_PATHS[self.dataset_combo.currentData()]
+        self.path_edit.setText(str(self.root / path) if self.root is not None else path)
+
+    def show_fetched(self, result):
+        self.path_edit.setText(result["path"])
+        self.summary_label.setText(f"{result['dataset_id']} 已下载并通过校验；点击「导入并校验数据」继续。")
 
     def set_busy(self, busy):
-        for widget in (self.dataset_combo, self.path_edit, self.browse_button, self.import_button):
+        for widget in (self.dataset_combo, self.path_edit, self.browse_button,
+                       self.fetch_button, self.import_button):
             widget.setEnabled(not busy)
 
     def show_summary(self, summary):

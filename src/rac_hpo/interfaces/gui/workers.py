@@ -50,6 +50,13 @@ def run_worker(root, action, arguments, events, cancel_event):
                 result = {'export_path': loop.export_session(**arguments)}
             else:
                 raise ValueError(f'Unknown loop action: {action}')
+        elif action == "fetch":
+            from rac_hpo.data import registry
+            dataset_id = arguments.get("dataset_id")
+            if dataset_id not in registry.DEFAULT_PATHS:
+                raise ValueError(f"Unsupported dataset for download: {dataset_id!r}")
+            path = registry.download(dataset_id, Path(root))
+            result = {"dataset_id": dataset_id, "path": str(path)}
         elif action == "prepare":
             result = service.prepare_dataset(**arguments)
         elif action == "run":

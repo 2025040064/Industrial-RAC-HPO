@@ -34,7 +34,18 @@
 
 项目支持 Windows 和 macOS，使用 Python 3.11；依赖版本由 pyproject.toml 和 uv.lock 固定。
 
-### macOS
+### macOS 双击即用（免安装版）
+
+Apple Silicon、macOS 14 及以上。把 `智训引擎-<版本>-macOS-arm64.dmg` 里的应用拖进「应用程序」，双击打开。不需要 Python、uv、Homebrew 或终端；LightGBM 所需的 OpenMP 已内置。
+
+- 首次打开：应用未做 Apple 开发者签名与公证（仅 ad-hoc 签名）。若提示“无法验证开发者”，在应用上右键 → 打开，或到「系统设置 → 隐私与安全性」点“仍要打开”，只需一次。
+- 数据：打开「数据管理」，点「下载官方数据」，再点「导入并校验数据」。下载走官方地址并校验 SHA-256。
+- 工作区位置：`~/Library/Application Support/RAC-HPO`（配置、数据、实验历史、SQLite），升级或删除应用不会丢失；可用环境变量 `RAC_HPO_HOME` 指向别处。
+- 命令行（可选）：`"/Applications/智训引擎.app/Contents/MacOS/RAC-HPO"` 只启动界面；完整 CLI 仍使用下面的开发环境。
+
+自行构建安装包：在 Finder 双击 `Build-macOS-App.command`，或运行 `./packaging/macos/build_app.sh`，产物在 `dist/`。构建用独立环境，不影响 `.venv`；首次需联网。
+
+### macOS 开发环境
 
 首次使用需要联网、`uv` 和 LightGBM 依赖的 OpenMP 运行库。Apple Silicon 用户可先通过 Homebrew 安装：
 
@@ -138,5 +149,9 @@ RAC-HPO 默认前 16 次使用 TPE 暖启动，之后用 ExtraTrees 分工况性
 
 测试包含评分与非法配置、时间划分与来源、训练 / 搜索 / SQLite / 模型 / 导出，以及离屏 Qt 真实后台任务。仅针对边界规则的单元测试构造输入，不把这些输入或指标当作工业训练成果。
 
-阶段 0、1 历史验收见 [原报告](docs/PHASE_0_1_REPORT.md)；既有算法实验见 [阶段 2、3 报告](docs/PHASE_2_3_REPORT.md)。后续仍需增加独立刀具与外部工况，扩大同预算多种子对照并做代理、成本、可信权重消融。多轮持续优化、LLM 和打包发布未实施；新增工业数据与分类模型的范围见本文顶部。
+阶段 0、1 历史验收见 [原报告](docs/PHASE_0_1_REPORT.md)；既有算法实验见 [阶段 2、3 报告](docs/PHASE_2_3_REPORT.md)。后续仍需增加独立刀具与外部工况，扩大同预算多种子对照并做代理、成本、可信权重消融。多轮持续优化与 LLM 未实施；macOS 免安装包已可构建，但未做 Apple 签名与公证，Windows 打包未实施。新增工业数据与分类模型的范围见本文顶部。
+
+## 作者与许可
+
+作者 / 维护者：Yraguo。代码以 Apache License 2.0 发布，见 [LICENSE](LICENSE)。数据集本身不随仓库分发，各来源的许可与引用要求见 [数据来源](datasets/SOURCES.md)。
 

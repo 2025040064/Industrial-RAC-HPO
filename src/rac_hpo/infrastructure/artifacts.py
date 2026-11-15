@@ -44,16 +44,30 @@ def source_fingerprint(root: Path) -> str:
     return digest.hexdigest()
 
 
-def environment_snapshot(root: Path) -> dict:
+def _git_commit(root: Path) -> str:
     try:
         commit = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, check=False,
             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
-        code_commit = commit.stdout.strip() if commit.returncode == 0 else "unversioned"
+        return commit.stdout.strip() if commit.returncode == 0 else "unversioned"
     except OSError:
         # git is absent from PATH on some installations; keep the snapshot usable.
-        code_commit = "unversioned"
+        return "unversioned"
+
+
+def environment_snapshot(root: Path) -> dict:
+    from rac_hpo.runtime import build_info
+
+    # The packaged app has no checkout; its commit and source digest were
+    # recorded at build time. Never run git there: on a Mac without the
+    # Command Line Tools /usr/bin/git opens an installer dialog.
+    distribution = build_info()
+    if distribution is None:
+        code_commit, source_sha256 = _git_commit(root), source_fingerprint(root)
+    else:
+        code_commit = distribution.get("code_commit", "unversioned")
+        source_sha256 = distribution.get("source_sha256", "unknown")
     packages = ("numpy", "pandas", "scipy", "scikit-learn", "lightgbm", "optuna",
                 "PySide6", "matplotlib", "pydantic", "PyYAML")
     versions = {}
@@ -64,16 +78,19 @@ def environment_snapshot(root: Path) -> dict:
             if name != "PySide6":
                 raise
             versions[name] = importlib.metadata.version("PySide6-Essentials")
-    return {
+    snapshot = {
         "python": sys.version, "platform": platform.platform(),
         "processor": platform.processor(), "cpu_count": os.cpu_count(),
         "packages": versions,
-        "all_distributions": {distribution.metadata["Name"]: distribution.version
-                              for distribution in importlib.metadata.distributions()
-                              if distribution.metadata["Name"]},
+        "all_distributions": {item.metadata["Name"]: item.version
+                              for item in importlib.metadata.distributions()
+                              if item.metadata["Name"]},
         "code_commit": code_commit,
-        "source_sha256": source_fingerprint(root), "captured_at": utc_now(),
+        "source_sha256": source_sha256, "captured_at": utc_now(),
     }
+    if distribution is not None:
+        snapshot["distribution"] = distribution
+    return snapshot
 
 
 def save_convergence(path: Path, trials: list[dict]) -> None:

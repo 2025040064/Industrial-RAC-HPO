@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-11-15 — macOS 双击即用应用（.app / .dmg）
+
+- 新增 `packaging/macos/`：PyInstaller 打包为 `智训引擎.app`（arm64，macOS 14+，约 221 MB）和 `.dmg`（约 97 MB）；`Build-macOS-App.command` 双击构建。图标构建时由 Qt 渲染，不入库。
+- 新增 `rac_hpo/runtime.py`：打包后工作区放 `~/Library/Application Support/RAC-HPO`（可用 `RAC_HPO_HOME` 覆盖），首次运行复制 `configs/default.yaml`；源码运行行为不变。CLI `--root` 默认值改为 `default_root()`。
+- 打包后的环境快照不再调用 git（未装命令行工具的 Mac 会弹安装窗口），改记录构建时的提交与源码哈希，并写入 `distribution`。
+- OpenMP：LightGBM / XGBoost 的 wheel 只在 `/opt/homebrew`、`/opt/local` 找 libomp，换机必崩。构建时改 rpath 指向 scikit-learn 自带的 libomp，包内只留一份，并检查没有指向 `/opt`、`/usr/local`、`/Users` 的外部引用。
+- 数据页新增「下载官方数据」（后台进程，复用 SHA-256 校验）；数据集默认路径改为工作区内绝对路径，不再依赖 cwd（Finder 启动时 cwd 为 `/`）。
+- 测试：新增 `test_runtime.py`、`test_worker_fetch.py` 与 3 个 GUI 测试（成功 / 校验失败不覆盖 / 默认路径）；全量 291 通过，13 失败 + 4 错误与改动前基线完全一致，均因缺 CNC 数据（见下）。
+- 实测：全新工作区、`env -i` 干净环境、cwd=`/`、带隔离属性的副本中，应用内真实完成钢铁数据导入（35,040 行）、基线训练与 2 次 TPE；运行时只加载包内 libomp。
+- 未验证 / 限制：未做 Apple 签名与公证；未在另一台没有 Homebrew 的 Mac 上实测；Intel Mac 与 macOS 14 以下不支持；CNC 数据因 Figshare 对本机返回 403 未下载，相关功能与 17 个测试未能在本机验证；尚未人工点击验证 Finder 双击后的窗口。
+
+## 2026-11-15 — 署名与许可整理
+
+- LICENSE 补齐 Apache-2.0 版权署名；`pyproject.toml` 增加 authors / maintainers 与仓库链接；README 增加「作者与许可」小节。
+- 新增 `.gitattributes`：文本统一 LF，`.cmd` / `.bat` / `.ps1` 保留 CRLF，`.command` 保留 LF，二进制资源不做行尾转换；`.gitignore` 增补 `.DS_Store` 与 `dist/`。
+- 未修改代码、配置默认值和算法行为；未重新训练。
+
 ## 2026-11-09 — macOS 环境与验证脚本
 
 - README 补充 macOS 环境安装、启动和显式数据获取说明。

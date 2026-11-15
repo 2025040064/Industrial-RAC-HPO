@@ -1,0 +1,17 @@
+* text=auto eol=lf
+
+# Windows 批处理需要 CRLF，macOS 双击脚本需要 LF
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.command text eol=lf
+
+# 二进制资源不做行尾转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.sqlite3 binary

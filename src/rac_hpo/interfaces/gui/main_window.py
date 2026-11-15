@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         self.progress_bar.hide()
         content.addWidget(self.progress_bar)
         self.pages = QStackedWidget()
-        self.data_page = DataPage()
+        self.data_page = DataPage(root=self.root)
         self.train_page = TrainPage()
         self.optimize_page = OptimizePage()
         self.compare_page = ComparePage()
@@ -155,6 +155,7 @@ class MainWindow(QMainWindow):
         # Start on 数据管理: the workflow begins with a verified dataset, not with a search.
         self.navigation.setCurrentRow(0)
         self.data_page.import_requested.connect(self.import_dataset)
+        self.data_page.fetch_requested.connect(self.fetch_dataset)
         self.train_page.start_requested.connect(lambda overrides: self.start_experiment("baseline", overrides))
         self.optimize_page.start_requested.connect(self.start_experiment)
         self.train_page.cancel_requested.connect(self.controller.cancel)
@@ -267,6 +268,13 @@ class MainWindow(QMainWindow):
         self.optimize_page.set_active_experiment(None)
         self._start_task("prepare", path=path)
 
+    def fetch_dataset(self, dataset_id):
+        if self.controller.running:
+            return
+        self._active_task_kind = 'experiment'
+        self.active_algorithm = None
+        self._start_task("fetch", dataset_id=dataset_id)
+
     def start_experiment(self, algorithm, overrides=None):
         if self.controller.running:
             return
@@ -317,7 +325,8 @@ class MainWindow(QMainWindow):
             self.logs_page.append("cancellation_requested; waiting_for_backend_acknowledgement")
         elif busy:
             self.progress_bar.setRange(0, 0)
-            labels = {'prepare': '正在校验真实数据…', 'industrial_audit': '正在审计工业数据与固定划分…',
+            labels = {'prepare': '正在校验真实数据…', 'fetch': '正在从官方来源下载并校验数据…',
+                      'industrial_audit': '正在审计工业数据与固定划分…',
                       'industrial_fetch': '正在显式获取公开工业数据…'}
             self.task_label.setText(labels.get(self.controller.action, '正在后台执行真实训练…'))
 
@@ -452,6 +461,16 @@ class MainWindow(QMainWindow):
             if self._closing:
                 QTimer.singleShot(0, self.close)
             return
+        if action == "fetch":
+            # A download is not an import; latest_result keeps the last validated data.
+            self.data_page.show_fetched(result)
+            message = f"{result['dataset_id']} 下载完成：{result['path']}"
+            self.task_label.setText(message)
+            self.statusBar().showMessage(message)
+            self.logs_page.append(f"task_finished action=fetch dataset={result['dataset_id']} path={result['path']}")
+            if self._closing:
+                QTimer.singleShot(0, self.close)
+            return
         self.latest_result = result
         if action == "prepare":
             self.data_path = self._pending_data_path
@@ -491,6 +510,13 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(0, self.close)
 
     def _failed(self, message, trace):
+        if self.controller.action == 'fetch':
+            self.data_page.summary_label.setText(f"下载失败：{message}")
+            self._display_task_error(message)
+            self.logs_page.append(f"task_failed action=fetch error={message}\n{trace}")
+            if self._closing:
+                QTimer.singleShot(0, self.close)
+            return
         if self.controller.action.startswith('industrial_'):
             self.industrial_page.show_error(message, trace)
             self._display_task_error(message)
