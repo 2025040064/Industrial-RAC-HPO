@@ -29,3 +29,12 @@ dist/
 /训练集/
 
 /src/rac_hpo/contest/sampler.py.bak
+
+/docs/DEFENSE_NOTES.md
+/docs/images/phase1-comparison.png
+/docs/images/phase1-logs.png
+/docs/images/phase1-training.png
+/docs/images/phase3-comparison.png
+/docs/images/phase3-training.png
+/docs/images/sidebar-expanded.png
+/docs/images/sidebar-mid-animation.png

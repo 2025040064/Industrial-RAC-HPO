@@ -1,5 +1,9 @@
 # Changelog
 
+## 仓库材料整理
+
+- 将答辩备忘录和七张未被当前文档引用的旧截图移出版本控制，保留本地文件并添加忽略规则。
+
 ## 2026-11-15 — macOS 双击即用应用（.app / .dmg）
 
 - 新增 `packaging/macos/`：PyInstaller 打包为 `智训引擎.app`（arm64，macOS 14+，约 221 MB）和 `.dmg`（约 97 MB）；`Build-macOS-App.command` 双击构建。图标构建时由 Qt 渲染，不入库。
