@@ -19,3 +19,13 @@ dist/
 build/
 .tmp-pytest/
 dist/
+
+.venv-contest/
+
+.venv-pytrio/
+
+/harness.tar
+
+/训练集/
+
+/src/rac_hpo/contest/sampler.py.bak

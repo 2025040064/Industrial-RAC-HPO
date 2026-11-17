@@ -30,6 +30,7 @@ class RACSettings:
     minimum_rank_correlation: float = 0.0
     maximum_mae_ratio: float = 1.25
     maximum_overall_degradation: float = 0.1
+    maximum_cost_log_mae_ratio: float | None = None
 
     def __post_init__(self):
         for name in ("warmup_trials", "minimum_history", "forward_holdout", "min_forward_train", "surrogate_trees", "candidates", "refit_interval"):
@@ -41,8 +42,12 @@ class RACSettings:
         if self.surrogate_trees < 8 or self.candidates < 8:
             raise ValueError("RAC needs at least eight trees and eight candidates")
         for name, value in asdict(self).items():
+            if name == "maximum_cost_log_mae_ratio" and value is None:
+                continue
             if not math.isfinite(value):
                 raise ValueError(f"RAC {name} must be finite")
+        if self.maximum_cost_log_mae_ratio is not None and self.maximum_cost_log_mae_ratio <= 0:
+            raise ValueError("RAC cost error ratio must be positive")
         for name in ("exploration_fraction", "local_fraction", "q_max"):
             if not 0 <= getattr(self, name) <= 1:
                 raise ValueError(f"RAC {name} must be within [0, 1]")
@@ -56,8 +61,9 @@ class RACSettings:
 
 
 class RACSearchPolicy:
-    def __init__(self, config, space):
+    def __init__(self, config, space, *, require_forward_quality=True):
         self.config, self.space = config, space
+        self.require_forward_quality = require_forward_quality
         self.settings = RACSettings(**config.get("rac_hpo", {}))
         self.seed = config.get("seed", 42)
         self.rng = np.random.default_rng(self.seed)
@@ -91,13 +97,16 @@ class RACSearchPolicy:
                                        self.settings, self.seed)
             forward = surrogate.forward_check()
             self._cached_at, self._cached_forward = len(completed), forward
-            self._cached_surrogate = surrogate.fit() if forward["passed"] else None
+            if forward["passed"] or not self.require_forward_quality:
+                self._cached_surrogate = surrogate.fit()
+            else:
+                self._cached_surrogate = None
         forward = self._cached_forward
         surrogate = self._cached_surrogate
         diagnostics.update(forward_validation=forward, candidate_seed=candidate_seed,
                            surrogate_fit_history=self._cached_at,
                            surrogate_age_trials=len(completed) - self._cached_at)
-        if not forward["passed"]:
+        if surrogate is None:
             return None, {**diagnostics, "reason": forward["reason"]}
         incumbent = min(completed, key=lambda trial: trial["objective"])
         priority = regime_priorities(incumbent["metrics"], self.baseline, self.weights,
@@ -136,7 +145,8 @@ class RACSearchPolicy:
         selected = int(np.argmax(scores))
         predicted_j = float(normalized_objective(members[selected].mean(axis=0), weights, self.config.get("alpha", 0.3)))
         return candidates[selected], {
-            **diagnostics, "method": "rac_acquisition", "reason": "forward_quality_passed",
+            **diagnostics, "method": "rac_acquisition",
+            "reason": "forward_quality_passed" if forward["passed"] else "forward_quality_bypassed",
             "regime_priorities": priority, "candidate_count": len(candidates),
             "eligible_candidate_count": int(allowed.sum()), "acquisition": float(scores[selected]),
             "predicted_cost_seconds": float(costs[selected]), "predicted_objective": predicted_j,

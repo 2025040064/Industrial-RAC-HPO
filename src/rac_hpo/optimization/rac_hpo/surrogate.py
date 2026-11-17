@@ -52,6 +52,8 @@ class TrialSurrogate:
 
     def forward_check(self):
         predicted, truth, naive, coverages, prefixes = [], [], [], [], []
+        cost_errors, naive_cost_errors = [], []
+        cost_ratio = self.settings.maximum_cost_log_mae_ratio
         first = max(self.settings.min_forward_train, len(self.X) - self.settings.forward_holdout)
         for index in range(first, len(self.X)):
             target = self.Y[:index, 0] if self.Y.shape[1] == 1 else self.Y[:index]
@@ -63,6 +65,12 @@ class TrialSurrogate:
             naive.append(self.Y[:index].mean(axis=0))
             coverages.append(np.abs(self.Y[index] - mean) <= 1.96 * spread)
             prefixes.append({"training_trials": index, "held_out_trial_position": index})
+            if cost_ratio is not None:
+                prefix_costs = self.costs[:index]
+                cost_model = self._model(trees=24).fit(self.X[:index], prefix_costs)
+                predicted_cost = cost_model.predict(self.X[index:index + 1])[0]
+                cost_errors.append(abs(predicted_cost - self.costs[index]))
+                naive_cost_errors.append(abs(np.median(prefix_costs) - self.costs[index]))
         if len(predicted) < 3:
             return {"passed": False, "reason": "insufficient_forward_holdouts", "forward_splits": prefixes}
         predicted, truth, naive = np.array(predicted), np.array(truth), np.array(naive)
@@ -75,12 +83,23 @@ class TrialSurrogate:
         passed = (correlation is not None and np.isfinite(correlation)
                   and correlation >= self.settings.minimum_rank_correlation
                   and error <= self.settings.maximum_mae_ratio * max(naive_error, 1e-12))
-        return {"passed": bool(passed), "reason": "passed" if passed else "surrogate_quality_failed",
-                "normalized_mae": error, "naive_normalized_mae": naive_error,
-                "rank_correlation": correlation, "approximate_tree_band_coverage": float(np.mean(coverages)),
-                "uncertainty_kind": "uncalibrated tree dispersion; coverage is diagnostic only",
-                "forward_normalized_residuals": self.forward_residuals.tolist(),
-                "forward_splits": prefixes}
+        result = {"passed": bool(passed), "reason": "passed" if passed else "surrogate_quality_failed",
+                  "normalized_mae": error, "naive_normalized_mae": naive_error,
+                  "rank_correlation": correlation, "approximate_tree_band_coverage": float(np.mean(coverages)),
+                  "uncertainty_kind": "uncalibrated tree dispersion; coverage is diagnostic only",
+                  "forward_normalized_residuals": self.forward_residuals.tolist(),
+                  "forward_splits": prefixes}
+        if cost_ratio is not None:
+            cost_error = float(np.mean(cost_errors))
+            naive_cost_error = float(np.mean(naive_cost_errors))
+            cost_passed = cost_error <= 1e-12 or cost_error < cost_ratio * naive_cost_error
+            result["cost_validation"] = {
+                "passed": cost_passed, "log_mae": cost_error, "median_baseline_log_mae": naive_cost_error,
+                "maximum_log_mae_ratio": cost_ratio,
+            }
+            if passed and not cost_passed:
+                result.update(passed=False, reason="cost_surrogate_quality_failed")
+        return result
 
     def fit(self):
         target = self.Y[:, 0] if self.Y.shape[1] == 1 else self.Y
