@@ -38,3 +38,7 @@ dist/
 /docs/images/phase3-training.png
 /docs/images/sidebar-expanded.png
 /docs/images/sidebar-mid-animation.png
+
+# RAC-HPO local experiment outputs
+/experiments/ablation/*-20261118-/
+*.tar
