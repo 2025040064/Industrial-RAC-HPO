@@ -40,7 +40,11 @@ class TrialSurrogate:
         self.X = np.array([encode(trial["params"], space) for trial in history])
         self.Y = np.array([[trial["metrics"]["regimes"][regime]["mae"] for regime in self.regimes]
                            for trial in history]) / self.baselines
-        self.costs = np.log(np.maximum([trial["duration_seconds"] for trial in history], 1e-6))
+        if not np.isfinite(self.X).all() or not np.isfinite(self.Y).all():
+            raise ValueError("Surrogate features and targets must be finite")
+        raw_costs = np.asarray([trial["duration_seconds"] for trial in history], dtype=float)
+        self.cost_valid = bool(np.isfinite(raw_costs).all() and (raw_costs > 0).all())
+        self.costs = np.log(np.maximum(raw_costs, 1e-6)) if self.cost_valid else np.zeros(len(history))
         self.settings, self.seed = settings, seed
         self.model = None
         self.cost_model = None
@@ -52,7 +56,7 @@ class TrialSurrogate:
 
     def forward_check(self):
         predicted, truth, naive, coverages, prefixes = [], [], [], [], []
-        cost_errors, naive_cost_errors = [], []
+        cost_errors, naive_cost_errors, cost_predictions, cost_truth = [], [], [], []
         cost_ratio = self.settings.maximum_cost_log_mae_ratio
         first = max(self.settings.min_forward_train, len(self.X) - self.settings.forward_holdout)
         for index in range(first, len(self.X)):
@@ -65,14 +69,18 @@ class TrialSurrogate:
             naive.append(self.Y[:index].mean(axis=0))
             coverages.append(np.abs(self.Y[index] - mean) <= 1.96 * spread)
             prefixes.append({"training_trials": index, "held_out_trial_position": index})
-            if cost_ratio is not None:
+            if cost_ratio is not None and self.cost_valid:
                 prefix_costs = self.costs[:index]
                 cost_model = self._model(trees=24).fit(self.X[:index], prefix_costs)
                 predicted_cost = cost_model.predict(self.X[index:index + 1])[0]
                 cost_errors.append(abs(predicted_cost - self.costs[index]))
                 naive_cost_errors.append(abs(np.median(prefix_costs) - self.costs[index]))
+                cost_predictions.append(predicted_cost)
+                cost_truth.append(self.costs[index])
         if len(predicted) < 3:
-            return {"passed": False, "reason": "insufficient_forward_holdouts", "forward_splits": prefixes}
+            failed = {"passed": False, "reason": "insufficient_forward_holdouts", "forward_splits": prefixes,
+                      "rank_correlation": None}
+            return {**failed, "performance_validation": dict(failed), "cost_validation": dict(failed)}
         predicted, truth, naive = np.array(predicted), np.array(truth), np.array(naive)
         self.forward_residuals = truth - predicted
         error = float(np.abs(predicted - truth).mean())
@@ -85,26 +93,36 @@ class TrialSurrogate:
                   and error <= self.settings.maximum_mae_ratio * max(naive_error, 1e-12))
         result = {"passed": bool(passed), "reason": "passed" if passed else "surrogate_quality_failed",
                   "normalized_mae": error, "naive_normalized_mae": naive_error,
+                  "mae_vs_naive_ratio": error / max(naive_error, 1e-12),
                   "rank_correlation": correlation, "approximate_tree_band_coverage": float(np.mean(coverages)),
                   "uncertainty_kind": "uncalibrated tree dispersion; coverage is diagnostic only",
                   "forward_normalized_residuals": self.forward_residuals.tolist(),
                   "forward_splits": prefixes}
-        if cost_ratio is not None:
+        result["performance_validation"] = {key: result[key] for key in (
+            "passed", "reason", "normalized_mae", "naive_normalized_mae", "mae_vs_naive_ratio", "rank_correlation", "forward_splits")}
+        if cost_ratio is not None and self.cost_valid:
             cost_error = float(np.mean(cost_errors))
             naive_cost_error = float(np.mean(naive_cost_errors))
             cost_passed = cost_error <= 1e-12 or cost_error < cost_ratio * naive_cost_error
+            corr = float(spearmanr(cost_predictions, cost_truth).statistic) if (
+                np.ptp(cost_predictions) and np.ptp(cost_truth)) else None
             result["cost_validation"] = {
-                "passed": cost_passed, "log_mae": cost_error, "median_baseline_log_mae": naive_cost_error,
-                "maximum_log_mae_ratio": cost_ratio,
+                "passed": bool(cost_passed), "reason": "passed" if cost_passed else "cost_surrogate_quality_failed",
+                "log_mae": cost_error, "median_baseline_log_mae": naive_cost_error,
+                "mae_vs_naive_ratio": cost_error / max(naive_cost_error, 1e-12),
+                "rank_correlation": corr if corr is None or np.isfinite(corr) else None,
+                "forward_splits": prefixes, "maximum_log_mae_ratio": cost_ratio,
             }
-            if passed and not cost_passed:
-                result.update(passed=False, reason="cost_surrogate_quality_failed")
+        else:
+            result["cost_validation"] = {"passed": False,
+                "reason": "invalid_cost_history" if not self.cost_valid else "cost_validation_disabled",
+                "rank_correlation": None, "forward_splits": prefixes}
         return result
 
     def fit(self):
         target = self.Y[:, 0] if self.Y.shape[1] == 1 else self.Y
         self.model = self._model().fit(self.X, target)
-        self.cost_model = self._model().fit(self.X, self.costs)
+        self.cost_model = self._model().fit(self.X, self.costs) if self.cost_valid else None
         return self
 
     def predict(self, candidates):
@@ -118,5 +136,5 @@ class TrialSurrogate:
             indices = rng.integers(0, len(self.forward_residuals), size=members.shape[:2])
             residuals = self.forward_residuals - self.forward_residuals.mean(axis=0)
             members = np.maximum(0, members + residuals[indices])
-        costs = np.exp(np.clip(self.cost_model.predict(candidates), -20, 20))
+        costs = np.exp(np.clip(self.cost_model.predict(candidates), -20, 20)) if self.cost_model else np.ones(len(candidates))
         return members, costs

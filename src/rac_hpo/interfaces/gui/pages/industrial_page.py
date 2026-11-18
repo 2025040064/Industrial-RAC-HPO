@@ -240,6 +240,12 @@ class IndustrialPage(QWidget):
         self.trial_table = table(['Trial', '状态', '目标值', '平衡准确率', '耗时 / s', '超参数'])
         self.curve = IndustrialCurve()
         self.learning_curve = IndustrialCurve(kind='training')
+        self.threshold_panel = QWidget()
+        threshold_layout = QVBoxLayout(self.threshold_panel)
+        self.threshold_note = secondary('此实验没有已保存的训练期阈值工作点。')
+        self.threshold_table = table(['阈值', '漏报数 FN', '误报数 FP', '漏报率', '误报率', '网格 Pareto', '已选'])
+        threshold_layout.addWidget(self.threshold_note)
+        threshold_layout.addWidget(self.threshold_table)
         self.details_view = QPlainTextEdit()
         self.details_view.setReadOnly(True)
         self.log_view = QPlainTextEdit()
@@ -247,6 +253,7 @@ class IndustrialPage(QWidget):
         self.log_view.setMaximumBlockCount(3000)
         for widget, title in [(self.audit_view, '数据审计'), (self.regime_table, '各工况'),
                               (self.trial_table, '搜索记录'), (self.curve, '搜索曲线'), (self.learning_curve, '训练曲线'),
+                              (self.threshold_panel, '阈值工作点'),
                               (self.details_view, '配置与模型产物'), (self.log_view, '日志')]:
             self.tabs.addTab(widget, title)
         result_layout.addWidget(self.tabs)
@@ -371,6 +378,18 @@ class IndustrialPage(QWidget):
             _json(trial.get('params', {}))] for trial in trials])
         self.curve.set_trials(trials)
         self.learning_curve.set_learning_curve(metrics)
+        policy = metrics.get('decision_policy') or {}
+        working_points = policy.get('working_points') or []
+        fill_table(self.threshold_table, [
+            [point.get('threshold'), point.get('false_negatives'), point.get('false_positives'),
+             point.get('false_negative_rate'), point.get('false_positive_rate'),
+             '是' if point.get('pareto_within_grid') else '否', '是' if point.get('selected') else '']
+            for point in working_points])
+        self.threshold_note.setText(
+            f"训练分区前向折外预测 · 正类 {policy.get('positive_class')} · "
+            f"正类 {policy.get('oof_positive_count')} / 负类 {policy.get('oof_negative_count')} 行\n"
+            "漏报率和误报率范围为 0–1。Pareto 仅比较当前阈值网格；概率尚未校准。"
+            if working_points else '此实验没有已保存的训练期阈值工作点。')
         self.audit_view.setPlainText(_json({'manifest': result.get('manifest', {}), 'quality_audit': result.get('quality_audit')}))
         self.details_view.setPlainText(_json({key: result.get(key) for key in (
             'task_type', 'best_params', 'best_trial', 'best_value', 'config', 'artifacts', 'failure_reason')}))

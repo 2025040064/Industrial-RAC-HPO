@@ -76,6 +76,19 @@ def evaluate_diagnostics(model, data, groups):
     return {"groups": result}
 
 
+def evaluate_primary(model, data):
+    """Measure the frozen primary metric on the supplied public projection."""
+    import numpy as np
+    predicted = model.predict(data["x"])
+    expected = data["y"]
+    if model.meta["task"] == "classification":
+        labels = predicted.argmax(axis=1)
+        observed = sorted(set(expected.tolist()) | set(labels.tolist()))
+        return float(np.mean([2 * np.sum((labels == label) & (expected == label)) /
+                              (np.sum(labels == label) + np.sum(expected == label)) for label in observed]))
+    return float(np.sqrt(np.mean((predicted - expected) ** 2)))
+
+
 def train(package, parent, output, proposal):
     from baselines.model import Model
     from baselines.data import read_dataset

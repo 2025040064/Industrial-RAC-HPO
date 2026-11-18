@@ -27,6 +27,17 @@ def fixture_dataset():
     )
 
 
+@pytest.mark.parametrize("field,values", [
+    ("groups", [None, "bearing2"]), ("groups", [float("nan"), "bearing2"]),
+    ("groups", ["", "bearing2"]), ("groups", ["  ", "bearing2"]),
+    ("regimes", [None, "load2"]), ("regimes", ["", "load2"]),
+])
+def test_missing_metadata_cannot_become_independent_group_evidence(field, values):
+    with pytest.raises(ValueError, match="missing|empty"):
+        evaluate([0, 1], [0, 1], [[.9, .1], [.1, .9]], class_labels=[0, 1],
+                 group_kind="physical_bearing", **{field: values})
+
+
 def test_evaluator_sparse_classes_and_independent_groups():
     result = evaluate([0, 0, 1, 1], [0, 1, 1, 1], [[.9, .1], [.2, .8], [.1, .9], [.1, .9]],
                       ["a", "a", "b", "b"], ["u1", "u2", "u3", "u4"], class_labels=[0, 1])

@@ -187,6 +187,18 @@ def test_real_lightgbm_training_and_search_do_not_access_test(small_dataset, mon
     assert baseline.model is not None
     assert 0 < baseline.best_iteration <= 35
     assert np.isfinite(baseline.metrics["overall_mae"])
+    diagnostics = baseline.diagnostics
+    assert diagnostics["train_rows"] == 144
+    assert diagnostics["validation_rows"] == 48
+    assert diagnostics["validation_mae"] == baseline.metrics["overall_mae"]
+    training_error = np.abs(baseline.model.predict(small_dataset.X.iloc[:144]) -
+                            small_dataset.y.iloc[:144]).mean()
+    assert diagnostics["train_mae"] == pytest.approx(training_error)
+    assert diagnostics["mae_gap"] == pytest.approx(diagnostics["validation_mae"] - training_error)
+    curve = diagnostics["validation_curve"]
+    assert baseline.best_iteration <= len(curve) <= 35
+    assert curve[baseline.best_iteration - 1]["mae"] == pytest.approx(baseline.metrics["overall_mae"])
+    assert curve[-1]["iteration"] == len(curve)
     assert len(baseline.model.predict(small_dataset.X.iloc[144:192])) == 48
     baselines = {regime: metric["mae"] for regime, metric in baseline.metrics["regimes"].items()}
     result = optimize(config(max_trials=2, baseline_errors=baselines),
@@ -194,6 +206,7 @@ def test_real_lightgbm_training_and_search_do_not_access_test(small_dataset, mon
     assert len(result.trials) == 2
     assert all(trial["status"] == "completed" for trial in result.trials)
     assert accessed == ["train", "validation"] * 3
+    assert all(trial["training_diagnostics"]["train_rows"] == 144 for trial in result.trials)
 
 
 def test_training_cancels_from_iteration_callback(small_dataset):
@@ -245,3 +258,42 @@ def test_core_imports_do_not_load_qt():
     result = subprocess.run([sys.executable, "-c", "import sys; import rac_hpo.training.lightgbm_trainer; import rac_hpo.optimization.base; assert not any(name.startswith('PySide6') for name in sys.modules)"],
                             text=True, capture_output=True, check=False)
     assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize("limit", [0, -1, True, float("nan"), float("inf")])
+def test_training_rejects_invalid_deadline(small_dataset, limit):
+    with pytest.raises(ValueError, match="timeout_seconds"):
+        train(small_dataset, {}, timeout_seconds=limit)
+
+
+def test_training_deadline_stops_after_iteration_and_search_continues(small_dataset, monkeypatch):
+    from rac_hpo.domain.schemas import TrainingTimeout
+    elapsed = [0.0]
+    monkeypatch.setattr("rac_hpo.training.lightgbm_trainer.perf_counter", lambda: elapsed[0])
+
+    def advance_time(step, value):
+        elapsed[0] = 2.0
+
+    with pytest.raises(TrainingTimeout) as caught:
+        train(small_dataset, {}, model_config={"n_jobs": 1},
+              resource_callback=advance_time, timeout_seconds=1.0)
+    assert caught.value.details["completed_iterations"] == 1
+    assert caught.value.details["overrun_seconds"] == 1.0
+
+    def runner(params, number):
+        if number == 0:
+            raise caught.value
+        return metric_result()
+
+    result = optimize(config(), runner)
+    assert [trial["status"] for trial in result.trials] == ["failed", "completed", "completed"]
+    assert result.trials[0]["failure_kind"] == "training_timeout"
+    assert result.trials[0]["metrics"] == {}
+    assert result.best_trial == 1
+
+
+def test_cancel_takes_precedence_over_training_timeout(small_dataset, monkeypatch):
+    moments = iter([0.0, 2.0])
+    monkeypatch.setattr("rac_hpo.training.lightgbm_trainer.perf_counter", lambda: next(moments))
+    with pytest.raises(TaskCancelled):
+        train(small_dataset, {}, timeout_seconds=1.0, cancel_check=lambda: True)

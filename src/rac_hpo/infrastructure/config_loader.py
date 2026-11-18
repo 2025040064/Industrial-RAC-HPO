@@ -32,6 +32,7 @@ class OptimizationConfig(StrictModel):
     algorithm: Literal["random", "grid", "tpe", "tpe_robust", "rac_hpo", "successive_halving", "hyperband"] = "tpe"
     max_trials: int = Field(default=12, ge=1, le=100000)
     timeout_seconds: float = Field(default=120, gt=0, allow_inf_nan=False)
+    trial_timeout_seconds: float | None = Field(default=None, gt=0, allow_inf_nan=False, strict=True)
     search_space: dict[str, dict] = Field(default_factory=dict)
     rac_hpo: dict = Field(default_factory=dict)
     min_resource: int = Field(default=10, ge=1)

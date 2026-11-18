@@ -1,0 +1,12 @@
+**
+!Dockerfile.harness
+!LICENSE
+!requirements-contest.txt
+!requirements-contest-sampler.txt
+!src/rac_hpo/__init__.py
+!src/rac_hpo/_io.py
+!src/rac_hpo/contest/*.py
+!src/rac_hpo/domain/__init__.py
+!src/rac_hpo/domain/metrics.py
+!src/rac_hpo/optimization/__init__.py
+!src/rac_hpo/optimization/rac_hpo/*.py

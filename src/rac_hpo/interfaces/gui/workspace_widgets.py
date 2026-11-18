@@ -730,7 +730,8 @@ class RunDetailDrawer(QFrame):
             self._section("分工况指标", {})
             self._section("分组指标", {})
             return
-        names = {"overall_mae": f"验证 MAE ({unit})", "robust_objective": "固定 J（无量纲）"}
+        names = {"overall_mae": f"验证 MAE ({unit})", "robust_objective": "固定 J（无量纲）",
+                 "overall_p95_absolute_error": f"验证 P95 绝对误差 ({unit})"}
         self._section("评价指标", {names.get(key, key): value for key, value in metrics.items()
                                   if key not in {"regimes", "groups"}})
         self._section("分工况指标", metrics.get("regimes", {}))
@@ -781,6 +782,9 @@ class RunDetailDrawer(QFrame):
                                       "搜索耗时 (s)": result.get("search_duration_seconds"),
                                       "随机种子": config.get("experiment", {}).get("seed")})
         self._section("最佳参数", result.get("best_params", {}))
+        self._section("训练诊断", {key: value for key, value in
+                               result.get("training_diagnostics", {}).items()
+                               if key != "validation_curve"})
         self._section("候选排序诊断", result.get("search_diagnostics", {}))
         self._section("失败或取消原因", {"原因": result["failure_reason"]} if result.get("failure_reason") else {})
         trials = result.get("trials", [])
@@ -826,6 +830,9 @@ class RunDetailDrawer(QFrame):
         self._section("优化目标", {objective_name: trial.get("objective")})
         self._metrics(trial.get("metrics", {}), unit)
         self._section("超参数", trial.get("params", {}))
+        self._section("训练诊断", {key: value for key, value in
+                               trial.get("training_diagnostics", {}).items()
+                               if key != "validation_curve"})
         self._section("候选选择", trial.get("selection", {}))
         if trial.get("resource"):
             self._section("资源调度", trial["resource"])

@@ -18,6 +18,8 @@ def test_overall_and_raw_regime_metrics():
     assert metrics["regimes"]["a"]["samples"] == 2
     assert metrics["regimes"]["a"]["reliability"] == "insufficient_independent_groups"
     assert metrics["robust_objective"] is None
+    assert metrics["overall_p95_absolute_error"] == pytest.approx(3.7)
+    assert metrics["regimes"]["b"]["p95_absolute_error"] == pytest.approx(3.9)
 
 
 def test_fixed_objective_matches_hand_calculation():
@@ -62,6 +64,8 @@ def test_fixed_objective_rejects_invalid_contract(kwargs):
     ([float("nan")], [1], ["a"], [1]), ([1], [float("inf")], ["a"], [1]),
     ([1], [1], [None], [1]), ([1], [1], ["a"], [None]),
     ([1], [1], [""], [1]), ([[1]], [[1]], ["a"], [1]),
+    ([1, 2], [1, 2], ["a", "a"], [float("nan"), "tool"]),
+    ([1], [1], ["a"], ["  "]),
 ])
 def test_evaluation_rejects_missing_or_invalid_inputs(truth, predictions, regimes, groups):
     with pytest.raises(ValueError):

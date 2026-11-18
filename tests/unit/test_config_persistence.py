@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from rac_hpo.infrastructure.artifacts import atomic_text, write_json
+from rac_hpo.infrastructure.artifacts import atomic_text, environment_snapshot, write_json
 from rac_hpo.infrastructure.config_loader import load_config
 from rac_hpo.infrastructure.database import ExperimentRepository
 
@@ -17,6 +17,9 @@ ROOT = Path(__file__).resolve().parents[2]
     {"schema_version": 2}, {"optimization": {"max_trials": 0}},
     {"optimization": {"algorithm": "unsupported"}}, {"model": {"n_jobs": 0}},
     {"robustness": {"alpha": 1.1}}, {"unknown": True},
+    {"optimization": {"trial_timeout_seconds": 0}},
+    {"optimization": {"trial_timeout_seconds": float("nan")}},
+    {"optimization": {"trial_timeout_seconds": True}},
 ])
 def test_config_rejects_unsupported_values(overrides):
     with pytest.raises((ValueError, ValidationError)):
@@ -63,3 +66,12 @@ def test_atomic_write_never_leaves_temporary_files(tmp_path):
     with pytest.raises(ValueError):
         write_json(path, {"mae": float("nan")})
     assert json.loads(path.read_text()) == {"mae": 2.5}
+
+
+def test_isolated_workspaces_record_the_actual_loaded_implementation(tmp_path):
+    isolated = environment_snapshot(tmp_path)
+    project = environment_snapshot(ROOT)
+    assert isolated["source_sha256"] != project["source_sha256"]
+    assert isolated["implementation_package_sha256"] == project["implementation_package_sha256"]
+    assert len(isolated["implementation_package_sha256"]) == 64
+    assert Path(isolated["implementation_package_path"]) == ROOT / "src/rac_hpo"

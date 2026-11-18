@@ -64,6 +64,12 @@ class RACSearchPolicy:
     def __init__(self, config, space, *, require_forward_quality=True):
         self.config, self.space = config, space
         self.require_forward_quality = require_forward_quality
+        self.surrogate_mode = config.get("surrogate_mode", "active")
+        if self.surrogate_mode not in {"off", "shadow", "active"}:
+            raise ValueError("Invalid surrogate mode")
+        self.cost_gate_mode = config.get("cost_gate_mode", "decoupled")
+        if self.cost_gate_mode not in {"coupled", "decoupled"}:
+            raise ValueError("Invalid cost gate mode")
         self.settings = RACSettings(**config.get("rac_hpo", {}))
         self.seed = config.get("seed", 42)
         self.rng = np.random.default_rng(self.seed)
@@ -80,9 +86,13 @@ class RACSearchPolicy:
     def propose(self, history, cancel_check=None):
         completed = [trial for trial in history if trial["status"] == "completed"]
         diagnostics = {"method": "tpe_fallback", "completed_history": len(completed),
-                       "algorithm_version": "rac-hpo-0.2.0", "predicted_cost_seconds": None}
+                       "algorithm_version": "rac-hpo-0.2.0", "predicted_cost_seconds": None,
+                       "surrogate_mode": self.surrogate_mode, "surrogate_shadow_rank": False,
+                       "surrogate_actual_proposal": False}
         if len(completed) < max(self.settings.warmup_trials, self.settings.minimum_history):
             return None, {**diagnostics, "reason": "insufficient_history"}
+        if self.surrogate_mode == "off":
+            return None, {**diagnostics, "reason": "surrogate_disabled"}
         candidate_seed = int(self.rng.integers(0, 2**31 - 1))
         rng = np.random.default_rng(candidate_seed)
         if self.rng.random() < self.settings.exploration_fraction:
@@ -97,7 +107,11 @@ class RACSearchPolicy:
                                        self.settings, self.seed)
             forward = surrogate.forward_check()
             self._cached_at, self._cached_forward = len(completed), forward
-            if forward["passed"] or not self.require_forward_quality:
+            performance = forward.get("performance_validation", forward)
+            cost_quality = forward.get("cost_validation", {})
+            coupled_block = (self.cost_gate_mode == "coupled" and cost_quality.get("passed") is False
+                             and cost_quality.get("reason") != "cost_validation_disabled")
+            if (performance["passed"] and not coupled_block) or not self.require_forward_quality:
                 self._cached_surrogate = surrogate.fit()
             else:
                 self._cached_surrogate = None
@@ -107,7 +121,12 @@ class RACSearchPolicy:
                            surrogate_fit_history=self._cached_at,
                            surrogate_age_trials=len(completed) - self._cached_at)
         if surrogate is None:
-            return None, {**diagnostics, "reason": forward["reason"]}
+            perf = forward.get("performance_validation", forward)
+            cost = forward.get("cost_validation", {})
+            reason = (cost.get("reason", "cost_surrogate_quality_failed")
+                      if perf["passed"] and self.cost_gate_mode == "coupled" and cost.get("passed") is False
+                      else perf["reason"])
+            return None, {**diagnostics, "reason": reason}
         incumbent = min(completed, key=lambda trial: trial["objective"])
         priority = regime_priorities(incumbent["metrics"], self.baseline, self.weights,
                                     minimum_groups=self.config.get("minimum_independent_groups", 5),
@@ -123,14 +142,27 @@ class RACSearchPolicy:
         candidates = [decode(vector, self.space) for vector in pool]
         encoded = np.array([encode(candidate, self.space) for candidate in candidates])
         members, costs = surrogate.predict(encoded)
+        if not np.isfinite(members).all():
+            return None, {**diagnostics, "reason": "nonfinite_surrogate_prediction"}
+        invalid_cost_prediction = (not getattr(surrogate, "cost_valid", True)
+                                   or not np.isfinite(costs).all() or (costs <= 0).any())
+        if invalid_cost_prediction:
+            costs = np.ones(len(candidates))
         weights = np.array([self.weights[regime] for regime in self.regimes], dtype=float)
         weights /= weights.sum()
         current = [incumbent["metrics"]["regimes"][regime]["mae"] / surrogate.baselines[index]
                    for index, regime in enumerate(self.regimes)]
         attention = [priority[regime]["q"] for regime in self.regimes]
+        cost_quality = forward.get("cost_validation", {})
+        cost_passed = cost_quality.get("passed") is True
+        effective_gamma = self.settings.gamma if cost_passed and not invalid_cost_prediction else 0.0
+        diagnostics.update(effective_cost_gamma=effective_gamma,
+                           cost_gate_reason=("invalid_cost_prediction" if invalid_cost_prediction else
+                                             cost_quality.get("reason", "cost_quality_unavailable")
+                                             if self.settings.gamma else "cost_not_requested"))
         scores = acquisition_scores(members, costs, incumbent["objective"], current,
                                     weights, self.config.get("alpha", 0.3), attention,
-                                    self.settings.beta, self.settings.gamma, self.settings.t0)
+                                    self.settings.beta, effective_gamma, self.settings.t0)
         counts = np.array([incumbent["metrics"]["regimes"][regime]["samples"] for regime in self.regimes])
         sample_weights = counts / counts.sum()
         predicted_raw = members.mean(axis=1) * surrogate.baselines
@@ -144,14 +176,21 @@ class RACSearchPolicy:
         scores[~allowed] = -np.inf
         selected = int(np.argmax(scores))
         predicted_j = float(normalized_objective(members[selected].mean(axis=0), weights, self.config.get("alpha", 0.3)))
-        return candidates[selected], {
+        selected_trace = {
             **diagnostics, "method": "rac_acquisition",
-            "reason": "forward_quality_passed" if forward["passed"] else "forward_quality_bypassed",
+            "reason": "forward_quality_passed" if forward.get("performance_validation", forward)["passed"] else "forward_quality_bypassed",
+            "surrogate_actual_proposal": self.surrogate_mode == "active",
+            "surrogate_shadow_rank": self.surrogate_mode == "shadow",
             "regime_priorities": priority, "candidate_count": len(candidates),
             "eligible_candidate_count": int(allowed.sum()), "acquisition": float(scores[selected]),
-            "predicted_cost_seconds": float(costs[selected]), "predicted_objective": predicted_j,
+            "predicted_cost_seconds": None if invalid_cost_prediction else float(costs[selected]), "predicted_objective": predicted_j,
             "predicted_overall_mae": float(predicted_overall[selected]),
             "predicted_regime_mae": {regime: float(predicted_raw[selected, index]) for index, regime in enumerate(self.regimes)},
             "overall_guard_kind": "predictive screening, not a calibrated hard guarantee",
             "predictive_draws": "uncalibrated tree dispersion plus centered forward-residual bootstrap",
         }
+        if self.surrogate_mode == "shadow":
+            selected_trace.update(method="tpe_fallback", reason="surrogate_shadow_only",
+                                  shadow_proposal=candidates[selected])
+            return None, selected_trace
+        return candidates[selected], selected_trace

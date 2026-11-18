@@ -8,7 +8,7 @@ import uuid
 from pathlib import Path
 
 from rac_hpo import ALGORITHM_VERSION, SCHEMA_VERSION, __version__
-from rac_hpo.domain.schemas import TaskCancelled
+from rac_hpo.domain.schemas import TaskCancelled, TrainingTimeout
 from rac_hpo.infrastructure.artifacts import (
     atomic_text, environment_snapshot, file_hash, save_convergence, utc_now,
     write_json, write_yaml, source_fingerprint,
@@ -133,7 +133,9 @@ class ApplicationService:
             robustness = config["robustness"]
             baseline_attempt_started = time.perf_counter()
             evaluation_config = {"minimum_groups": config["robustness"]["minimum_independent_groups"]}
-            baseline = train(dataset, {}, seed, model_config, cancel_check, evaluation_config)
+            trial_timeout = config["optimization"].get("trial_timeout_seconds")
+            baseline = train(dataset, {}, seed, model_config, cancel_check, evaluation_config,
+                             timeout_seconds=trial_timeout)
             if cancel_check and cancel_check():
                 raise TaskCancelled("Baseline cancellation acknowledged")
             baseline_errors = {key: value["mae"] for key, value in baseline.metrics["regimes"].items()}
@@ -156,6 +158,7 @@ class ApplicationService:
                 "metrics": baseline.metrics,
                 "objective": baseline.metrics["robust_objective" if algorithm in {"tpe_robust", "rac_hpo"} else "overall_mae"],
                 "failure_reason": None, "role": "default_baseline",
+                "training_diagnostics": baseline.diagnostics,
             }
             save_trial(baseline_record)
             emit({"type": "baseline_completed", "metrics": baseline.metrics,
@@ -163,14 +166,14 @@ class ApplicationService:
             if algorithm == "baseline":
                 detail.update(status="completed", metrics=baseline.metrics, best_params=baseline.params,
                               best_value=baseline.metrics["overall_mae"], best_trial=-1,
-                              search_duration_seconds=0.0)
+                              search_duration_seconds=0.0, training_diagnostics=baseline.diagnostics)
             else:
                 latest = {}
                 best_search_value = float("inf")
 
                 def runner(params, number, report=None):
                     trained = train(dataset, params, seed, model_config, cancel_check, evaluation_config,
-                                    resource_callback=report)
+                                    resource_callback=report, timeout_seconds=trial_timeout)
                     latest.clear()
                     latest[number] = trained
                     return trained
@@ -186,6 +189,7 @@ class ApplicationService:
                             best_model = trained.model
                             best_iteration = trained.best_iteration
                             detail["metrics"] = trial["metrics"]
+                            detail["training_diagnostics"] = trained.diagnostics
                     emit(event)
 
                 search_config = {**config["optimization"], **objective_controls, "seed": seed,
@@ -210,6 +214,9 @@ class ApplicationService:
                         "selection_seconds": sum(trial.get("selection_duration_seconds", 0) for trial in result.trials),
                     }
             if best_model is not None and (detail["best_trial"] is not None):
+                diagnostics_path = directory / "training_diagnostics.json"
+                write_json(diagnostics_path, detail["training_diagnostics"])
+                detail["artifacts"]["training_diagnostics"] = str(diagnostics_path)
                 model_path = directory / "artifacts/model.txt"
                 atomic_text(model_path, best_model.booster_.model_to_string())
                 detail["best_iteration"] = best_iteration
@@ -226,13 +233,17 @@ class ApplicationService:
         except Exception as error:
             detail["status"] = "failed"
             detail["failure_reason"] = f"{type(error).__name__}: {error}"
+            if isinstance(error, TrainingTimeout):
+                detail.update(failure_kind="training_timeout", timeout=error.details)
             emit({"type": "error", "message": detail["failure_reason"]})
         finally:
             if baseline_attempt_started is not None and not any(record["number"] == -1 for record in records):
                 save_trial({"number": -1, "params": {}, "seed": config["experiment"]["seed"],
                             "status": detail["status"], "metrics": {}, "objective": None,
                             "duration_seconds": time.perf_counter() - baseline_attempt_started,
-                            "failure_reason": detail.get("failure_reason"), "role": "default_baseline"})
+                            "failure_reason": detail.get("failure_reason"), "role": "default_baseline",
+                            **({"failure_kind": detail["failure_kind"], "timeout": detail["timeout"]}
+                               if detail.get("failure_kind") == "training_timeout" else {})})
             detail["duration_seconds"] = time.perf_counter() - started
             detail["ended_at"] = utc_now()
             write_json(directory / "metrics.json", detail["metrics"])
@@ -273,7 +284,8 @@ class ApplicationService:
         atomic_text(directory / "trials.csv", buffer.getvalue())
         source = Path(detail["directory"])
         manifest = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
-        for filename in ("config.yaml", "manifest.json", "environment.json", "fixed_objective.json", "uv.lock", "test_evaluation.json"):
+        for filename in ("config.yaml", "manifest.json", "environment.json", "fixed_objective.json",
+                         "uv.lock", "finalization_claim.json", "test_evaluation.json"):
             if (source / filename).exists():
                 shutil.copy2(source / filename, directory / filename)
         for path in detail["artifacts"].values():
@@ -301,6 +313,20 @@ class ApplicationService:
             raise ValueError("Test was already evaluated for this experiment; use saved report")
         if detail["status"] != "completed" or detail.get("best_trial") is None:
             raise ValueError("Only completed experiments with a selected model can be finalized")
+        directory = Path(detail["directory"])
+        if (directory / "test_evaluation.json").exists():
+            raise ValueError("A saved test report already exists; inspect it instead of evaluating again")
+        claim = {"experiment_id": experiment_id, "started_at": utc_now(),
+                 "protocol": "one_attempt_including_interruption",
+                 "data_sha256": detail["data_sha256"]}
+        try:
+            # Durable exclusive claim precedes all dataset/test access. Keep it on
+            # failure: after an interruption we cannot prove the test stayed sealed.
+            atomic_text(directory / "finalization_claim.json",
+                        json.dumps(claim, ensure_ascii=False, allow_nan=False), overwrite=False)
+        except FileExistsError as error:
+            raise ValueError("Final evaluation already started; inspect the saved report or "
+                             "interrupted attempt before any further evaluation") from error
         dataset = self._prepare(detail["config"]["data"]["path"], detail["config"])
         if dataset.source_sha256 != detail["data_sha256"]:
             raise ValueError("Source data checksum changed; refusing sealed-test evaluation")
@@ -320,7 +346,6 @@ class ApplicationService:
                            minimum_groups=detail["config"]["robustness"]["minimum_independent_groups"])
         report = {"evaluated_at": utc_now(), "protocol": "refit_train_plus_validation_fixed_best_iteration",
                   "metrics": metrics, "test_rows": len(y_test), "best_iteration": detail["best_iteration"]}
-        directory = Path(detail["directory"])
         model_path = directory / "artifacts/final_model.txt"
         atomic_text(model_path, model.booster_.model_to_string())
         write_json(directory / "test_evaluation.json", report)

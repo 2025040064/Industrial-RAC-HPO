@@ -7,7 +7,7 @@ from time import perf_counter
 import lightgbm as lgb
 import numpy as np
 
-from rac_hpo.domain.schemas import PreparedDataset, TaskCancelled, TrainingResult
+from rac_hpo.domain.schemas import PreparedDataset, TaskCancelled, TrainingResult, TrainingTimeout
 from rac_hpo.evaluation.evaluator import evaluate
 
 
@@ -78,15 +78,26 @@ def train(
     cancel_check: Callable[[], bool] | None = None,
     evaluation_config: dict | None = None,
     resource_callback: Callable[[int, float], None] | None = None,
+    timeout_seconds: float | None = None,
 ) -> TrainingResult:
     """Train only on train and validate only on validation; never request test."""
+    if timeout_seconds is not None and (
+        isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, (int, float))
+        or not math.isfinite(timeout_seconds) or timeout_seconds <= 0
+    ):
+        raise ValueError("training timeout_seconds must be positive and finite, or None")
     started = perf_counter()
+    completed_iterations = 0
     model = build_regressor(params, seed, model_config)
     config = {**DEFAULT_MODEL_CONFIG, **(model_config or {})}
 
     def acknowledge_cancel(_environment=None):
         if cancel_check is not None and cancel_check():
             raise TaskCancelled("training cancelled")
+        if timeout_seconds is not None:
+            elapsed = perf_counter() - started
+            if elapsed >= timeout_seconds:
+                raise TrainingTimeout(timeout_seconds, elapsed, completed_iterations)
 
     acknowledge_cancel.order = 0
     acknowledge_cancel.before_iteration = True
@@ -100,15 +111,19 @@ def train(
     if not np.isfinite(np.asarray(y_train, dtype=float)).all():
         raise ValueError("training targets must be finite")
     def report_resource(environment):
+        nonlocal completed_iterations
+        completed_iterations = int(environment.iteration + 1)
+        acknowledge_cancel()
         if resource_callback is not None:
-            acknowledge_cancel()
             resource_callback(int(environment.iteration + 1), float(environment.evaluation_result_list[0][2]))
 
     report_resource.order = 20
+    evaluation_history = {}
     callbacks = [acknowledge_cancel, report_resource,
+                 lgb.record_evaluation(evaluation_history),
                  lgb.early_stopping(config["early_stopping_rounds"], verbose=False)]
     model.fit(
-        X_train, y_train, eval_set=[(X_valid, y_valid)], eval_metric="mae",
+        X_train, y_train, eval_set=[(X_valid, y_valid)], eval_names=["validation"], eval_metric="mae",
         callbacks=callbacks,
     )
     acknowledge_cancel()
@@ -116,8 +131,21 @@ def train(
     metrics = evaluate(y_valid, predictions, regimes, groups,
                        group_kind=dataset.manifest.get("independent_unit_kind", "calendar_blocks"),
                        bootstrap_seed=seed, **(evaluation_config or {}))
+    train_mae = float(np.abs(model.predict(X_train) - np.asarray(y_train)).mean())
+    best_iteration = int(model.best_iteration_ or model.n_estimators_)
+    curve = [{"iteration": index, "mae": float(value)}
+             for index, value in enumerate(evaluation_history["validation"]["l1"], start=1)]
+    diagnostics = {
+        "train_rows": len(X_train), "validation_rows": len(X_valid),
+        "train_mae": train_mae, "validation_mae": metrics["overall_mae"],
+        "mae_gap": metrics["overall_mae"] - train_mae,
+        "best_iteration": best_iteration, "evaluated_iterations": len(curve),
+        "estimator_limit_reached": len(curve) == config["n_estimators"],
+        "validation_curve": curve,
+        "interpretation": "Descriptive train/validation gap; validation also selects the stopping iteration.",
+    }
     acknowledge_cancel()
     return TrainingResult(
         params={**DEFAULT_PARAMS, **params}, metrics=metrics, duration_seconds=perf_counter() - started,
-        model=model, best_iteration=int(model.best_iteration_ or model.n_estimators_),
+        model=model, best_iteration=best_iteration, diagnostics=diagnostics,
     )

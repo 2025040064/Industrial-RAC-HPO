@@ -44,6 +44,20 @@ def test_threshold_folds_are_chronological_and_keep_equal_times_together():
     assert 0.01 <= policy["threshold"] <= .5
     assert policy["oof_positive_count"] >= 5
     assert policy["threshold_source"] == "train_time_oof"
+    points = policy["working_points"]
+    assert len(points) == 50
+    selected = [point for point in points if point["selected"]]
+    assert len(selected) == 1
+    assert selected[0]["threshold"] == policy["threshold"]
+    assert selected[0]["false_negatives"] == policy["oof_confusion_matrix"][1][0]
+    assert selected[0]["false_positives"] == policy["oof_confusion_matrix"][0][1]
+    assert selected[0]["pareto_within_grid"]
+    assert points[0]["false_positives"] == policy["oof_negative_count"]
+    assert points[-1]["false_negatives"] == policy["oof_positive_count"]
+    assert not points[0]["pareto_within_grid"] and not points[-1]["pareto_within_grid"]
+    for point in points:
+        assert point["false_negative_rate"] == point["false_negatives"] / policy["oof_positive_count"]
+        assert point["false_positive_rate"] == point["false_positives"] / policy["oof_negative_count"]
 
 
 @pytest.mark.parametrize("model_name", ["random_forest", "lightgbm", "xgboost"])
@@ -65,6 +79,7 @@ def test_trained_threshold_and_model_never_depend_on_validation_labels(model_nam
     b = train(second, model_name, seed=42, model_config=config)
     assert a.metrics["decision_policy"]["threshold_source"] == "train_time_oof"
     assert a.metrics["decision_policy"]["threshold"] == b.metrics["decision_policy"]["threshold"]
+    assert a.metrics["decision_policy"]["working_points"] == b.metrics["decision_policy"]["working_points"]
     assert np.allclose(a.model.predict_proba(first.X.iloc[60:80]), b.model.predict_proba(first.X.iloc[60:80]))
     assert np.array_equal(a.model.predict(first.X.iloc[60:80]), b.model.predict(first.X.iloc[60:80]))
     assert a.metrics["overall_average_precision"] is not None

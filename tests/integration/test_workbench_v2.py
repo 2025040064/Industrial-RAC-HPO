@@ -37,6 +37,38 @@ def test_rail_stays_fixed_and_has_one_tooltip(app):
     assert not rail.tooltip.isVisible()
     host.close()
 
+
+def test_regression_diagnostics_and_deadline_controls(app):
+    from rac_hpo.interfaces.gui.pages.train_page import TrainPage
+    from rac_hpo.interfaces.gui.pages.optimize_page import OptimizePage
+    training = TrainPage()
+    search = OptimizePage()
+    submitted = []
+    training.start_requested.connect(submitted.append)
+    training.trial_timeout_spin.setValue(.125)
+    training._start()
+    assert submitted[-1]["optimization"]["trial_timeout_seconds"] == .125
+    training.show_result({"id": "unit", "target_unit": "cycles",
+        "metrics": {"overall_p95_absolute_error": 5},
+        "training_diagnostics": {"train_mae": 1, "mae_gap": 2, "best_iteration": 1,
+            "evaluated_iterations": 2,
+            "validation_curve": [{"iteration": 1, "mae": 3}, {"iteration": 2, "mae": 4}]}})
+    assert "P95" in training.diagnostics_label.text()
+    assert training.learning_curve.points == [(1, 3), (2, 4)]
+    training.show_result({"id": "old"})
+    assert training.learning_curve.points == []
+    training.reset_progress()
+    assert "等待" in training.diagnostics_label.text()
+    captured = []
+    search.start_requested.connect(lambda algorithm, config: captured.append(config))
+    search.trial_timeout_spin.setValue(2.5)
+    search._start()
+    assert captured[-1]["optimization"]["trial_timeout_seconds"] == 2.5
+    search.set_busy(True)
+    assert not search.trial_timeout_spin.isEnabled()
+    training.close()
+    search.close()
+
 def test_observation_selection_and_hidden_selection_are_independent(app):
     from rac_hpo.interfaces.gui.workspace_widgets import RecordTable
     table=RecordTable([("name","名称")]); table.enable_workbench()

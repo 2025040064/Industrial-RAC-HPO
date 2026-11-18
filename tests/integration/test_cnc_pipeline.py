@@ -24,6 +24,10 @@ def test_author_cnc_real_baseline_and_robust_search(tmp_path):
     assert result["target_unit"] == "cycles"
     assert result["config"]["data"]["dataset_id"] == "cnc_milling_2025"
     assert result["metrics"]["robust_objective"] > 0
+    best = next(trial for trial in result["trials"] if trial["number"] == result["best_trial"])
+    assert result["training_diagnostics"] == best["training_diagnostics"]
+    assert result["training_diagnostics"]["train_rows"] == 442
+    assert result["metrics"]["overall_p95_absolute_error"] >= result["metrics"]["overall_mae"]
     assert all(metric["effective_independent_groups"] == 2 and metric["mae_interval"] is None
                for metric in result["metrics"]["regimes"].values())
     assert "test_evaluation" not in result
@@ -32,6 +36,9 @@ def test_author_cnc_real_baseline_and_robust_search(tmp_path):
     text = (exported / "report.md").read_text(encoding="utf-8")
     assert "Validation metrics (cycles)" in text
     assert "Date blocks are temporal groups" not in text
+    import json
+    diagnostics = json.loads((exported / "training_diagnostics.json").read_text())
+    assert diagnostics == result["training_diagnostics"]
 
 
 @pytest.mark.skipif(not DATA.exists(), reason="Fetch real CNC measurements first")

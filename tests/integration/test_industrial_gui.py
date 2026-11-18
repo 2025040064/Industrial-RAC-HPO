@@ -110,6 +110,23 @@ def test_industrial_missing_metrics_remain_empty(page):
     assert 'traceback marker' in page.log_view.toPlainText()
 
 
+def test_threshold_working_points_are_saved_values_and_clear_for_old_runs(page):
+    fixture = display_fixture()
+    fixture["metrics"]["decision_policy"] = {
+        "positive_class": 1, "oof_positive_count": 5, "oof_negative_count": 20,
+        "working_points": [{"threshold": .1, "false_negatives": 2, "false_positives": 3,
+                            "false_negative_rate": .4, "false_positive_rate": .15,
+                            "pareto_within_grid": True, "selected": True}]}
+    page.show_result(fixture)
+    assert page.threshold_table.rowCount() == 1
+    assert page.threshold_table.item(0, 1).text() == "2"
+    assert page.threshold_table.item(0, 5).text() == "是"
+    assert "前向折外" in page.threshold_note.text()
+    page.show_result(display_fixture("old"))
+    assert page.threshold_table.rowCount() == 0
+    assert "没有已保存" in page.threshold_note.text()
+
+
 def test_industrial_training_curve_and_saved_log_use_persisted_values(page):
     fixture = display_fixture()
     fixture['metrics']['learning_curve'] = [

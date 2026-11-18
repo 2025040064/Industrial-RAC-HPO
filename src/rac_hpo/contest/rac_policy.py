@@ -1,10 +1,13 @@
 """Adapt fixed-parent contest trials to the shared RAC-HPO search policy."""
 
 import math
+import statistics
 
 import optuna
 
 from rac_hpo.contest.policy import validate
+from rac_hpo.contest.transfer_gate import filter_transfer
+from rac_hpo.contest.bearing_feasibility import assess_feasibility
 from rac_hpo.domain.metrics import robust_metrics
 from rac_hpo.optimization.rac_hpo.search import RACSearchPolicy
 
@@ -49,7 +52,22 @@ def regime_metrics(task, diagnostics, validation_units):
 class ContestRACPolicy:
     require_forward_quality = True
 
-    def __init__(self, task, audit, *, protocol=PROTOCOL, seed=SEED, prioritize_bearing_feasibility=False):
+    def __init__(self, task, audit, *, protocol=PROTOCOL, seed=SEED, prioritize_bearing_feasibility=False,
+                 transfer_cost_weight=0.05, transfer_mode="legacy", surrogate_mode="active",
+                 cost_mode=None, enforce_shadow_evidence=False, bearing_mode="off"):
+        if (isinstance(transfer_cost_weight, bool) or not math.isfinite(transfer_cost_weight)
+                or not 0 <= transfer_cost_weight <= 1):
+            raise ValueError("Invalid transfer cost weight")
+        self.transfer_cost_weight = transfer_cost_weight
+        if transfer_mode not in {"off", "legacy", "gated"} or surrogate_mode not in {"off", "shadow", "active"}:
+            raise ValueError("Invalid contest search mode")
+        if cost_mode not in {None, "off", "transfer", "acquisition", "both"} or bearing_mode not in {"off", "shadow", "active"}:
+            raise ValueError("Invalid contest cost or bearing mode")
+        self.transfer_mode, self.cost_mode, self.bearing_mode = transfer_mode, cost_mode, bearing_mode
+        self.requested_surrogate_mode = surrogate_mode
+        evidence_ok = audit.get("surrogate_evidence", {}).get("passed") is True
+        self.surrogate_mode = "shadow" if enforce_shadow_evidence and surrogate_mode == "active" and not evidence_ok else surrogate_mode
+        self.activation_reason = "missing_validated_shadow_evidence" if self.surrogate_mode != surrogate_mode else None
         self.protocol = protocol
         self.seed = seed
         self.task = task
@@ -63,6 +81,8 @@ class ContestRACPolicy:
             if prioritize_bearing_feasibility and task == "B" and self.diagnostic_section == "groups"
             else {}
         )
+        self.parent_bearing_rmse = ({name: row.get("rmse") for name, row in audit["diagnostics"]["groups"].items()}
+                                    if task == "B" and self.diagnostic_section == "groups" else {})
         baseline = regime_metrics(task, audit["diagnostics"], self.validation_units)
         self.error_name = "one_minus_class_f1" if task == "A" else "mae"
         self.weak_class = max(baseline, key=lambda name: baseline[name]["mae"]) if task == "A" else None
@@ -87,6 +107,9 @@ class ContestRACPolicy:
         }
         if protocol == PROTOCOL:
             self.search_config["rac_hpo"]["maximum_cost_log_mae_ratio"] = 1.0
+        self.search_config["surrogate_mode"] = self.surrogate_mode
+        if cost_mode is not None:
+            self.search_config["rac_hpo"]["gamma"] = .5 if cost_mode in {"acquisition", "both"} else 0.0
 
     def score(self, diagnostics):
         regimes = regime_metrics(self.task, diagnostics, self.validation_units)
@@ -104,10 +127,15 @@ class ContestRACPolicy:
         }
 
     def propose(self, metadata, records, *, transfer_records=(), round_index=None):
+        if round_index is not None and (type(round_index) is not int or round_index < 1):
+            raise ValueError("Invalid current round")
         history, history_rounds, excluded = [], [], []
         seen = set()
         for position, record in enumerate(records, start=1):
             number = record.get("round", position) if isinstance(record, dict) else position
+            if round_index is not None and (type(number) is not int or not 1 <= number < round_index):
+                excluded.append({"round": number, "reason": "non_prior_round"})
+                continue
             try:
                 trial = self._trial(record)
             except (KeyError, TypeError, ValueError, ArithmeticError) as error:
@@ -123,12 +151,23 @@ class ContestRACPolicy:
                 seen.add(key)
             history.append(trial)
             history_rounds.append(number)
+        cost_cpu_ready = bool(history) and all(
+            isinstance(record.get("training_cpu_seconds"), (int, float))
+            and not isinstance(record.get("training_cpu_seconds"), bool)
+            and math.isfinite(record["training_cpu_seconds"]) and record["training_cpu_seconds"] > 0
+            for record in records if isinstance(record, dict) and record.get("round") in history_rounds)
+        if self.cost_mode in {"acquisition", "both"} and cost_cpu_ready:
+            by_round = {record["round"]: record for record in records if isinstance(record, dict) and "round" in record}
+            for number, trial in zip(history_rounds, history):
+                trial["duration_seconds"] = by_round[number]["training_cpu_seconds"]
+        elif self.cost_mode in {"acquisition", "both"}:
+            self.search_config["rac_hpo"]["maximum_cost_log_mae_ratio"] = None
         seed = self.seed + (len(records) if round_index is None else round_index - 1)
         policy = RACSearchPolicy({**self.search_config, "seed": seed}, self.space,
                                  require_forward_quality=self.require_forward_quality)
         try:
             params, trace = policy.propose(history)
-        except (ValueError, FloatingPointError) as error:
+        except (ValueError, FloatingPointError, RuntimeError) as error:
             params = None
             trace = {"method": "tpe_fallback", "reason": "surrogate_error", "error_type": type(error).__name__}
 
@@ -136,10 +175,29 @@ class ContestRACPolicy:
         if params in seen:
             params = None
             trace.update(method="tpe_fallback", reason="duplicate_candidate")
+        transfer_gate = {"reason": "disabled", "used": False, "eligible_count": 0, "excluded": []}
+        if self.transfer_mode == "off":
+            transfer_records = ()
+        elif self.transfer_mode == "gated":
+            if round_index is None:
+                transfer_records = ()
+                transfer_gate["reason"] = "missing_round_index"
+            else:
+                transfer_records, transfer_gate = filter_transfer(
+                    transfer_records, self.objective_config["baseline_errors"], self.objective_config["weights"],
+                    round_index, max_distance=.5, parameter_space=self.space, require_complete=True,
+                    allowed_strategies={"uniform", "class_focus"} if self.task == "A" else {"uniform", "unit_balanced"},
+                    weak_class=self.weak_class)
+        else:
+            transfer_gate = {"reason": "legacy_unvalidated", "used": False,
+                             "eligible_count": 0, "excluded": []}
         transfer = []
         transfer_rounds = []
         for record in transfer_records:
             try:
+                number = record["round"]
+                if round_index is not None and (type(number) is not int or not 1 <= number < round_index):
+                    continue
                 params_old = record["rac_params"]
                 baseline_j = record["parent_objective"]
                 objective = record["robust_objective"]
@@ -156,22 +214,47 @@ class ContestRACPolicy:
                     continue
                 if config.get("strategy") == "class_focus" and config.get("target_class") != self.weak_class:
                     continue
-                transfer.append({"params": params_old, "objective": objective / baseline_j})
+                transfer.append({"params": params_old, "objective": objective / baseline_j,
+                                 "duration_seconds": duration})
                 transfer_rounds.append(record["round"])
             except (KeyError, TypeError, ValueError, ArithmeticError):
                 continue
         if transfer and len(history) < self.search_config["rac_hpo"]["minimum_history"]:
+            if self.transfer_mode == "legacy":
+                transfer_gate.update(used=True, eligible_count=len(transfer))
             observations = transfer + [{"params": item["params"],
-                                         "objective": item["objective"] / self.baseline_objective}
+                                         "objective": item["objective"] / self.baseline_objective,
+                                         "duration_seconds": item["duration_seconds"]}
                                         for item in history]
+            effective_weight = self.transfer_cost_weight
+            if self.cost_mode is not None:
+                all_records = [*transfer_records, *(r for r in records if isinstance(r, dict) and r.get("round") in history_rounds)]
+                cpu_ready = all_records and all(isinstance(r.get("training_cpu_seconds"), (int, float))
+                            and not isinstance(r.get("training_cpu_seconds"), bool)
+                            and math.isfinite(r["training_cpu_seconds"]) and r["training_cpu_seconds"] > 0 for r in all_records)
+                if not cpu_ready:
+                    effective_weight = 0.0
+                else:
+                    durations = {r["round"]: r["training_cpu_seconds"] for r in all_records}
+                    for item, number in zip(observations, transfer_rounds + history_rounds):
+                        item["duration_seconds"] = durations[number]
+            median_cost = statistics.median(item["duration_seconds"] for item in observations)
+            for item in observations:
+                log_cost = math.log(item["duration_seconds"]) - math.log(median_cost)
+                item["objective"] += effective_weight * max(-2.0, min(2.0, log_cost))
             params = self._fallback(observations, seed, startup_trials=2)
-            trace.update(method="transfer_tpe", reason="parent_normalized_history")
+            trace.update(method="transfer_tpe", reason="parent_normalized_history_cost_heuristic",
+                         transfer_cost_method="bounded_log_relative_seconds", transfer_cost_weight=effective_weight,
+                         transfer_cost_median_seconds=median_cost, tpe_observations=len(observations),
+                         tpe_startup_trials=2, tpe_model_ready=len(observations) >= 2)
         elif not history:
             params = {"learning_rate": metadata["learning_rate"], "batch_size": metadata["batch_size"],
                       "epochs": 2, "sampling_level": 1}
             trace["method"] = "checkpoint_reference"
         elif params is None:
             params = self._fallback(history, seed)
+            trace.update(tpe_observations=len(history), tpe_startup_trials=4,
+                         tpe_model_ready=len(history) >= 4)
             if self.bearing_rmse:
                 trace["method"] = "bearing_constrained_tpe"
         if not all(math.isfinite(value) and self.space[name]["low"] <= value <= self.space[name]["high"]
@@ -189,9 +272,21 @@ class ContestRACPolicy:
         elif sampling > 1:
             proposal["strategy"] = "unit_balanced"
         trace.update(params=params, decision_seed=seed, group_error=self.error_name)
+        trace.update(transfer_mode=self.transfer_mode, transfer_gate=transfer_gate,
+                     requested_surrogate_mode=self.requested_surrogate_mode,
+                     surrogate_mode=self.surrogate_mode, surrogate_activation_reason=self.activation_reason,
+                     requested_cost_mode=self.cost_mode, cpu_cost_history_ready=cost_cpu_ready,
+                     cost_prediction_source=("training_cpu_seconds" if self.cost_mode in {"acquisition", "both"}
+                                             and cost_cpu_ready else "training_wall_seconds_diagnostic_only"),
+                     bearing_mode=self.bearing_mode,
+                     bearing_activation_reason="no_forward_validated_feasibility_model" if self.bearing_mode == "active" else None)
+        if self.task == "B" and self.bearing_mode != "off":
+            bearing_trace = assess_feasibility(records, self.parent_bearing_rmse, params, self.space, round_index)
+            bearing_trace["requested_mode"] = self.bearing_mode
+            trace["bearing_feasibility"] = bearing_trace
         if self.protocol == PROTOCOL:
             trace.update(history_rounds=history_rounds, excluded_history=excluded,
-                         transfer_history_rounds=transfer_rounds)
+                         transfer_history_rounds=transfer_rounds if trace["method"] == "transfer_tpe" else [])
         if "predicted_regime_mae" in trace:
             trace["predicted_group_errors"] = trace.pop("predicted_regime_mae")
             trace["predicted_sample_weighted_group_error"] = trace.pop("predicted_overall_mae")

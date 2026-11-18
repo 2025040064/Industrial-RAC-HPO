@@ -36,6 +36,7 @@ class TrainingResult:
     best_iteration: int = 0
     status: str = "completed"
     failure_reason: str | None = None
+    diagnostics: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -51,3 +52,17 @@ class OptimizationResult:
 
 class TaskCancelled(Exception):
     """Raised once a running task has acknowledged cancellation."""
+
+
+class TrainingTimeout(TimeoutError):
+    """Cooperative deadline reached at a training or evaluation boundary."""
+
+    def __init__(self, limit_seconds, elapsed_seconds, completed_iterations):
+        self.details = {
+            "limit_seconds": limit_seconds, "elapsed_seconds": elapsed_seconds,
+            "overrun_seconds": max(0.0, elapsed_seconds - limit_seconds),
+            "completed_iterations": completed_iterations,
+            "enforcement": "cooperative_iteration_and_evaluation_boundaries",
+        }
+        super().__init__(f"Training exceeded {limit_seconds:g}s after "
+                         f"{elapsed_seconds:.6g}s ({completed_iterations} iterations)")

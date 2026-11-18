@@ -1,8 +1,93 @@
 # 智训引擎技术规范与实施架构
 
+<<<<<<< HEAD
 ## 2026-11-09 macOS 运行环境
 
 macOS 使用项目内 `.venv`、`.python` 和 `.cache`；Apple Silicon 的 LightGBM 依赖 Homebrew libomp。macOS 依赖 PySide6-Essentials 6.9.3（项目使用的 QtCore、QtGui、QtWidgets 和 QtTest 均包含在内），其他平台仍依赖原 PySide6 6.9.3；环境快照兼容两种发行包并保留 `PySide6` 键。原生界面验证脚本不再强制 Windows 平台插件：`--native` 由 Qt 自动选择当前系统平台，默认仍使用 offscreen。回归 GUI 恢复与后端一致的 Grid、Successive Halving 和 Hyperband 入口。安装不隐式下载数据。
+=======
+## 2026-11-18 竞赛代理与迁移安全门槛
+
+SDK 回调通过 `RAC_TRANSFER_MODE=off|legacy|gated`、`RAC_SURROGATE_MODE=off|shadow|active`、`RAC_COST_MODE=off|transfer|acquisition|both` 和 `RAC_BEARING_FEASIBILITY=off|shadow|active` 控制搜索；默认分别为 off、shadow、off、off。历史兼容开关 `RAC_TRANSFER_HISTORY=1` 显式选择 legacy，不能作为可信迁移证据。gated 要求匹配投影、时间、工况距离、足够观察及不同父模型，并要求既往配对证据；当前 SDK 尚不提供可信证据载入，因此不会自动启用。
+
+工况代理分别前向核验性能和可变训练 CPU 成本；成本失败仅关闭成本惩罚。active 必须有相同父模型、真实训练过且严格早于当前轮的影子候选质量证据，否则实际使用 shadow。B 的最近邻可行性仅记录影子判断，真实逐轴承硬门槛不变。结构化模型回复只能选择合法方案，仍由平台主指标、固定 J 和真实轴承误差共同决定是否采纳；非法回复保守回退。CPU 分段、SHA、历史门槛及模型回执写入逐轮审计。详细证据和未完成事项见 [阶段三决策](docs/RAC_HPO_STAGE3_RELEASE_DECISION.md)。
+
+## 2026-11-18 竞赛硬 CPU 预算对照
+
+独立实验驱动 `experiments/ablation/hard_budget.py` 保留既有 SDK 回调与选择规则，按冻结协议在每个单线程 worker 进程施加 `RLIMIT_CPU`，以 `wait4` 记录 user/system CPU。预先冻结 A/B/C 上限 4/9/60 秒，软限额提前 1 秒，最终已完成轮、未完成轮资源、阶段计时和峰值内存分别留痕。候选和 state 写完后原子提交轮次；恢复前核对父 SHA、审计和累计 attempt CPU，无法核算的中断安全拒绝恢复。controller 的解压与调度 CPU 单独报告。模型服务仅本地替身，结果不代表赛事平台。三种子对照、局限和未触发模块见 [阶段二报告](docs/RAC_HPO_STAGE2_REPORT.md)。
+
+## 2026-11-18 竞赛消融实验接口
+
+`ContestRACPolicy` 增加有界 `transfer_cost_weight` 选项，默认 0.05 不变；传入当前轮时拒绝本轮及未来轮历史，并记录 TPE 暖启动阈值、观察数和是否已进入拟合。离线 `experiments/ablation/run.py` 以 SDK 替身宿主、相同父链与选模合同运行 G0–G3；G1/G2 关闭 RAC acquisition 和迁移 TPE 的成本惩罚，G3 开启两处，三组保留相同代理成本质量门槛。源代码更改尚未写入历史镜像。首阶段单种子结果与预算限制见 [消融报告](docs/RAC_HPO_ABLATION_REPORT.md)。
+
+## 2026-11-18 竞赛逐轮搜索审计
+
+正式 SDK 回调的 `contest-sdk-history-v2` 状态将训练、验证及工况元数据投影摘要、主指标合同与连续的已选父 SHA 链绑定。同父记录供完整 `RACSearchPolicy` 使用；跨父记录不进入其代理，而是在同父历史不足时默认供独立 TPE 启发式使用，可通过 `RAC_TRANSFER_HISTORY=0` 关闭。旧状态或口径、链条不一致的记录保存在隔离归档，不进入新搜索。跨父目标是各轮候选 J / 父 J，再加 `0.05 * clip(log(训练秒数 / 中位训练秒数), -2, 2)`；这是有界软惩罚，不是硬性限时或完整成本代理。相对 J 不能消除父模型变化带来的不可比性。当时旧的无成本迁移在 A/B/C 三种子对照中未优于原策略；后续对照见本页阶段二记录。
+
+SDK 的 `selection-audit.jsonl` 和状态逐轮保存 RAC 推荐、模型回复及合法性、`fit_epochs` 实际参数和采样策略、训练秒数、父与候选摘要、主指标和 J 门槛、选择理由与历史使用。宿主是否长期保存历史 artifact 仍待核实。独立本地修复镜像与原候选并存，详见 [竞赛审计报告](docs/CONTEST_CORE_AUDIT_20261118.md)。
+
+## 2026-11-18 竞赛选择链与审计
+
+新建本地 RAC 续训从上一轮已选 checkpoint 出发，固定 J 仍以原始模型为基准，仅将同父观察提供给搜索；已有无 `parent_mode` 标记的 RAC 运行继续按原固定父模型协议恢复。正式 SDK 始终使用宿主父产物，主指标严格改善与原有 J、可用的 B 逐轴承门槛同时生效。父/候选平台主指标还须与使用同一公开投影和 checkpoint 本地重算结果在相对 `1e-7`、绝对 `1e-8` 容差内一致，且本地值也严格改善；否则保留父模型。连续轮次的宿主父摘要若与已保存的上一轮选中摘要不一致，则停止本轮并报告，避免继续污染选择链。旧 state 无审计历史时不能作此跨轮核验。
+
+每轮本地运行和 SDK state 中的 `selection-audit.jsonl` 记录父、候选、选中模型摘要、主指标、J、各门槛与原因；SDK 的路径是 artifact 内相对路径，能否长期恢复由宿主持久化合同决定。仅记录摘要和 ID 不保证历史 artifact 永久可用。本地已提交轮次可在日志写入中断后重建缺失的末尾审计记录。详见 [模型选择审计](docs/model_selection_audit.md)。
+
+## 2026-11-17 竞赛提交候选与消融
+
+竞赛基准脚本可选择 `rac_no_forward_gate` 或 `rac_bearing_constraint`。前者保留前向质量记录并绕过质量判定，后者在 B 的 TPE 提议中优先使用满足逐轴承 RMSE 边界的历史候选。真实 SDK 入口按默认设置保留代理质量回退和既有候选排序。当前提交候选依据比赛页面要求，在 Linux/amd64 构建并使用 `docker save` 导出单镜像未压缩 tar。
+
+## 2026-11-17 跨父历史研究选项
+
+当时的 SDK 回调默认关闭跨父迁移，显式 `RAC_TRANSFER_HISTORY=1` 才启用相对 J 暖启动 TPE。三种子实验证据未支持该方案，详见 [实验报告](docs/CONTEST_TRANSFER_EXPERIMENT.md)。现行源码的后续变化见上方 2026-11-18 记录。
+
+## 2026-11-17 Harness SDK 容器装配
+
+`official_submission/prepare_context.py` 校验 SDK 压缩包与三份基线运行源码摘要，生成独立 Docker 上下文和源文件清单。容器安装锁定 Python 依赖及实际 SDK 1.0.2，入口使用原 SDK 模板。官方镜像入口与既有本地 `Dockerfile.harness` 续训镜像分别构建。ARM64 本机门禁在只读根文件系统、禁网、单 CPU 和非 root 用户下验证。
+
+## 2026-11-17 Harness SDK 1.0.2 适配
+
+`official_submission/contest_submission.py` 实现官方模板调用的 `train(rnd)` 和 `predict(sample, model_dir)`。每轮校验官方父 NPZ 摘要，按固定特征合同从本轮公开训练投影续训，使用 SDK 模型回执在 RAC 与保守候选之间选择。训练后的候选由宿主测量，主指标缺失或门槛失败时保留合法父产物。状态只在 `/workspace` 副本保存，按父摘要及公开划分摘要限制可比较搜索历史。B/C 无验证组元数据时使用整体验证 MAE 作为内部 J 的唯一分量，关闭独立单元加权；即使如此，宿主的主指标仍为 RMSE。
+
+## 2026-11-17 竞赛 V2 的 RAC 历史与成本门槛
+
+本地竞赛新运行使用 `contest-rac-hpo-v2`。候选历史必须匹配固定搜索域和验证样本计数，能重算固定 J，并具有有限的实测正训练耗时。无效或重复记录的轮次和排除原因写入决策记录。A 类别 F1 缺少每类独立批次证据时，可信权重为零。竞赛启用成本前向门槛，以逐时间前缀的中位数 log 秒数为对照。性能或成本代理质量失败时回退 Optuna TPE。既有 V1 运行按保存的协议恢复，通用回归的默认代理门槛沿用原设置。
+
+## 2026-11-17 RAC-HPO 决策模型训练
+
+`scripts/train_contest_sampler.py` 在 Conda `industrial` 中使用 PyTRIO LoRA SFT，复用竞赛 Sampler 的提示投影及参数校验。默认本地核对数据，`--train` 启动云端训练并使用 SwanLab 在线记录。A/B 训练任务缺少已采纳样本时才使用显式补充历史，C 留出始终取自主要历史。记录训练 loss、监督 token 数、留出格式通过率和 Sampler URI。使用方式见 [竞赛续训镜像](docs/CONTEST_HARNESS.md#在-conda-industrial-中训练决策模型)。
+
+## 2026-11-17 RAC-HPO 竞赛续训接入
+
+- `contest/rac_policy.py` 将固定父检查点的候选记录适配到共享 `RACSearchPolicy` 和固定目标 J。A 以类别 F1 损失分组，B 以轴承 MAE 分组，C 以发布子集 MAE 分组并保留发动机级误差统计。现有 RAC 核心复用 ExtraTrees 分组和成本代理、前向质量检查、全局探索及成本归一化采集函数。
+- 第一轮执行基准参数续训，之后用 Optuna TPE 及其随机启动填充历史。第 9、10 轮可触发代理排序或全局探索，代理未通过质量检查则回退 TPE。按已提交轮次重建决策状态，配置、候选、实测训练耗时与代理诊断原子保存。
+- RAC 策略从各任务原始检查点训练每个候选。采纳需同时改善主验证指标与 J，B 还执行原有逐轴承基线 RMSE 门槛。历史规则和 PyTRIO 策略使用其原有的选中父模型协议。Linux amd64 镜像的默认策略为 `rac_hpo`，实验和启动命令见 [竞赛续训镜像](docs/CONTEST_HARNESS.md)。
+
+## 2026-11-17 Sampler 效果对照
+
+新增 pytrio_base 策略，与 pytrio_sampler 共享同一采样适配器、响应解析、参数范围和采纳规则。基础模式要求空 Sampler 路径，微调模式要求已保存的 URI。
+
+## 2026-11-17 PyTRIO Sampler 接入
+
+新增 contest/sampler.py，以投影后的公开验证历史请求 PyTRIO，并对模型提出的训练参数做白名单校验。服务的 pytrio_sampler 策略复用原训练、重放及采纳门槛，并将采样证据写入轮次目录。
+
+## 2026-11-16 竞赛续训镜像
+
+新增 contest/continuation 在公开训练数据上组织定向或按轴承均衡采样，沿用原模型结构、标准化与 Adam 实现。task_aware_v3 通过子进程训练和重放，A 记录分类别 F1，B 按验证轴承设置相对原始检查点的门槛。原有本地 CLI 策略仍可读取历史运行。Dockerfile.harness 仅封装竞赛模块和固定 NumPy 依赖，默认运行三任务，每任务 10 轮。运行和预测接口见 [竞赛续训镜像](docs/CONTEST_HARNESS.md)。
+
+## 2026-11-16 竞赛本地模拟
+
+新增 contest/packages 负责原始 ZIP、检查点和文件摘要核验，contest/worker 在独立进程内调用各包训练／评估模块，contest/policy 提供有界的本地验证历史策略，contest/service 负责逐轮执行、原子提交与恢复。CLI 入口为 python -m rac_hpo.contest，使用 NumPy 1.26.4 独立环境。复用 _io 原子写入，不依赖 Qt 或 SQLite。输出在独立 workspace/contest_simulation，原始 A/B/C 包逐项隔离。当前支持 macOS／Linux 进程锁。PyTRIO 与正式 Harness 待官方协议接入。
+
+## 2026-11-07 训练诊断、限时与评估一致性
+
+- `TrainingResult.diagnostics` 为兼容的可选字典。回归训练记录训练 MAE、验证 MAE、差值、实际评估轮数及逐迭代验证曲线。统一 evaluator 增加 `overall_p95_absolute_error` 和工况 `p95_absolute_error`，采用样本绝对误差的线性插值 95% 分位数。最终 J 定义沿用现有实现。
+- `optimization.trial_timeout_seconds` 默认为 null。应用服务传给回归 `train(..., timeout_seconds=None)`，包含基线和每个候选的构建、拟合及评估。取消优先于超时，树迭代前后和评估边界检查。超时抛出 `TrainingTimeout`，保存 failed、`failure_kind=training_timeout`、预算、实际耗时、超时量和完成轮数。基线超时终止实验，候选超时继续下一候选。单次原生调用可能超过限时。分类服务和固定轮数最终重训沿用各自预算语义。
+- 每次完成的回归 trial 保存 `training_diagnostics`。实验顶层只对应实际选中模型，并额外原子保存可导出的 `training_diagnostics.json`。训练页绘制真实验证曲线和已选迭代，详情抽屉显示摘要，历史缺失字段显示空态。
+- `finalize_experiment` 在准备数据前独占原子创建 `finalization_claim.json`。并发调用及中断后的重复调用在读取 test 前阻断，旧实验若已有孤立测试报告也阻断。执行标记失败后保留，已保存的报告和模型可供人工核查，应用不会自动重复评估。
+- 回归和分类 evaluator 在字符串转换前检查工况/分组缺失值，拒绝空白标签。`environment_snapshot` 增加实际导入包的路径和源码哈希，独立输出工作区也能追溯实际实现。
+- 二分类 `time_oof` 在原有 0.01–0.5 网格和训练期前向折外预测上保存 `working_points`，包含 FN、FP、两类错误率、召回、已选与网格内 Pareto 标记。选择规则和概率校准状态沿用现有协议，工业训练页只展示保存值。
+
+Config / SQLite Schema 仍为 1，新增数据保存到兼容 JSON 字段及独立产物。真实实验和验证详见 `docs/PROJECT_IMPROVEMENT_20261107.md`。
+>>>>>>> 20aa64b (完成RAC-HPO阶段三算法优化)
 
 ## 2026-11-04 总结文档与 Mac 对齐
 

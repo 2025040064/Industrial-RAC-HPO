@@ -1,0 +1,19 @@
+FROM public.ecr.aws/docker/library/python:3.11-slim-bookworm@sha256:a83ba18aef0f865b1a4a611c2cf460fe446f2795673bbb9fe43be570439e3b39
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app/src \
+    HARNESS_PACKAGES=/input \
+    HARNESS_OUTPUT=/output/run \
+    HARNESS_POLICY=rac_hpo
+WORKDIR /app
+COPY requirements-contest.txt requirements-contest-sampler.txt ./
+ARG CONTEST_PYPI_INDEX=https://pypi.tuna.tsinghua.edu.cn/simple
+RUN python -m pip install --disable-pip-version-check --no-cache-dir --only-binary=:all: \
+    --index-url "$CONTEST_PYPI_INDEX" -r requirements-contest.txt -r requirements-contest-sampler.txt
+COPY src/rac_hpo/__init__.py src/rac_hpo/_io.py /app/src/rac_hpo/
+COPY src/rac_hpo/contest/ /app/src/rac_hpo/contest/
+COPY src/rac_hpo/domain/__init__.py src/rac_hpo/domain/metrics.py /app/src/rac_hpo/domain/
+COPY src/rac_hpo/optimization/__init__.py /app/src/rac_hpo/optimization/
+COPY src/rac_hpo/optimization/rac_hpo/ /app/src/rac_hpo/optimization/rac_hpo/
+COPY LICENSE ./
+ENTRYPOINT ["python", "-m", "rac_hpo.contest"]

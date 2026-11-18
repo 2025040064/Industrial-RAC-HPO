@@ -73,6 +73,27 @@ def choose_time_oof_threshold(dataset, train_indices, fit_predict, n_splits=3):
     threshold = max(grid, key=lambda value: (balanced_accuracy_score(truth, probability >= value), value))
     predicted = (probability >= threshold).astype(int)
     tn, fp, fn, tp = confusion_matrix(truth, predicted, labels=[0, 1]).ravel()
+    working_points = []
+    for value in grid:
+        positive_predictions = probability >= value
+        false_negatives = int(np.count_nonzero((truth == 1) & ~positive_predictions))
+        false_positives = int(np.count_nonzero((truth == 0) & positive_predictions))
+        working_points.append({
+            "threshold": float(value), "false_negatives": false_negatives,
+            "false_positives": false_positives,
+            "false_negative_rate": false_negatives / positive_count,
+            "false_positive_rate": false_positives / negative_count,
+            "positive_recall": 1 - false_negatives / positive_count,
+            "selected": bool(value == threshold),
+        })
+    for point in working_points:
+        point["pareto_within_grid"] = not any(
+            other["false_negatives"] <= point["false_negatives"]
+            and other["false_positives"] <= point["false_positives"]
+            and (other["false_negatives"] < point["false_negatives"]
+                 or other["false_positives"] < point["false_positives"])
+            for other in working_points
+        )
     positive = classes[1].item() if isinstance(classes[1], np.generic) else classes[1]
     return {"mode": "time_oof", "threshold_source": "train_time_oof", "threshold": float(threshold),
             "positive_class": positive, "oof_folds": records, "oof_positive_count": positive_count,
@@ -83,4 +104,6 @@ def choose_time_oof_threshold(dataset, train_indices, fit_predict, n_splits=3):
             "oof_confusion_matrix": [[int(tn), int(fp)], [int(fn), int(tp)]],
             "selection_rule": "maximize balanced accuracy on train-time OOF; ties prefer higher threshold",
             "threshold_grid": {"minimum": .01, "maximum": .5, "count": 50},
+            "working_points": working_points,
+            "working_points_scope": "same train-time OOF rows; descriptive Pareto set within the configured grid",
             "probability_calibration": "not calibrated", "test_used": False}

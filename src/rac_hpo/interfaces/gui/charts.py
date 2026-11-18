@@ -252,3 +252,52 @@ class ExperimentChart(QWidget):
     def leaveEvent(self, event):
         QToolTip.hideText()
         super().leaveEvent(event)
+
+
+class RegressionLearningCurve(ExperimentChart):
+    """Plot saved per-iteration validation MAE with the selected iteration."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.points = []
+        self.best_iteration = None
+        self.unit = ""
+        self.setAccessibleName("LightGBM 验证 MAE 学习曲线")
+
+    def set_diagnostics(self, diagnostics, unit):
+        self.points = [(record["iteration"], record["mae"])
+                       for record in diagnostics.get("validation_curve", [])
+                       if finite_value(record.get("iteration")) is not None
+                       and finite_value(record.get("mae")) is not None]
+        self.best_iteration = diagnostics.get("best_iteration")
+        self.unit = unit
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self._hits = []
+        if not self.points:
+            self._text(painter, self.rect(), "此实验没有已保存的逐迭代验证曲线")
+            return
+        rect = QRectF(72, 38, max(1, self.width() - 98), max(1, self.height() - 124))
+        xlow, xhigh = self.points[0][0], max(self.points[-1][0], self.points[0][0] + 1)
+        ylow, yhigh = self._range([value for _, value in self.points])
+        self._axes(painter, rect, xlow, xhigh, ylow, yhigh,
+                   "Boosting 迭代轮次", f"验证 MAE ({self.unit})")
+        path = QPainterPath()
+        for index, (iteration, value) in enumerate(self.points):
+            point = self._point(rect, iteration, value, xlow, xhigh, ylow, yhigh)
+            if index == 0:
+                path.moveTo(point)
+            else:
+                path.lineTo(point)
+            if iteration == self.best_iteration:
+                painter.setPen(QPen(QColor("#F79009"), 1, Qt.PenStyle.DashLine))
+                painter.drawLine(QPointF(point.x(), rect.top()), QPointF(point.x(), rect.bottom()))
+            self._hits.append((QRectF(point.x() - 5, point.y() - 5, 10, 10),
+                               f"迭代 {iteration} · MAE {value:.6g} {self.unit}"))
+        painter.setPen(QPen(QColor(TOKENS["accent"]), 2))
+        painter.drawPath(path)
+        self._text(painter, QRectF(rect.left(), self.height() - 23, rect.width(), 20),
+                   f"橙色虚线：已选迭代 {self.best_iteration or '—'} · 曲线包含早停等待轮次")

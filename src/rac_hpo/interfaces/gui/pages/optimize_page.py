@@ -121,7 +121,14 @@ class OptimizePage(QWidget):
         self.seed_spin = QSpinBox()
         self.seed_spin.setRange(0, 2147483647)
         self.seed_spin.setValue(42)
-        for index, (title, widget) in enumerate((('搜索算法', self.algorithm_combo), ('次数上限', self.trials_spin), ('时间预算', self.timeout_spin), ('随机种子', self.seed_spin))):
+        self.trial_timeout_spin = QDoubleSpinBox()
+        self.trial_timeout_spin.setRange(0, 86400)
+        self.trial_timeout_spin.setDecimals(3)
+        self.trial_timeout_spin.setSpecialValueText('不限时')
+        self.trial_timeout_spin.setSuffix(' 秒')
+        self.trial_timeout_spin.setAccessibleName('单次训练限时')
+        self.trial_timeout_spin.setToolTip('包含基线。树迭代和评估边界检查预算，记录超时量；0 表示不限时。')
+        for index, (title, widget) in enumerate((('搜索算法', self.algorithm_combo), ('次数上限', self.trials_spin), ('时间预算', self.timeout_spin), ('随机种子', self.seed_spin), ('单次训练限时', self.trial_timeout_spin))):
             row, column = divmod(index, 2)
             label = QLabel(title)
             label.setBuddy(widget)
@@ -260,7 +267,11 @@ class OptimizePage(QWidget):
         self.drawer.view_experiment_requested.connect(self.history_requested)
 
     def _start(self):
-        self.start_requested.emit(self.algorithm_combo.currentData(), {'optimization': {'max_trials': self.trials_spin.value(), 'timeout_seconds': self.timeout_spin.value()}, 'experiment': {'seed': self.seed_spin.value()}})
+        self.start_requested.emit(self.algorithm_combo.currentData(), {
+            'optimization': {'max_trials': self.trials_spin.value(),
+                             'timeout_seconds': self.timeout_spin.value(),
+                             'trial_timeout_seconds': self.trial_timeout_spin.value() or None},
+            'experiment': {'seed': self.seed_spin.value()}})
 
     def set_data_context(self, dataset):
         self.new_task_label.setText(f'新任务数据：{dataset}；查看历史不会更改新任务配置。')
@@ -292,7 +303,8 @@ class OptimizePage(QWidget):
             )
 
     def set_busy(self, busy, cancellable=False):
-        for widget in (self.start_button, self.algorithm_combo, self.trials_spin, self.timeout_spin, self.seed_spin):
+        for widget in (self.start_button, self.algorithm_combo, self.trials_spin, self.timeout_spin,
+                       self.seed_spin, self.trial_timeout_spin):
             widget.setEnabled(not busy)
         self.cancel_button.setEnabled(cancellable)
 

@@ -1,6 +1,22 @@
 # 智训引擎 · 工业模型训练与超参数优化
 
+<<<<<<< HEAD
 使用指南：[跟着做（实操手册）](docs/PRACTICAL_GUIDE.md) · [中文用户手册](docs/USER_MANUAL.md) · [RAC-HPO 算法详解](docs/ALGORITHM_GUIDE.md)。覆盖当前七页工作台、回归与分类训练、CLI、离线闭环和结果解读。
+=======
+竞赛 V2 已接入官方 Harness SDK 1.0.2 的训练和预测回调。提交候选按赛事要求使用 Linux/amd64 单镜像未压缩 tar，已完成本地真实模型联调、公开验证对照和禁网容器验收。赛事宿主实际结果以用户发起的试运行为准。见 [首次试运行预检](docs/submission_preflight.md)。
+
+竞赛续训已接入 `--policy rac_hpo`，支持 A/B/C 每项最多 10 轮 CPU 续训。Linux amd64 续训镜像默认启用 RAC-HPO，运行说明和公开验证结果见 [竞赛续训镜像](docs/CONTEST_HARNESS.md)。
+
+竞赛续训支持显式配置 PyTRIO Sampler，见 [运行与挂载说明](docs/CONTEST_HARNESS.md#pytrio-sampler-模式)。
+
+竞赛续训镜像的构建、输入挂载与预测命令见 [竞赛续训镜像](docs/CONTEST_HARNESS.md)。
+
+初版 A/B/C 本地规则模拟实训各完成 10 轮真实检查点续训，使用独立 NumPy 1.26.4 环境。正式赛事平台启动和隐藏评测协议待核验。见 [初版运行指南](docs/CONTEST_SIMULATION.md) 和 [实训报告](docs/CONTEST_SIMULATION_REPORT.md)。
+
+使用指南：[中文用户手册](docs/USER_MANUAL.md) · [RAC-HPO 算法详解](docs/ALGORITHM_GUIDE.md)。覆盖当前七页工作台、回归与分类训练、CLI、离线闭环和结果解读。
+>>>>>>> 20aa64b (完成RAC-HPO阶段三算法优化)
+
+2026-11-07 增量增加回归训练/验证 MAE 差距、总体及工况 P95 绝对误差、真实验证学习曲线，以及可选的单次训练限时。CLI `train` / `optimize` 使用 `--trial-timeout 10`，GUI 训练和优化页提供同一控制。限时包括基线，按树迭代和评估边界协作检查，可能超过设定值并保存超时量。分类 `time_oof` 新增 50 个训练期阈值工作点及网格内 Pareto 标记。最终评估增加持久化的一次性执行保护，中断后保留执行标记。实测与限制见[本轮改进报告](docs/PROJECT_IMPROVEMENT_20261107.md)。
 
 新增工业数据审计与分类训练入口：工作台第七页“工业训练”和 CLI `industrial`。支持 AI4I / SECOM / Paderborn 独立适配，Random Forest / XGBoost / LightGBM，以及同目标、同预算的 Random / TPE / RAC-HPO。AI4I 为官方合成基准，不能称真实生产数据；SECOM 没有已核验工艺工况。当前交付范围与实际实验见 [工业训练报告](docs/INDUSTRIAL_TRAINING_REPORT.md)，其他来源的授权、本地导入和任务限制见 [来源审计](datasets/INDUSTRIAL_SOURCES.md)。
 

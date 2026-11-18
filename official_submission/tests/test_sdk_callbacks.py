@@ -111,7 +111,8 @@ class SDKCallbacksTest(unittest.TestCase):
 
     def run_round(self, dataset, *, number=1, incoming=None, option="conservative",
                   measure=True, corrupt_parent=False, model_callback=None, mounted_parent=None,
-                  source_metadata=False, transfer_enabled=True):
+                  source_metadata=False, transfer_enabled=True, parent_metric_override=None,
+                  candidate_metric_override=None):
         from baselines.data import read_dataset
         from baselines.model import Model
         from baselines.train import metrics
@@ -143,6 +144,8 @@ class SDKCallbacksTest(unittest.TestCase):
             "current_validation": {"metrics": metrics(parent_model, validation)},
             "state_path": str(incoming) if incoming else None,
         }
+        if parent_metric_override is not None:
+            start["current_validation"]["metrics"][key] = parent_metric_override
         replies = deque([start])
         sent = {}
         calls = []
@@ -179,8 +182,11 @@ class SDKCallbacksTest(unittest.TestCase):
                     self_test.assertEqual(child.meta["epochs"], parent_model.meta["epochs"] + params["epochs"])
                     self_test.assertEqual(child.meta["learning_rate"], params["learning_rate"])
                     self_test.assertEqual(child.meta["batch_size"], params["batch_size"])
+                    candidate_metrics = metrics(child, validation) if measure else {}
+                    if candidate_metric_override is not None:
+                        candidate_metrics[key] = candidate_metric_override
                     reply.update(type="candidate_response", artifact_id="candidate",
-                                 summary={"metrics": metrics(child, validation) if measure else {}})
+                                 summary={"metrics": candidate_metrics})
                 elif kind == "state_request":
                     state.mkdir()
                     for item in frame["files"]:
@@ -231,9 +237,8 @@ class SDKCallbacksTest(unittest.TestCase):
         else:
             rnd = Round.start(reader=host, writer=host)
             rnd.parent.root = parent.parent
-            with patch("contest_submission.WORKSPACE", root), patch.dict(
-                os.environ, {"RAC_TRANSFER_HISTORY": "1" if transfer_enabled else "0"}
-            ):
+            env_value = {} if transfer_enabled is None else {"RAC_TRANSFER_HISTORY": "1" if transfer_enabled else "0"}
+            with patch("contest_submission.WORKSPACE", root), patch.dict(os.environ, env_value, clear=transfer_enabled is None):
                 train(rnd)
         self.assertEqual(digest(parent), sha)
         self.assertEqual(list(sent), ["history_request", "model_request", "candidate_request", "state_request",
@@ -250,6 +255,98 @@ class SDKCallbacksTest(unittest.TestCase):
                 stored = json.loads((state / "rac-round.json").read_text())["records"][0]
                 self.assertIsNotNone(stored["candidate_metric"])
                 self.assertFalse(stored["validation_metadata_available"])
+                audit = json.loads((state / "selection-audit.jsonl").read_text().splitlines()[-1])
+                self.assertTrue(audit["gates"]["parent_metric_matches"])
+                self.assertTrue(audit["gates"]["candidate_metric_matches"])
+                self.assertEqual(audit["selected_artifact_id"], result["selected_artifact_id"])
+                self.assertEqual(audit["selected_sha256"], audit["candidate_sha256"] if audit["accepted"]
+                                 else audit["parent_sha256"])
+
+    def test_audit_distinguishes_recommendation_response_and_training(self):
+        from contest_submission import fit_epochs
+
+        for option in ("RAC", "conservative", "unparseable response"):
+            with self.subTest(option=option):
+                with patch("contest_submission.fit_epochs", wraps=fit_epochs) as trained:
+                    state, sent = self.run_round("A", option=option)
+                audit = json.loads((state / "selection-audit.jsonl").read_text().splitlines()[-1])
+                decision = audit["decision"]
+                self.assertEqual(decision["model_response"], option)
+                self.assertEqual(decision["model_response_valid"], option != "unparseable response")
+                self.assertEqual(decision["final_params"], sent["candidate_request"]["configuration"]["params"])
+                self.assertEqual(decision["training_proposal"]["epochs"], decision["final_params"]["epochs"])
+                self.assertEqual(trained.call_args.args[2], decision["final_params"]["epochs"])
+                self.assertEqual(trained.call_args.args[3], decision["training_proposal"])
+                self.assertGreaterEqual(audit["training_seconds"], 0)
+                self.assertIn("recommended_params", decision)
+                self.assertIn("history_usage", audit)
+
+    def test_transfer_rejects_changed_metadata_projection(self):
+        state, _ = self.run_round("A", measure=False, source_metadata=False)
+        next_state, _ = self.run_round("A", number=2, incoming=state, source_metadata=True)
+        saved = json.loads((next_state / "rac-round.json").read_text())
+        self.assertEqual([row["round"] for row in saved["records"]], [2])
+        self.assertEqual(saved["records"][0]["trace"]["transfer_history_rounds"], [])
+        self.assertEqual(saved["retired_archives"][0]["records"][0]["round"], 1)
+
+    def test_default_transfer_is_off_and_preserves_chain(self):
+        state, sent = self.run_round("A", option="RAC", transfer_enabled=None)
+        selected = sent["round_complete"]["record"]["selected_artifact_id"]
+        if selected != "candidate":
+            self.skipTest("local candidate was not accepted")
+        state, _ = self.run_round("A", number=2, incoming=state, mounted_parent=state.parent / "measured.npz",
+                                  transfer_enabled=None)
+        row = json.loads((state / "rac-round.json").read_text())["records"][0]
+        self.assertFalse(row["history_usage"]["transfer_enabled"])
+        self.assertEqual(row["trace"]["transfer_history_rounds"], [])
+        self.assertEqual(row["trace"]["requested_surrogate_mode"], "shadow")
+
+    def test_structured_model_response_and_training_cpu_are_audited(self):
+        option = json.dumps({"selected_option": "RAC", "reason_codes": ["history"], "risk": "low"})
+        state, sent = self.run_round("A", option=option, transfer_enabled=None)
+        row = json.loads((state / "rac-round.json").read_text())["records"][0]
+        self.assertEqual(row["decision"]["model_action"], "rac")
+        self.assertEqual(row["decision"]["reason_codes"], ["history"])
+        self.assertGreater(row["training_cpu_seconds"], 0)
+        self.assertIn("parent_regime_errors", row)
+        self.assertEqual(sent["round_complete"]["record"]["configuration"]["model_action"], "rac")
+
+    def test_skipped_round_does_not_reuse_same_parent_history(self):
+        state, _ = self.run_round("A", measure=False)
+        state, _ = self.run_round("A", number=3, incoming=state)
+        row = json.loads((state / "rac-round.json").read_text())
+        self.assertEqual([record["round"] for record in row["records"]], [3])
+        self.assertEqual(row["records"][0]["trace"]["history_rounds"], [])
+
+    def test_broken_archive_chain_is_preserved_but_not_used(self):
+        state, _ = self.run_round("A", measure=False)
+        state, _ = self.run_round("A", number=2, incoming=state, measure=False)
+        state_path = state / "rac-round.json"
+        saved = json.loads(state_path.read_text())
+        saved["archive"][0]["selected_sha256"] = "0" * 64
+        state_path.write_text(json.dumps(saved))
+        state, _ = self.run_round("A", number=3, incoming=state)
+        saved = json.loads((state / "rac-round.json").read_text())
+        self.assertEqual([record["round"] for record in saved["records"]], [3])
+        self.assertEqual(saved["records"][0]["trace"]["history_rounds"], [])
+        self.assertEqual(len(saved["retired_archives"][0]["records"]), 2)
+
+    def test_ten_rounds_close_the_recorded_parent_and_feedback_loop(self):
+        state = None
+        parent = self.packages["A"] / "checkpoint.npz"
+        methods = []
+        for number in range(1, 11):
+            state, sent = self.run_round("A", number=number, incoming=state, mounted_parent=parent, option="RAC")
+            row = json.loads((state / "selection-audit.jsonl").read_text().splitlines()[-1])
+            self.assertEqual(row["round"], number)
+            self.assertEqual(row["history_usage"]["archive_available"], number - 1)
+            if number > 1:
+                self.assertTrue(row["history_usage"]["same_parent_used_rounds"]
+                                or row["history_usage"]["transfer_used_rounds"])
+            methods.append(row["history_usage"]["search_method"])
+            if sent["round_complete"]["record"]["selected_artifact_id"] == "candidate":
+                parent = state.parent / "measured.npz"
+        self.assertIn("transfer_tpe", methods)
 
     def test_state_inherits_and_missing_measurement_keeps_parent(self):
         state, first = self.run_round("A", measure=False)
@@ -262,6 +359,47 @@ class SDKCallbacksTest(unittest.TestCase):
         records = json.loads((next_state / state_path.name).read_text())["records"]
         self.assertEqual([record["round"] for record in records], [1, 2])
         self.assertEqual(records[1]["trace"]["history_rounds"], [1])
+
+    def test_mismatched_host_scores_fail_closed_and_rejection_keeps_parent(self):
+        from rac_hpo.contest.packages import digest
+
+        for dataset, parent_value, candidate_value in (("A", .964337, .963501),
+                                                        ("C", 51.436545, 51.658574)):
+            with self.subTest(dataset=dataset):
+                parent = self.packages[dataset] / "checkpoint.npz"
+                state, sent = self.run_round(dataset, number=8, mounted_parent=parent,
+                                             parent_metric_override=parent_value,
+                                             candidate_metric_override=candidate_value)
+                self.assertEqual(sent["round_complete"]["record"]["selected_artifact_id"], "parent")
+                audit = [json.loads(line) for line in (state / "selection-audit.jsonl").read_text().splitlines()]
+                self.assertEqual(audit[-1]["parent_sha256"], digest(parent))
+                self.assertEqual(audit[-1]["selected_sha256"], digest(parent))
+                self.assertFalse(audit[-1]["accepted"])
+                next_state, _ = self.run_round(dataset, number=9, incoming=state, mounted_parent=parent)
+                next_audit = [json.loads(line) for line in (next_state / "selection-audit.jsonl").read_text().splitlines()]
+                self.assertEqual(len(next_audit), 2)
+                self.assertEqual(next_audit[1]["parent_sha256"], audit[0]["selected_sha256"])
+
+    def test_spoofed_host_improvement_does_not_override_measured_parent(self):
+        state, sent = self.run_round("A", parent_metric_override=0.0, candidate_metric_override=1.0)
+        self.assertEqual(sent["round_complete"]["record"]["selected_artifact_id"], "parent")
+        audit = json.loads((state / "selection-audit.jsonl").read_text().splitlines()[-1])
+        self.assertFalse(audit["gates"]["parent_metric_matches"])
+        self.assertFalse(audit["gates"]["candidate_metric_matches"])
+
+    def test_parent_chain_mismatch_after_rejection_stops_round(self):
+        state, sent = self.run_round("A", measure=False)
+        self.assertEqual(sent["round_complete"]["record"]["selected_artifact_id"], "parent")
+        with self.assertRaisesRegex(ValueError, "selected checkpoint"):
+            self.run_round("A", number=2, incoming=state, mounted_parent=state.parent / "measured.npz")
+
+    def test_changed_preprocessing_blocks_candidate(self):
+        def change_normalization(model, *args):
+            model.mean[0] += 1.0
+
+        with patch("contest_submission.fit_epochs", side_effect=change_normalization):
+            with self.assertRaisesRegex(ValueError, "preprocessing"):
+                self.run_round("A")
 
     def test_invalid_parent_digest_blocks_training(self):
         from contest_harness.errors import HarnessError

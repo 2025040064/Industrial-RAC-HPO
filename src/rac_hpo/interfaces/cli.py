@@ -22,6 +22,8 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--dataset", choices=["steel_energy", "cnc_milling_2025"])
         command.add_argument("--seed", type=int, default=42)
         command.add_argument("--estimators", type=int, default=300)
+        command.add_argument("--trial-timeout", type=float, default=None,
+                             help="Optional seconds per training call, including baseline; cooperative at iteration boundaries")
         if name == "optimize":
             command.add_argument("--algorithm", choices=["random", "grid", "tpe", "tpe_robust", "rac_hpo", "successive_halving", "hyperband"], default="tpe")
             command.add_argument("--max-trials", type=int, default=12)
@@ -113,6 +115,8 @@ def main(argv=None) -> int:
                 if arguments.command == "optimize":
                     overrides["optimization"] = {"max_trials": arguments.max_trials,
                                                  "timeout_seconds": arguments.timeout}
+                if arguments.trial_timeout is not None:
+                    overrides.setdefault("optimization", {})["trial_timeout_seconds"] = arguments.trial_timeout
 
                 def progress(event):
                     event = {key: item for key, item in event.items() if key != "trial"}

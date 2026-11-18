@@ -23,8 +23,8 @@ def evaluate(
 ) -> dict:
     truth = np.asarray(y_true, dtype=float)
     predicted = np.asarray(predictions, dtype=float)
-    regime_values = np.asarray(regimes)
-    group_values = np.asarray(groups)
+    regime_values = np.asarray(regimes, dtype=object)
+    group_values = np.asarray(groups, dtype=object)
     arrays = (truth, predicted, regime_values, group_values)
     if any(array.ndim != 1 for array in arrays):
         raise ValueError("truth, predictions, regimes and groups must be one-dimensional")
@@ -35,8 +35,8 @@ def evaluate(
     if pd.isna(regime_values).any() or pd.isna(group_values).any():
         raise ValueError("regimes and independent groups must not contain missing values")
     labels = regime_values.astype(str)
-    if any(not label.strip() for label in labels):
-        raise ValueError("regime labels must not be empty")
+    if any(not label.strip() for values in (labels, group_values.astype(str)) for label in values):
+        raise ValueError("regime and group labels must not be empty")
     errors = np.abs(truth - predicted)
     regime_metrics = {}
     for regime in sorted(set(labels)):
@@ -44,6 +44,7 @@ def evaluate(
         independent_groups = int(len(set(group_values[mask])))
         regime_metrics[regime] = {
             "mae": float(errors[mask].mean()),
+            "p95_absolute_error": float(np.quantile(errors[mask], .95)),
             "samples": int(mask.sum()),
             "independent_groups": independent_groups,
             "reliability": (
@@ -63,6 +64,7 @@ def evaluate(
             )
     metrics = {
         "overall_mae": float(errors.mean()),
+        "overall_p95_absolute_error": float(np.quantile(errors, .95)),
         "regimes": regime_metrics,
         "robust_objective": None,
         "worst_normalized_mae": None,

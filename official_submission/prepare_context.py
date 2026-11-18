@@ -22,6 +22,7 @@ BASELINE_CODE = {
 PROJECT_CODE = (
     "__init__.py", "_io.py", "contest/__init__.py", "contest/continuation.py",
     "contest/packages.py", "contest/policy.py", "contest/rac_policy.py",
+    "contest/stage3_controls.py", "contest/transfer_gate.py", "contest/bearing_feasibility.py", "contest/surrogate_evidence.py",
     "domain/__init__.py", "domain/metrics.py", "optimization/__init__.py",
 )
 SDK_FILES = ("pyproject.toml", "README.md", *(

@@ -2,10 +2,11 @@ import json
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QFormLayout, QLabel, QPlainTextEdit, QPushButton, QSpinBox, QVBoxLayout, QWidget,
+    QDoubleSpinBox, QFormLayout, QLabel, QPlainTextEdit, QPushButton, QSpinBox, QVBoxLayout, QWidget,
 )
 
 from ..widgets import card, fill_table, format_value, page_layout, secondary, table
+from ..charts import RegressionLearningCurve
 from ..workspace_widgets import CollapsiblePanel, MetricsGrid, PanelGrid, WorkspaceHeader
 
 
@@ -44,6 +45,14 @@ class TrainPage(QWidget):
         self.seed_spin.setValue(42)
         form.addRow("最大树数量", self.rounds_spin)
         form.addRow("随机种子", self.seed_spin)
+        self.trial_timeout_spin = QDoubleSpinBox()
+        self.trial_timeout_spin.setRange(0, 86400)
+        self.trial_timeout_spin.setDecimals(3)
+        self.trial_timeout_spin.setSpecialValueText("不限时")
+        self.trial_timeout_spin.setSuffix(" 秒")
+        self.trial_timeout_spin.setAccessibleName("单次训练限时")
+        self.trial_timeout_spin.setToolTip("在树迭代和评估边界检查，记录实际超时量。0 表示不限时。")
+        form.addRow("单次训练限时", self.trial_timeout_spin)
         self.config_panel.content_layout.addLayout(form)
         self.context_note = secondary("使用数据管理中选择的文件；实际训练配置随实验保存。")
         self.context_note.setWordWrap(True)
@@ -89,7 +98,11 @@ class TrainPage(QWidget):
         self.validation_section.content_layout.addWidget(self.panels)
         layout.addWidget(self.validation_section)
         self.diagnostics_section=CollapsiblePanel('预测诊断与模型解释')
-        self.diagnostics_section.content_layout.addWidget(secondary('暂无逐样本预测、残差或特征重要性读取接口。需要 sampleId、评估集、模型版本与已对齐的预测/实际值；当前仅展示已保存的验证聚合指标。'))
+        self.diagnostics_label = secondary('等待已保存的训练诊断。')
+        self.learning_curve = RegressionLearningCurve()
+        self.diagnostics_section.content_layout.addWidget(self.diagnostics_label)
+        self.diagnostics_section.content_layout.addWidget(self.learning_curve)
+        self.diagnostics_section.content_layout.addWidget(secondary('误差差距为训练与验证的描述性比较；验证集同时参与早停，泛化仍需独立评估。'))
         layout.addWidget(self.diagnostics_section)
         self.detail_panel = CollapsiblePanel("完整训练结果与复现信息")
         self.detail_panel.set_expanded(False)
@@ -122,6 +135,7 @@ class TrainPage(QWidget):
         self.start_requested.emit({
             "model": {"n_estimators": self.rounds_spin.value()},
             "experiment": {"seed": self.seed_spin.value()},
+            "optimization": {"trial_timeout_seconds": self.trial_timeout_spin.value() or None},
         })
 
     def reset_progress(self):
@@ -136,12 +150,14 @@ class TrainPage(QWidget):
         self.result_label.setText("新训练正在启动；等待后端保存真实结果。")
         self.duration_label.setText("实验总耗时：—；等待后端保存。")
         self.detail.clear()
+        self.diagnostics_label.setText("等待已保存的训练诊断。")
+        self.learning_curve.set_diagnostics({}, "")
         self.error_label.clear()
         self.error_label.hide()
         self.header.set_context("等待后端开始训练", "running")
 
     def set_busy(self, busy, cancellable=False):
-        for widget in (self.start_button, self.rounds_spin, self.seed_spin):
+        for widget in (self.start_button, self.rounds_spin, self.seed_spin, self.trial_timeout_spin):
             widget.setEnabled(not busy)
         self.cancel_button.setEnabled(cancellable)
 
@@ -173,6 +189,13 @@ class TrainPage(QWidget):
         self.metrics.set_metric("training_duration", f"{format_value(training_duration)} s" if training_duration is not None else "—")
         self.metrics.set_metric("iteration", format_value(result.get("best_iteration")))
         self.result_label.setText(f"{self.experiment_id or '—'} · 验证 MAE {format_value(mae)} {unit}")
+        diagnostics = result.get("training_diagnostics") or {}
+        self.diagnostics_label.setText(
+            f"训练 MAE {format_value(diagnostics.get('train_mae'))} {unit} · "
+            f"验证 − 训练 MAE {format_value(diagnostics.get('mae_gap'))} {unit}\n"
+            f"验证 P95 绝对误差 {format_value(metrics.get('overall_p95_absolute_error'))} {unit} · "
+            f"实际评估 {format_value(diagnostics.get('evaluated_iterations'))} 轮")
+        self.learning_curve.set_diagnostics(diagnostics, unit)
         self.duration_label.setText(f"实验总耗时：{format_value(result.get('duration_seconds'))} s · 包含初始化与产物处理")
         status = result.get("status") or "unknown"
         self.header.set_context(f"{self.experiment_id or '实验结果'} · {status}", status)

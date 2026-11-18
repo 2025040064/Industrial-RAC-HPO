@@ -2,6 +2,7 @@
 from collections.abc import Sequence
 
 import numpy as np
+import pandas as pd
 from sklearn.metrics import average_precision_score, confusion_matrix, f1_score, log_loss
 
 
@@ -72,10 +73,15 @@ def evaluate(y_true, predictions, probabilities, regimes=None, groups=None, *,
     # XGBoost emits float32 probabilities; preserve their probabilities while
     # removing sub-ulp row-sum drift before sklearn's float64 loss calculation.
     probabilities = probabilities / probabilities.sum(axis=1, keepdims=True)
-    regimes = np.asarray(regimes if regimes is not None else ["all"] * len(truth)).astype(str)
-    groups = np.asarray(groups if groups is not None else ["unknown"] * len(truth)).astype(str)
+    regimes = np.asarray(regimes if regimes is not None else ["all"] * len(truth), dtype=object)
+    groups = np.asarray(groups if groups is not None else ["unknown"] * len(truth), dtype=object)
     if regimes.shape != truth.shape or groups.shape != truth.shape:
         raise ValueError("classification regimes and groups must match target length")
+    if pd.isna(regimes).any() or pd.isna(groups).any():
+        raise ValueError("classification regimes and groups must not contain missing values")
+    regimes, groups = regimes.astype(str), groups.astype(str)
+    if any(not value.strip() for values in (regimes, groups) for value in values):
+        raise ValueError("classification regimes and groups must not contain empty labels")
     overall = _metrics(truth, predictions, probabilities, labels)
     result = {f"overall_{key}": overall[key] for key in ("balanced_accuracy", "f1_macro", "log_loss", "average_precision", "error")}
     result.update(task_type="classification", class_labels=[_scalar(label) for label in labels],

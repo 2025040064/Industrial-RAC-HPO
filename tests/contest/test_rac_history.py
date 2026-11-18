@@ -1,5 +1,6 @@
 from copy import deepcopy
 import unittest
+from unittest.mock import patch
 
 from rac_hpo.contest.rac_policy import ContestRACPolicy
 from rac_hpo.optimization.rac_hpo.search import RACSettings
@@ -31,6 +32,41 @@ class ContestRACHistoryTest(unittest.TestCase):
         self.assertEqual(trace["completed_history"], 1)
         self.assertEqual(trace["history_rounds"], [1])
         self.assertEqual([item["round"] for item in trace["excluded_history"]], [2, 3, 4, 5, 6])
+
+    def test_transfer_tpe_penalizes_cost_and_reports_usage(self):
+        first = {**deepcopy(self.record), "parent_objective": 1.0,
+                 "configuration": {"strategy": "uniform"}}
+        second = deepcopy(first)
+        second.update(round=2, training_seconds=4.0)
+        second["rac_params"]["epochs"] = 3
+        with patch.object(self.policy, "_fallback", return_value=first["rac_params"]) as fallback:
+            _, trace = self.policy.propose(self.metadata, [], transfer_records=[first, second], round_index=3)
+        observations = fallback.call_args.args[0]
+        self.assertLess(observations[0]["objective"], observations[1]["objective"])
+        self.assertEqual(trace["transfer_history_rounds"], [1, 2])
+        self.assertEqual(trace["transfer_cost_method"], "bounded_log_relative_seconds")
+
+    def test_transfer_cost_can_be_disabled_without_changing_observations(self):
+        policy = ContestRACPolicy("C", {"diagnostics": self.diagnostics}, transfer_cost_weight=0.0)
+        first = {**deepcopy(self.record), "parent_objective": 1.0,
+                 "configuration": {"strategy": "uniform"}}
+        second = deepcopy(first)
+        second.update(round=2, training_seconds=4.0)
+        second["rac_params"]["epochs"] = 3
+        with patch.object(policy, "_fallback", return_value=first["rac_params"]) as fallback:
+            _, trace = policy.propose(self.metadata, [], transfer_records=[first, second], round_index=3)
+        observations = fallback.call_args.args[0]
+        self.assertEqual(observations[0]["objective"], observations[1]["objective"])
+        self.assertEqual(trace["transfer_cost_weight"], 0.0)
+
+    def test_future_rounds_are_never_search_observations(self):
+        same = {**deepcopy(self.record), "round": 3}
+        transfer = {**deepcopy(self.record), "round": 4, "parent_objective": 1.0,
+                    "configuration": {"strategy": "uniform"}}
+        _, trace = self.policy.propose(self.metadata, [same], transfer_records=[transfer], round_index=3)
+        self.assertEqual(trace["history_rounds"], [])
+        self.assertEqual(trace["transfer_history_rounds"], [])
+        self.assertEqual(trace["method"], "checkpoint_reference")
 
     def test_cost_quality_falls_back_when_a_holdout_cost_spikes(self):
         trials = []

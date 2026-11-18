@@ -8,7 +8,7 @@ from time import perf_counter
 import optuna
 from optuna.trial import TrialState
 
-from rac_hpo.domain.schemas import OptimizationResult, TaskCancelled, TrainingResult
+from rac_hpo.domain.schemas import OptimizationResult, TaskCancelled, TrainingResult, TrainingTimeout
 from rac_hpo.optimization.baselines import SEARCH_METHODS, RESOURCE_METHODS, grid_candidates, resource_pruner
 from rac_hpo.optimization.robust_objective import apply_robust_metrics
 from rac_hpo.training.lightgbm_trainer import DEFAULT_PARAMS, validate_params
@@ -200,7 +200,8 @@ def optimize(
             if not math.isfinite(value) or value < 0:
                 raise ValueError("trial objective must be nonnegative and finite")
             record.update(status="completed", metrics=metrics, objective=value,
-                          best_iteration=trained.best_iteration)
+                          best_iteration=trained.best_iteration,
+                          training_diagnostics=deepcopy(trained.diagnostics))
             study.tell(optuna_trial, value)
             if result.best_value is None or value < result.best_value:
                 result.best_params = dict(params)
@@ -213,6 +214,10 @@ def optimize(
             record.update(status="cancelled", failure_reason=str(error))
             study.tell(optuna_trial, state=TrialState.FAIL)
             result.status = "cancelled"
+        except TrainingTimeout as error:
+            record.update(failure_reason=str(error), failure_kind="training_timeout",
+                          timeout=error.details)
+            study.tell(optuna_trial, state=TrialState.FAIL)
         except Exception as error:
             record["failure_reason"] = f"{type(error).__name__}: {error}"
             study.tell(optuna_trial, state=TrialState.FAIL)
