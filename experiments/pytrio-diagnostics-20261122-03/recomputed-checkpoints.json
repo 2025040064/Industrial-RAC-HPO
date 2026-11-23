@@ -1,0 +1,96 @@
+{
+  "source": "historical local SDK experiment, not platform screenshots",
+  "rows": [
+    {
+      "task": "A",
+      "round": 3,
+      "group": "R3",
+      "metric": "macro_f1",
+      "parent_value": 0.7176878592653493,
+      "candidate_value": 0.7182721304563326,
+      "accepted": true,
+      "checks": {
+        "parent_sha": true,
+        "candidate_sha": true,
+        "parent_metric": true,
+        "candidate_metric": true
+      }
+    },
+    {
+      "task": "B",
+      "round": 4,
+      "group": "R3",
+      "metric": "rmse",
+      "parent_value": 681.1598326043113,
+      "candidate_value": 638.381423875188,
+      "accepted": false,
+      "checks": {
+        "parent_sha": true,
+        "candidate_sha": true,
+        "parent_metric": true,
+        "candidate_metric": true
+      }
+    },
+    {
+      "task": "B",
+      "round": 5,
+      "group": "R3",
+      "metric": "rmse",
+      "parent_value": 681.1598326043113,
+      "candidate_value": 669.1364348542113,
+      "accepted": true,
+      "checks": {
+        "parent_sha": true,
+        "candidate_sha": true,
+        "parent_metric": true,
+        "candidate_metric": true
+      }
+    },
+    {
+      "task": "B",
+      "round": 8,
+      "group": "R3",
+      "metric": "rmse",
+      "parent_value": 669.1364348542113,
+      "candidate_value": 647.1689965789153,
+      "accepted": false,
+      "checks": {
+        "parent_sha": true,
+        "candidate_sha": true,
+        "parent_metric": true,
+        "candidate_metric": true
+      }
+    },
+    {
+      "task": "C",
+      "round": 4,
+      "group": "R3",
+      "metric": "rmse",
+      "parent_value": 52.1899795575983,
+      "candidate_value": 53.47143123161282,
+      "accepted": false,
+      "checks": {
+        "parent_sha": true,
+        "candidate_sha": true,
+        "parent_metric": true,
+        "candidate_metric": true
+      }
+    },
+    {
+      "task": "C",
+      "round": 7,
+      "group": "R3",
+      "metric": "rmse",
+      "parent_value": 52.1899795575983,
+      "candidate_value": 52.324598301726716,
+      "accepted": false,
+      "checks": {
+        "parent_sha": true,
+        "candidate_sha": true,
+        "parent_metric": true,
+        "candidate_metric": true
+      }
+    }
+  ],
+  "failures": []
+}

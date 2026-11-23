@@ -1,0 +1,14 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "{\"request\": \"Select only RAC or conservative. Return JSON with selected_option, reason_codes and risk.\", \"allowed_reason_codes\": [\"history\", \"risk\", \"constraint\", \"cost\", \"uncertainty\", \"conservative\", \"other\"], \"allowed_risk\": [\"low\", \"medium\", \"high\", \"unknown\"], \"task\": \"A\", \"metric\": \"macro_f1\", \"metric_direction\": \"higher\", \"platform_parent_metric\": 0.7140297220788709, \"history\": [], \"same_parent_observations\": [], \"transfer_history_rounds\": [], \"parent_regime_errors\": {\"Ethanol\": 0.316017316017316, \"Ethylene\": 0.057722308892355745, \"Ammonia\": 0.00497512437810943, \"Acetaldehyde\": 1.0, \"Acetone\": 0.0037735849056603765, \"Toluene\": 0.33333333333333337}, \"surrogate_quality\": null, \"constraint_risks\": {\"bearing_guard_available\": false, \"predictions_are_not_acceptance\": true}, \"rac\": {\"learning_rate\": 0.003, \"batch_size\": 128, \"epochs\": 2, \"sampling_level\": 1}, \"conservative\": {\"learning_rate\": 0.0015, \"batch_size\": 128, \"epochs\": 1, \"sampling_level\": 1}, \"search\": \"checkpoint_reference\"}"
+    }
+  ],
+  "options": {
+    "max_tokens": 128,
+    "temperature": 0,
+    "enable_thinking": false
+  },
+  "task": "A"
+}

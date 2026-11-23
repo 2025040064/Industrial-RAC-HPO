@@ -1,0 +1,4 @@
+FROM industrial-rac-hpo:stage3-20261118-01-amd64
+COPY contest_submission.py /app/contest_submission.py
+COPY stage3_controls.py /app/rac_hpo/contest/stage3_controls.py
+COPY source-files.json /app/source-files.json

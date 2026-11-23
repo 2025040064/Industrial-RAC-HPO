@@ -18,7 +18,7 @@ from rac_hpo.contest.continuation import evaluate_diagnostics, evaluate_primary,
 from rac_hpo.contest.packages import digest, write_json
 from rac_hpo.contest.policy import accept_candidate
 from rac_hpo.contest.rac_policy import ContestRACPolicy
-from rac_hpo.contest.stage3_controls import bearing_deltas, controls, parse_decision
+from rac_hpo.contest.stage3_controls import bearing_deltas, controls, normalize_decision_text, parse_decision
 from rac_hpo.contest.surrogate_evidence import shadow_evidence
 
 
@@ -381,7 +381,8 @@ def train(rnd):
             or not math.isfinite(reported_cost) or reported_cost < 0):
         reported_cost = None
     decision = {"recommended_params": recommended_params, "recommended_proposal": recommended_proposal,
-                "model_response": raw_answer, "model_response_valid": parsed["valid"],
+                "model_response": raw_answer, "normalized_response": normalize_decision_text(raw_answer),
+                "model_response_valid": parsed["valid"],
                 "reason_codes": parsed["reason_codes"], "risk": parsed["risk"], "response_format": parsed["format"],
                 "model_id": model_name, "token_usage": token_usage, "cost": reported_cost,
                 "model_latency_seconds": model_latency,

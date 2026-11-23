@@ -1,0 +1,340 @@
+{
+  "context": {
+    "dataset": "B",
+    "parent_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+    "train_sha256": "sha256:71b2663fffd3d7ef6dca8a7b3feb31c3feb96c57f385335d03041a5fa431054a",
+    "validation_sha256": "sha256:23673a66bc22a166bf2f47b18f9c9d594f7e66a9aad88ddbccbcaea2310d9eb3",
+    "groups_sha256": "70ef853bdefadfb53978394cf3f6b2b1b4501c0595eaee511a0274e06ee5568c",
+    "history_protocol": "contest-sdk-history-v2",
+    "metric": "rmse",
+    "direction": "lower"
+  },
+  "round_index": 1,
+  "records": [
+    {
+      "round": 1,
+      "rac_params": {
+        "learning_rate": 0.0015,
+        "batch_size": 128,
+        "epochs": 1,
+        "sampling_level": 1
+      },
+      "diagnostics": {
+        "overall": {
+          "samples": 1679,
+          "mae": 554.1075225973887
+        }
+      },
+      "history_protocol": "contest-sdk-history-v2",
+      "parent_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+      "selected_sha256": "ee13edf8a395c4c58c6b90a1855e7a02960cff8d056e5d1074f20e278d5a8894",
+      "parent_regime_errors": {
+        "overall": 563.1058414514887
+      },
+      "parent_bearing_rmse": {},
+      "robust_objective": 0.9840201997536631,
+      "parent_objective": 0.9999999999822413,
+      "training_seconds": 0.003990791999967769,
+      "training_cpu_seconds": 0.003980999999999568,
+      "bearing_comparison": {
+        "feasible": null,
+        "delta_rmse": {},
+        "reason": "missing_or_incompatible_bearings"
+      },
+      "parent_metric": 681.1598326043113,
+      "candidate_metric": 667.0837208069205,
+      "accepted": true,
+      "bearing_gate": null,
+      "validation_metadata_available": false,
+      "artifact_id": "candidate",
+      "candidate_sha256": "ee13edf8a395c4c58c6b90a1855e7a02960cff8d056e5d1074f20e278d5a8894",
+      "local_parent_metric": 681.1598326043113,
+      "local_candidate_metric": 667.0837208069205,
+      "gates": {
+        "parent_metric_matches": true,
+        "candidate_metric_matches": true,
+        "platform_primary_improved": true,
+        "local_primary_improved": true,
+        "bearing_gate": null,
+        "objective_improved": true
+      },
+      "reason": "Platform primary metric and local fixed robustness objective improved.",
+      "selected_artifact_id": "candidate",
+      "model_call_id": "diagnostic-replayed-real-sample",
+      "history_ids": [],
+      "trace": {
+        "method": "checkpoint_reference",
+        "completed_history": 0,
+        "algorithm_version": "rac-hpo-0.2.0",
+        "predicted_cost_seconds": null,
+        "surrogate_mode": "shadow",
+        "surrogate_shadow_rank": false,
+        "surrogate_actual_proposal": false,
+        "reason": "insufficient_history",
+        "params": {
+          "learning_rate": 0.003,
+          "batch_size": 128,
+          "epochs": 2,
+          "sampling_level": 1
+        },
+        "decision_seed": 42,
+        "group_error": "mae",
+        "transfer_mode": "off",
+        "transfer_gate": {
+          "reason": "disabled",
+          "used": false,
+          "eligible_count": 0,
+          "excluded": []
+        },
+        "requested_surrogate_mode": "shadow",
+        "surrogate_activation_reason": null,
+        "requested_cost_mode": "off",
+        "cpu_cost_history_ready": false,
+        "cost_prediction_source": "training_wall_seconds_diagnostic_only",
+        "bearing_mode": "off",
+        "bearing_activation_reason": null,
+        "history_rounds": [],
+        "excluded_history": [],
+        "transfer_history_rounds": [],
+        "shadow_activation_evidence": {
+          "passed": false,
+          "reason": "insufficient_matched_shadow_trials",
+          "observations": 0,
+          "rounds": []
+        }
+      },
+      "configuration": {
+        "params": {
+          "learning_rate": 0.0015,
+          "batch_size": 128,
+          "epochs": 1,
+          "sampling_level": 1
+        },
+        "model_action": "conservative",
+        "strategy": "uniform",
+        "parent_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+        "cpu_threads": 1
+      },
+      "decision": {
+        "recommended_params": {
+          "learning_rate": 0.003,
+          "batch_size": 128,
+          "epochs": 2,
+          "sampling_level": 1
+        },
+        "recommended_proposal": {
+          "learning_rate": 0.003,
+          "batch_size": 128,
+          "epochs": 2,
+          "reason": "RAC-HPO decision: checkpoint_reference (insufficient_history).",
+          "strategy": "uniform"
+        },
+        "model_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}<|im_end|>",
+        "normalized_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}",
+        "model_response_valid": true,
+        "reason_codes": [
+          "constraint",
+          "risk"
+        ],
+        "risk": "high",
+        "response_format": "json",
+        "model_id": null,
+        "token_usage": {},
+        "cost": null,
+        "model_latency_seconds": 3.0041992431506515e-05,
+        "prompt_sha256": "55fcd40b01bfde9bd0aa044831dad269f4090160d816ad4e0636628d1f7a6cec",
+        "model_action": "conservative",
+        "final_params": {
+          "learning_rate": 0.0015,
+          "batch_size": 128,
+          "epochs": 1,
+          "sampling_level": 1
+        },
+        "training_proposal": {
+          "learning_rate": 0.0015,
+          "batch_size": 128,
+          "epochs": 1,
+          "reason": "RAC-HPO decision: checkpoint_reference (insufficient_history).",
+          "strategy": "uniform",
+          "sampling_level": 1
+        }
+      },
+      "history_usage": {
+        "same_parent_available": 0,
+        "same_parent_used_rounds": [],
+        "same_parent_valid_rounds": [],
+        "archive_available": 0,
+        "transfer_candidates": 0,
+        "transfer_enabled": false,
+        "transfer_used_rounds": [],
+        "excluded_history": [],
+        "search_method": "checkpoint_reference"
+      },
+      "elapsed_seconds": 0.6051127499958966
+    }
+  ],
+  "archive": [
+    {
+      "round": 1,
+      "rac_params": {
+        "learning_rate": 0.0015,
+        "batch_size": 128,
+        "epochs": 1,
+        "sampling_level": 1
+      },
+      "diagnostics": {
+        "overall": {
+          "samples": 1679,
+          "mae": 554.1075225973887
+        }
+      },
+      "history_protocol": "contest-sdk-history-v2",
+      "parent_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+      "selected_sha256": "ee13edf8a395c4c58c6b90a1855e7a02960cff8d056e5d1074f20e278d5a8894",
+      "parent_regime_errors": {
+        "overall": 563.1058414514887
+      },
+      "parent_bearing_rmse": {},
+      "robust_objective": 0.9840201997536631,
+      "parent_objective": 0.9999999999822413,
+      "training_seconds": 0.003990791999967769,
+      "training_cpu_seconds": 0.003980999999999568,
+      "bearing_comparison": {
+        "feasible": null,
+        "delta_rmse": {},
+        "reason": "missing_or_incompatible_bearings"
+      },
+      "parent_metric": 681.1598326043113,
+      "candidate_metric": 667.0837208069205,
+      "accepted": true,
+      "bearing_gate": null,
+      "validation_metadata_available": false,
+      "artifact_id": "candidate",
+      "candidate_sha256": "ee13edf8a395c4c58c6b90a1855e7a02960cff8d056e5d1074f20e278d5a8894",
+      "local_parent_metric": 681.1598326043113,
+      "local_candidate_metric": 667.0837208069205,
+      "gates": {
+        "parent_metric_matches": true,
+        "candidate_metric_matches": true,
+        "platform_primary_improved": true,
+        "local_primary_improved": true,
+        "bearing_gate": null,
+        "objective_improved": true
+      },
+      "reason": "Platform primary metric and local fixed robustness objective improved.",
+      "selected_artifact_id": "candidate",
+      "model_call_id": "diagnostic-replayed-real-sample",
+      "history_ids": [],
+      "trace": {
+        "method": "checkpoint_reference",
+        "completed_history": 0,
+        "algorithm_version": "rac-hpo-0.2.0",
+        "predicted_cost_seconds": null,
+        "surrogate_mode": "shadow",
+        "surrogate_shadow_rank": false,
+        "surrogate_actual_proposal": false,
+        "reason": "insufficient_history",
+        "params": {
+          "learning_rate": 0.003,
+          "batch_size": 128,
+          "epochs": 2,
+          "sampling_level": 1
+        },
+        "decision_seed": 42,
+        "group_error": "mae",
+        "transfer_mode": "off",
+        "transfer_gate": {
+          "reason": "disabled",
+          "used": false,
+          "eligible_count": 0,
+          "excluded": []
+        },
+        "requested_surrogate_mode": "shadow",
+        "surrogate_activation_reason": null,
+        "requested_cost_mode": "off",
+        "cpu_cost_history_ready": false,
+        "cost_prediction_source": "training_wall_seconds_diagnostic_only",
+        "bearing_mode": "off",
+        "bearing_activation_reason": null,
+        "history_rounds": [],
+        "excluded_history": [],
+        "transfer_history_rounds": [],
+        "shadow_activation_evidence": {
+          "passed": false,
+          "reason": "insufficient_matched_shadow_trials",
+          "observations": 0,
+          "rounds": []
+        }
+      },
+      "configuration": {
+        "params": {
+          "learning_rate": 0.0015,
+          "batch_size": 128,
+          "epochs": 1,
+          "sampling_level": 1
+        },
+        "model_action": "conservative",
+        "strategy": "uniform",
+        "parent_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+        "cpu_threads": 1
+      },
+      "decision": {
+        "recommended_params": {
+          "learning_rate": 0.003,
+          "batch_size": 128,
+          "epochs": 2,
+          "sampling_level": 1
+        },
+        "recommended_proposal": {
+          "learning_rate": 0.003,
+          "batch_size": 128,
+          "epochs": 2,
+          "reason": "RAC-HPO decision: checkpoint_reference (insufficient_history).",
+          "strategy": "uniform"
+        },
+        "model_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}<|im_end|>",
+        "normalized_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}",
+        "model_response_valid": true,
+        "reason_codes": [
+          "constraint",
+          "risk"
+        ],
+        "risk": "high",
+        "response_format": "json",
+        "model_id": null,
+        "token_usage": {},
+        "cost": null,
+        "model_latency_seconds": 3.0041992431506515e-05,
+        "prompt_sha256": "55fcd40b01bfde9bd0aa044831dad269f4090160d816ad4e0636628d1f7a6cec",
+        "model_action": "conservative",
+        "final_params": {
+          "learning_rate": 0.0015,
+          "batch_size": 128,
+          "epochs": 1,
+          "sampling_level": 1
+        },
+        "training_proposal": {
+          "learning_rate": 0.0015,
+          "batch_size": 128,
+          "epochs": 1,
+          "reason": "RAC-HPO decision: checkpoint_reference (insufficient_history).",
+          "strategy": "uniform",
+          "sampling_level": 1
+        }
+      },
+      "history_usage": {
+        "same_parent_available": 0,
+        "same_parent_used_rounds": [],
+        "same_parent_valid_rounds": [],
+        "archive_available": 0,
+        "transfer_candidates": 0,
+        "transfer_enabled": false,
+        "transfer_used_rounds": [],
+        "excluded_history": [],
+        "search_method": "checkpoint_reference"
+      },
+      "elapsed_seconds": 0.6051127499958966
+    }
+  ],
+  "retired_archives": []
+}

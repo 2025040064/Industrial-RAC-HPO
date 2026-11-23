@@ -281,6 +281,32 @@ class SDKCallbacksTest(unittest.TestCase):
                 self.assertIn("recommended_params", decision)
                 self.assertIn("history_usage", audit)
 
+    def test_terminal_marker_decisions_drive_training_and_preserve_audit(self):
+        for dataset in ("A", "B", "C"):
+            for option, expected in (("RAC<|im_end|>", "rac"),
+                                     ("conservative<|im_end|>", "conservative"),
+                                     ("RAC<|unknown|>", "conservative_invalid_response")):
+                with self.subTest(dataset=dataset, option=option):
+                    state, sent = self.run_round(dataset, option=option)
+                    audit = json.loads((state / "selection-audit.jsonl").read_text().splitlines()[-1])
+                    decision = audit["decision"]
+                    self.assertEqual(decision["model_response"], option)
+                    self.assertEqual(decision["model_action"], expected)
+                    self.assertEqual(decision["normalized_response"], option.removesuffix("<|im_end|>"))
+                    self.assertEqual(decision["model_response_valid"], expected != "conservative_invalid_response")
+                    self.assertEqual(decision["final_params"], sent["candidate_request"]["configuration"]["params"])
+                    if expected == "rac":
+                        self.assertEqual(decision["final_params"], decision["recommended_params"])
+                    else:
+                        self.assertEqual(decision["final_params"]["epochs"], 1)
+                        self.assertEqual(decision["final_params"]["learning_rate"],
+                                         max(1e-5, decision["recommended_params"]["learning_rate"] / 2))
+                    self.assertEqual(audit["accepted"], all((
+                        audit["gates"]["parent_metric_matches"], audit["gates"]["candidate_metric_matches"],
+                        audit["gates"]["platform_primary_improved"], audit["gates"]["local_primary_improved"],
+                        audit["gates"]["bearing_gate"] is not False, audit["gates"]["objective_improved"],
+                    )))
+
     def test_transfer_rejects_changed_metadata_projection(self):
         state, _ = self.run_round("A", measure=False, source_metadata=False)
         next_state, _ = self.run_round("A", number=2, incoming=state, source_metadata=True)
@@ -310,6 +336,27 @@ class SDKCallbacksTest(unittest.TestCase):
         self.assertGreater(row["training_cpu_seconds"], 0)
         self.assertIn("parent_regime_errors", row)
         self.assertEqual(sent["round_complete"]["record"]["configuration"]["model_action"], "rac")
+
+    def test_callback_prompt_contract_and_parameter_json_fail_closed(self):
+        choices = (
+            (json.dumps({"selected_option": "RAC", "reason_codes": ["history"], "risk": "low"}), "rac"),
+            (json.dumps({"learning_rate": 0.001, "batch_size": 128, "epochs": 1,
+                         "sampling_level": 1, "strategy": "uniform"}), "conservative_invalid_response"),
+        )
+        for dataset in ("A", "B", "C"):
+            for response, expected in choices:
+                with self.subTest(dataset=dataset, expected=expected):
+                    state, sent = self.run_round(dataset, option=response)
+                    request = json.loads(sent["model_request"]["messages"][0]["content"])
+                    self.assertIn("selected_option, reason_codes and risk", request["request"])
+                    self.assertIn("history", request["allowed_reason_codes"])
+                    self.assertIn("low", request["allowed_risk"])
+                    self.assertEqual(request["task"], dataset)
+                    audit = json.loads((state / "selection-audit.jsonl").read_text().splitlines()[-1])
+                    self.assertEqual(audit["decision"]["model_action"], expected)
+                    self.assertEqual(audit["decision"]["model_response_valid"], expected == "rac")
+                    self.assertEqual(audit["decision"]["final_params"],
+                                     sent["candidate_request"]["configuration"]["params"])
 
     def test_skipped_round_does_not_reuse_same_parent_history(self):
         state, _ = self.run_round("A", measure=False)

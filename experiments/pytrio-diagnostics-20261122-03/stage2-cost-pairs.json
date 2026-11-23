@@ -1,0 +1,106 @@
+{
+  "source": "experiments/ablation/stage2-20261118-02/statistics-01/runs.csv",
+  "scope": "historical stage 2 implementation, local SDK, not new image",
+  "comparison": "G3 cost on vs G2 cost off, both legacy transfer enabled",
+  "rows": [
+    {
+      "task": "A",
+      "seed": 101,
+      "metric": "macro_f1",
+      "cost_on": 0.7241169537549959,
+      "cost_off": 0.7268899315360345,
+      "difference_on_minus_off": -0.002772977781038688,
+      "ranking_inversions": 33,
+      "transfer_rounds_cost_on": 9,
+      "surrogate_rounds_cost_on": 0
+    },
+    {
+      "task": "A",
+      "seed": 202,
+      "metric": "macro_f1",
+      "cost_on": 0.7176878592653493,
+      "cost_off": 0.7171644944743796,
+      "difference_on_minus_off": 0.0005233647909697048,
+      "ranking_inversions": 25,
+      "transfer_rounds_cost_on": 9,
+      "surrogate_rounds_cost_on": 0
+    },
+    {
+      "task": "A",
+      "seed": 303,
+      "metric": "macro_f1",
+      "cost_on": 0.7245779140729599,
+      "cost_off": 0.7245779140729599,
+      "difference_on_minus_off": 0.0,
+      "ranking_inversions": 2,
+      "transfer_rounds_cost_on": 8,
+      "surrogate_rounds_cost_on": 0
+    },
+    {
+      "task": "B",
+      "seed": 101,
+      "metric": "rmse",
+      "cost_on": 668.4699649230527,
+      "cost_off": 668.4699649230527,
+      "difference_on_minus_off": 0.0,
+      "ranking_inversions": 37,
+      "transfer_rounds_cost_on": 7,
+      "surrogate_rounds_cost_on": 0
+    },
+    {
+      "task": "B",
+      "seed": 202,
+      "metric": "rmse",
+      "cost_on": 681.1598326043113,
+      "cost_off": 681.1598326043113,
+      "difference_on_minus_off": 0.0,
+      "ranking_inversions": 0,
+      "transfer_rounds_cost_on": 0,
+      "surrogate_rounds_cost_on": 2
+    },
+    {
+      "task": "B",
+      "seed": 303,
+      "metric": "rmse",
+      "cost_on": 676.9182750456557,
+      "cost_off": 676.9182750456557,
+      "difference_on_minus_off": 0.0,
+      "ranking_inversions": 47,
+      "transfer_rounds_cost_on": 5,
+      "surrogate_rounds_cost_on": 0
+    },
+    {
+      "task": "C",
+      "seed": 101,
+      "metric": "rmse",
+      "cost_on": 52.13248964056274,
+      "cost_off": 52.13248964056274,
+      "difference_on_minus_off": 0.0,
+      "ranking_inversions": 41,
+      "transfer_rounds_cost_on": 8,
+      "surrogate_rounds_cost_on": 0
+    },
+    {
+      "task": "C",
+      "seed": 202,
+      "metric": "rmse",
+      "cost_on": 52.80875628463003,
+      "cost_off": 52.0713844935319,
+      "difference_on_minus_off": 0.737371791098127,
+      "ranking_inversions": 48,
+      "transfer_rounds_cost_on": 8,
+      "surrogate_rounds_cost_on": 0
+    },
+    {
+      "task": "C",
+      "seed": 303,
+      "metric": "rmse",
+      "cost_on": 51.90430394695326,
+      "cost_off": 51.90430394695326,
+      "difference_on_minus_off": 0.0,
+      "ranking_inversions": 55,
+      "transfer_rounds_cost_on": 8,
+      "surrogate_rounds_cost_on": 0
+    }
+  ]
+}

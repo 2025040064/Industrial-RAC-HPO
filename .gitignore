@@ -4,6 +4,7 @@
 .workbuddy/
 .firecrawl/
 .DS_Store
+/.gitignore.save
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -40,5 +41,5 @@ dist/
 /docs/images/sidebar-mid-animation.png
 
 # RAC-HPO local experiment outputs
-/experiments/ablation/*-20261118-/
+/experiments/ablation/*-20261118-*/
 *.tar

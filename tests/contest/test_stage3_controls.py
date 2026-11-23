@@ -3,6 +3,25 @@ from rac_hpo.contest.stage3_controls import controls, parse_decision, bearing_de
 
 
 class Stage3ControlsTest(unittest.TestCase):
+    def test_known_terminal_marker_is_accepted_without_accepting_extra_content(self):
+        for raw, expected in (
+            ('RAC<|im_end|>', 'rac'),
+            (' conservative<|im_end|>  ', 'conservative'),
+            ('{"selected_option":"RAC","reason_codes":["history"],"risk":"low"}<|im_end|>', 'rac'),
+        ):
+            with self.subTest(raw=raw):
+                result = parse_decision(raw)
+                self.assertTrue(result['valid'])
+                self.assertEqual(result['action'], expected)
+        for raw in ('RAC<|unknown|>', 'RAC<|im_end|>extra', 'RAC<|im_end|><|im_end|>',
+                    'RAC and conservative<|im_end|>',
+                    '{"selected_option":"RAC"}<|im_end|>',
+                    '{"selected_option":"RAC","reason_codes":[],"risk":"low","learning_rate":0.1}<|im_end|>'):
+            with self.subTest(raw=raw):
+                result = parse_decision(raw)
+                self.assertFalse(result['valid'])
+                self.assertEqual(result['action'], 'conservative_invalid_response')
+
     def test_defaults_are_safe_and_invalid_switches_fail(self):
         c=controls({})
         self.assertEqual((c['transfer_mode'],c['surrogate_mode'],c['cost_mode'],c['bearing_mode']),

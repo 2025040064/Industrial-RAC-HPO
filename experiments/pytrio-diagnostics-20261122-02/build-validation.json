@@ -1,0 +1,19 @@
+{
+  "image_tag": "industrial-rac-hpo:parser-fix-20261122-01",
+  "image_id": "sha256:8ec045377604bc18244767883ac1d7293f6364cf23cf19e9d8a5388a2f68ecaa",
+  "parent_image_id": "sha256:9e76000a815336554e394002ea46bd2aced96b3a5cfebe81ddf1c2ab803a4d54",
+  "platform": "linux/amd64",
+  "archive_sha256": "6b00156891e086784da163efc317687b22672c941ab3dfe31d03a094de0df414",
+  "archive_bytes": 150218752,
+  "offline_build_from_base": "failed: dependencies unavailable under --network=none",
+  "overlay_build": "passed using verified local stage3 parent",
+  "tests": {
+    "contest_unittest": "59 total, 58 passed, 1 skipped",
+    "sdk_unittest": "20 passed",
+    "container_sdk": "4 passed including 9 A/B/C decision cases",
+    "saved_sample_replay": "9 A/B/C cases completed"
+  },
+  "live_sampler": "A request timed out after 120 seconds; no A/B/C remote results; charge status unknown",
+  "platform_trial": "not performed",
+  "historical_platform_image": "unverified"
+}

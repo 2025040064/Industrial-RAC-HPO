@@ -6,6 +6,12 @@ import math
 REASON_CODES = {'history', 'risk', 'constraint', 'cost', 'uncertainty', 'conservative', 'other'}
 
 
+def normalize_decision_text(raw):
+    if not isinstance(raw, str):
+        return None
+    return raw.strip().removesuffix('<|im_end|>').strip()
+
+
 def controls(env):
     transfer=env.get('RAC_TRANSFER_MODE')
     if transfer is None:
@@ -22,7 +28,7 @@ def controls(env):
 def parse_decision(raw):
     invalid={'action':'conservative_invalid_response','valid':False,'reason_codes':[],'risk':'unknown','format':'invalid'}
     if not isinstance(raw,str): return invalid
-    text=raw.strip()
+    text=normalize_decision_text(raw)
     if text.casefold() in {'rac','conservative'}:
         return {'action':text.casefold(),'valid':True,'reason_codes':[],'risk':'unknown','format':'legacy'}
     try: parsed=json.loads(text)

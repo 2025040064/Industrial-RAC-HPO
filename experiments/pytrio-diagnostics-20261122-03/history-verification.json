@@ -1,0 +1,280 @@
+{
+  "protocol_sha256": "01b1b7d51363ae5285e79ae33996e38fd8b4ec917e45a34b6d6f51b3e9bbff61",
+  "source": "previously completed paired run, not a new trial",
+  "runs": [
+    {
+      "task": "A",
+      "group": "R0-shadow",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 4,
+      "used_cpu_seconds": 3.014313,
+      "final_metrics": {
+        "accuracy": 0.885048231511254,
+        "macro_f1": 0.726366315676049
+      },
+      "counts": {
+        "accepted": 4,
+        "bearing_rejected": 0,
+        "objective_rejected": 6,
+        "rejected": 6
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "84e385f2edcdbb89756f90eb34e432ec0d2d849bf0d0358b4ab02197dd1ae128"
+    },
+    {
+      "task": "A",
+      "group": "R1",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 4,
+      "used_cpu_seconds": 3.01714,
+      "final_metrics": {
+        "accuracy": 0.885048231511254,
+        "macro_f1": 0.726366315676049
+      },
+      "counts": {
+        "accepted": 4,
+        "bearing_rejected": 0,
+        "objective_rejected": 6,
+        "rejected": 6
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "84e385f2edcdbb89756f90eb34e432ec0d2d849bf0d0358b4ab02197dd1ae128"
+    },
+    {
+      "task": "A",
+      "group": "R2",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 4,
+      "used_cpu_seconds": 3.0254380000000003,
+      "final_metrics": {
+        "accuracy": 0.885048231511254,
+        "macro_f1": 0.726366315676049
+      },
+      "counts": {
+        "accepted": 4,
+        "bearing_rejected": 0,
+        "objective_rejected": 6,
+        "rejected": 6
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "84e385f2edcdbb89756f90eb34e432ec0d2d849bf0d0358b4ab02197dd1ae128"
+    },
+    {
+      "task": "A",
+      "group": "R3",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 4,
+      "used_cpu_seconds": 3.037681,
+      "final_metrics": {
+        "accuracy": 0.885048231511254,
+        "macro_f1": 0.726366315676049
+      },
+      "counts": {
+        "accepted": 4,
+        "bearing_rejected": 0,
+        "objective_rejected": 6,
+        "rejected": 6
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "84e385f2edcdbb89756f90eb34e432ec0d2d849bf0d0358b4ab02197dd1ae128"
+    },
+    {
+      "task": "B",
+      "group": "R1",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 9,
+      "used_cpu_seconds": 6.9432030000000005,
+      "final_metrics": {
+        "mae": 548.4377908246128,
+        "rmse": 669.1364348542113
+      },
+      "counts": {
+        "rejected": 9,
+        "bearing_rejected": 7,
+        "objective_rejected": 9,
+        "accepted": 1
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "fa3d65e59e8e14e6652481ea0102dd0e75a3dfa853ac269f929a78980a94f9fe"
+    },
+    {
+      "task": "B",
+      "group": "R2",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 9,
+      "used_cpu_seconds": 6.842804,
+      "final_metrics": {
+        "mae": 548.4377908246128,
+        "rmse": 669.1364348542113
+      },
+      "counts": {
+        "rejected": 9,
+        "bearing_rejected": 7,
+        "objective_rejected": 9,
+        "accepted": 1
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "fa3d65e59e8e14e6652481ea0102dd0e75a3dfa853ac269f929a78980a94f9fe"
+    },
+    {
+      "task": "B",
+      "group": "R3",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 9,
+      "used_cpu_seconds": 6.950104,
+      "final_metrics": {
+        "mae": 548.4377908246128,
+        "rmse": 669.1364348542113
+      },
+      "counts": {
+        "rejected": 9,
+        "bearing_rejected": 7,
+        "objective_rejected": 9,
+        "accepted": 1
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "fa3d65e59e8e14e6652481ea0102dd0e75a3dfa853ac269f929a78980a94f9fe"
+    },
+    {
+      "task": "B",
+      "group": "R0-shadow",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 9,
+      "used_cpu_seconds": 7.247800000000001,
+      "final_metrics": {
+        "mae": 548.4377908246128,
+        "rmse": 669.1364348542113
+      },
+      "counts": {
+        "rejected": 9,
+        "bearing_rejected": 7,
+        "objective_rejected": 9,
+        "accepted": 1
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "fa3d65e59e8e14e6652481ea0102dd0e75a3dfa853ac269f929a78980a94f9fe"
+    },
+    {
+      "task": "C",
+      "group": "R2",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 60,
+      "used_cpu_seconds": 49.285092,
+      "final_metrics": {
+        "mae": 37.34905601394611,
+        "rmse": 52.1899795575983
+      },
+      "counts": {
+        "rejected": 9,
+        "bearing_rejected": 0,
+        "objective_rejected": 6,
+        "accepted": 1
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "2d9bfb691c4e8f5e625948da1a2c58b580b1f219796bb56983baf0b7252aa063"
+    },
+    {
+      "task": "C",
+      "group": "R3",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 60,
+      "used_cpu_seconds": 49.940172999999994,
+      "final_metrics": {
+        "mae": 37.34905601394611,
+        "rmse": 52.1899795575983
+      },
+      "counts": {
+        "rejected": 9,
+        "bearing_rejected": 0,
+        "objective_rejected": 6,
+        "accepted": 1
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "2d9bfb691c4e8f5e625948da1a2c58b580b1f219796bb56983baf0b7252aa063"
+    },
+    {
+      "task": "C",
+      "group": "R0-shadow",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 60,
+      "used_cpu_seconds": 52.353156999999996,
+      "final_metrics": {
+        "mae": 37.34905601394611,
+        "rmse": 52.1899795575983
+      },
+      "counts": {
+        "rejected": 9,
+        "bearing_rejected": 0,
+        "objective_rejected": 6,
+        "accepted": 1
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "2d9bfb691c4e8f5e625948da1a2c58b580b1f219796bb56983baf0b7252aa063"
+    },
+    {
+      "task": "C",
+      "group": "R1",
+      "seed": 4041,
+      "rounds": 10,
+      "budget_cpu_seconds": 60,
+      "used_cpu_seconds": 49.907769,
+      "final_metrics": {
+        "mae": 37.34905601394611,
+        "rmse": 52.1899795575983
+      },
+      "counts": {
+        "rejected": 9,
+        "bearing_rejected": 0,
+        "objective_rejected": 6,
+        "accepted": 1
+      },
+      "surrogate_attempts": 0,
+      "surrogate_used": 0,
+      "transfer_tpe_rounds": 0,
+      "final_sha256": "2d9bfb691c4e8f5e625948da1a2c58b580b1f219796bb56983baf0b7252aa063"
+    }
+  ],
+  "failures": [],
+  "rounds_checked": 120,
+  "cost_modes": [
+    "off"
+  ],
+  "limitations": [
+    "one seed per task and group",
+    "local SDK model stub",
+    "hidden test not evaluated"
+  ]
+}

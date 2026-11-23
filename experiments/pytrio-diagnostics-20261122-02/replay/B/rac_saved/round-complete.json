@@ -1,0 +1,26 @@
+{
+  "type": "round_complete",
+  "record": {
+    "selected_artifact_id": "candidate",
+    "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+    "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+    "reason": "Platform primary metric and local fixed robustness objective improved.",
+    "configuration": {
+      "params": {
+        "learning_rate": 0.003,
+        "batch_size": 128,
+        "epochs": 2,
+        "sampling_level": 1
+      },
+      "model_action": "rac",
+      "strategy": "uniform",
+      "parent_sha256": "c7d819fcee9d25459c583b5ffdb35593d4a47b524ed152d0226bf81a283314b4",
+      "cpu_threads": 1
+    },
+    "history_ids": [],
+    "model_call_ids": [
+      "offline-call-1"
+    ],
+    "seed": 42
+  }
+}
