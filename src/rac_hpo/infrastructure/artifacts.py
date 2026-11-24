@@ -57,7 +57,6 @@ def _git_commit(root: Path) -> str:
 
 
 def environment_snapshot(root: Path) -> dict:
-<<<<<<< HEAD
     from rac_hpo.runtime import build_info
 
     # The packaged app has no checkout; its commit and source digest were
@@ -69,7 +68,6 @@ def environment_snapshot(root: Path) -> dict:
     else:
         code_commit = distribution.get("code_commit", "unversioned")
         source_sha256 = distribution.get("source_sha256", "unknown")
-=======
     # The output workspace may be isolated from the imported implementation.
     # Hash the loaded package as well as the workspace's source/config snapshot.
     package = Path(__file__).resolve().parents[1]
@@ -77,11 +75,6 @@ def environment_snapshot(root: Path) -> dict:
     for path in sorted(package.rglob("*.py")):
         implementation_digest.update(path.relative_to(package).as_posix().encode())
         implementation_digest.update(path.read_bytes())
-    commit = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True, check=False,
-        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-    )
->>>>>>> 20aa64b (完成RAC-HPO阶段三算法优化)
     packages = ("numpy", "pandas", "scipy", "scikit-learn", "lightgbm", "optuna",
                 "PySide6", "matplotlib", "pydantic", "PyYAML")
     versions = {}
@@ -95,7 +88,15 @@ def environment_snapshot(root: Path) -> dict:
     snapshot = {
         "python": sys.version, "platform": platform.platform(),
         "processor": platform.processor(), "cpu_count": os.cpu_count(),
-
+        "packages": versions,
+        "all_distributions": {item.metadata["Name"]: item.version
+                              for item in importlib.metadata.distributions()
+                              if item.metadata["Name"]},
+        "code_commit": code_commit,
+        "source_sha256": source_sha256,
+        "implementation_package_path": str(package),
+        "implementation_package_sha256": implementation_digest.hexdigest(),
+        "captured_at": utc_now(),
     }
     if distribution is not None:
         snapshot["distribution"] = distribution
