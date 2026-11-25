@@ -70,3 +70,44 @@
 
 - 隐藏集 A/B/C 的最终指标（accuracy / macro_f1 / MAE / RMSE / NASA）未在 API 报告中暴露，需要从平台网页"查看训练记录"或"查看报告"入口获取。
 - 两道未通过门禁（材料完整性、实验记录完整性）的具体缺失项，需要对照平台规则补齐。
+
+---
+
+## 追加取证（2026-11-25 21:52，平台 API 实测）
+
+上一节"待补充"两项已分别查清，取证方法与字段位置见 [`docs/PLATFORM_API_FIELDS.md`](PLATFORM_API_FIELDS.md)。
+
+### 1. 两道门禁为何不通过（重大修正）
+
+不是"上传的文件不齐"，而是**平台从未审核 v8**：
+
+| 字段（`GET /api/v1/submissions`） | v8 实测值 |
+|---|---|
+| `compliance_status` | `unreviewed` |
+| `compliance_reason` | `""`（空） |
+| `materials_complete` | `null`（未评审） |
+| `base_model_confirmed` | `false` |
+
+- `experiment_records_complete=false` **与记录是否跑完无关**：`training_records` 中 A/B/C 三项均为
+  `record_complete=true`、各 10 轮。最可疑来源是 `workspace_suite.datasets` 的
+  `label_status`：**A=draft、C=draft**（B=approved）。
+- `complete_materials_and_reproducibility=false` **与少交文件无关**：`materials_complete=null` 且
+  `compliance_status=unreviewed`，未审核状态下该门禁默认不通过。
+- 平台历史上唯一给出文字拒稿的是 v7（`da5f98ed…`）：「当前提交不符合赛题续训要求。请基于官方
+  baseline 及平台提供的父检查点实现真实续训，修改后重新上传镜像并提交新版本；不得从头训练
+  另一套模型替代 baseline。」——人工复审对 v8 同样适用，风险高于材料问题。
+
+### 2. 隐藏集逐任务指标：确认 API 不存在
+
+`report` 字段为 `null`；`training_records[].rounds[].validation_metrics` 仅含公开验证集指标。
+追加探测 `/runs/{id}/metrics`、`/records`、`/result`、`/score`、`/report/A`、`?task=A` 均 404 或
+返回同一份报告。结论：只在平台网页「查看报告」或评审后台可见。
+
+### 3. 新增发现：一个零分分项
+
+`objective_components`：`mean_gain=3.223`、`recovery=3.373`、`retention=5`、
+`worst_stage=0.176`，而 **`resource_efficiency=0`**。这是唯一为零的分项，可能口径为镜像体积
+（143.3 MB）或 CPU 用时，是最容易补分的方向。
+
+原始响应已存档：`experiments/platform-runs/submissions-list.json`、
+`experiments/platform-runs/83d226c33445ca8176ec66cf29885916-report-full.json`。

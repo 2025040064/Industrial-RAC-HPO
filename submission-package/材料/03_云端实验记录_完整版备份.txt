@@ -1,0 +1,9 @@
+云端实验记录（SwanLab，团队 2025040064）
+
+决策采样器微调实验：
+https://swanlab.cn/@2025040064/industrial-rac-hpo-sft
+
+Harness 续训与评估实验：
+https://swanlab.cn/@2025040064/industrial-harness-sft
+
+覆盖训练、微调、调参与评估全流程，逐轮指标与日志可在线复核。

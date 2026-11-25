@@ -52,3 +52,6 @@ dist/
 /experiments/s2-ablation-b-20261125/results/
 /experiments/s2-ablation-b-20261125/replay/
 /experiments/s2-ablation-b-20261125/*.log
+
+# 仅本地产物：143.3MB 镜像归档（超 GitHub 单文件限制，提交走网盘链接）
+submission-package/材料/08_harness-selection-v8-B.tar
