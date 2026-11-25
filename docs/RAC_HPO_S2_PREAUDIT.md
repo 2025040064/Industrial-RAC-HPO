@@ -91,7 +91,7 @@ v6 里 `warmup_trials = minimum_history = 8`（rac_policy.py:112）。
 ### 4.2 不可复现部分（明确记录，不假定）
 
 1. **平台 `rnd.model()` 是平台 RPC**（SDK `round.py` 经 `_rpc("model_request")` 转发到 Sampler 服务），本地无法复现该 RPC 通道；本地用 PyTRIO 直接 `SamplingClient.sample` 对同一 sampler path 做决策替代，**决策文本可能与平台不同**。
-2. **平台主指标 `old`/`new` 来自隐藏集**（`submission.get("summary")`），本地仅有公开验证集，故接纳门的 `improved` 判定口径不同（本地用公开验证 RMSE）。
+2. **平台主指标 `old`/`new` 来自公开验证集**（`old = platform_metric(rnd.frame["current_validation"])`、`new = platform_metric(submission.get("summary"))`，均非隐藏集；隐藏集仅在最终 `report.metrics` 评测一次）。本地也用公开验证 RMSE，故接纳门的 `improved` 判定口径**与平台一致**。（此条已于 S3.0 §5.2 修正：此前"old/new 来自隐藏集"表述有误。）
 3. **平台 `validation_metrics` 的 keep 轮语义无法从 report 唯一确定**：round 5/6/7 的 vm 精确相同（648.8518×3）、round 8 为 651.4012，怀疑平台对 keep 轮存在缓存/复用，但无法从 report 证实。**此项标注为不确定，不作假定。**
 
 ### 4.3 动态决策复现（真实 PyTRIO + RAC-HPO）
