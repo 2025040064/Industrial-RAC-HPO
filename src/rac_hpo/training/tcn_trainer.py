@@ -30,6 +30,11 @@ DEFAULT_TCN_MODEL_CONFIG = {
     "batch_size": 64,
     "rul_cap": None,
     "device": "auto",
+    # Clip validation targets for early stopping so selection happens in the same
+    # target space the network was trained on. Final metrics still use raw labels.
+    "clip_validation_targets": True,
+    # None derives the depth from window_size; an int overrides it for ablations.
+    "num_blocks": None,
 }
 
 DEFAULT_TCN_PARAMS = {
@@ -45,6 +50,32 @@ TCN_SEARCH_SPACE = {
     "learning_rate": {"type": "float", "low": 1e-4, "high": 1e-2, "log": True},
     "dropout": {"type": "float", "low": 0.0, "high": 0.4},
 }
+
+_KERNEL_SIZE = 3
+_MAX_BLOCKS = 6
+_MIN_BLOCKS = 2
+
+
+def receptive_field(blocks: int, kernel_size: int = _KERNEL_SIZE) -> int:
+    """Receptive field of ``blocks`` residual blocks with dilations 1, 2, 4, ...
+
+    Each block holds two dilated convolutions, so block ``i`` (0-based, dilation
+    ``2**i``) adds ``2 * (kernel_size - 1) * 2**i`` timesteps.
+    """
+    if isinstance(blocks, bool) or not isinstance(blocks, int) or blocks < 1:
+        raise ValueError("blocks must be a positive integer")
+    span = sum(2 * (kernel_size - 1) * (2 ** i) for i in range(blocks))
+    return 1 + span
+
+
+def blocks_for_window(window_size: int, kernel_size: int = _KERNEL_SIZE) -> int:
+    """Smallest depth whose receptive field covers ``window_size`` (bounded)."""
+    if isinstance(window_size, bool) or not isinstance(window_size, int) or window_size < 1:
+        raise ValueError("window_size must be a positive integer")
+    needed = _MIN_BLOCKS
+    while receptive_field(needed, kernel_size) < window_size and needed < _MAX_BLOCKS:
+        needed += 1
+    return needed
 
 
 def validate_params(params: dict[str, Any]) -> None:
@@ -88,18 +119,28 @@ def _resolve_device(torch_mod, requested: str):
     return torch_mod.device(requested)
 
 
-def _build_tcn_module(torch_mod, nn, in_channels: int, tcn_channels: int, dropout: float):
+def _group_norm(nn, channels: int, max_groups: int = 8):
+    """GroupNorm instead of BatchNorm: correct at batch size 1 and on tiny units."""
+    for groups in (max_groups, 4, 2, 1):
+        candidate = min(groups, channels)
+        if channels % candidate == 0:
+            return nn.GroupNorm(candidate, channels)
+    return nn.GroupNorm(1, channels)
+
+
+def _build_tcn_module(torch_mod, nn, in_channels: int, tcn_channels: int, dropout: float,
+                      blocks: int):
     class TemporalResidualBlock(nn.Module):
-        def __init__(self, c_in: int, c_out: int, dilation: int, kernel_size: int = 3):
+        def __init__(self, c_in: int, c_out: int, dilation: int, kernel_size: int = _KERNEL_SIZE):
             super().__init__()
             self.pad = (kernel_size - 1) * dilation
             self.conv1 = nn.Conv1d(c_in, c_out, kernel_size, padding=self.pad, dilation=dilation)
-            self.bn1 = nn.BatchNorm1d(c_out)
+            self.bn1 = _group_norm(nn, c_out)
             self.act1 = nn.ReLU()
             self.drop1 = nn.Dropout(dropout)
 
             self.conv2 = nn.Conv1d(c_out, c_out, kernel_size, padding=self.pad, dilation=dilation)
-            self.bn2 = nn.BatchNorm1d(c_out)
+            self.bn2 = _group_norm(nn, c_out)
             self.act2 = nn.ReLU()
             self.drop2 = nn.Dropout(dropout)
 
@@ -118,11 +159,15 @@ def _build_tcn_module(torch_mod, nn, in_channels: int, tcn_channels: int, dropou
     class CausalTCNRegressor(nn.Module):
         def __init__(self):
             super().__init__()
-            self.blocks = nn.Sequential(
-                TemporalResidualBlock(in_channels, tcn_channels, dilation=1, kernel_size=3),
-                TemporalResidualBlock(tcn_channels, tcn_channels, dilation=2, kernel_size=3),
-                TemporalResidualBlock(tcn_channels, tcn_channels, dilation=4, kernel_size=3),
-            )
+            self.blocks = nn.Sequential(*[
+                TemporalResidualBlock(
+                    in_channels if index == 0 else tcn_channels,
+                    tcn_channels,
+                    dilation=2 ** index,
+                    kernel_size=_KERNEL_SIZE,
+                )
+                for index in range(blocks)
+            ])
             self.head = nn.Linear(tcn_channels, 1)
 
         def forward(self, x):
@@ -130,6 +175,45 @@ def _build_tcn_module(torch_mod, nn, in_channels: int, tcn_channels: int, dropou
             return self.head(features[:, :, -1]).squeeze(-1)
 
     return CausalTCNRegressor()
+
+
+def save_checkpoint(path, result: TrainingResult) -> None:
+    """Persist a trained TCN (state dict + scaler + window config) without lightgbm."""
+    torch_mod, _, _, _ = _require_torch()
+    model = result.model if isinstance(result.model, dict) else None
+    if not model or "module" not in model:
+        raise ValueError("result.model must expose a 'module' entry produced by train()")
+    payload = {
+        "state_dict": model["module"].state_dict(),
+        "params": dict(result.params),
+        "model_meta": {key: value for key, value in model.items() if key != "module"},
+        "best_iteration": int(result.best_iteration),
+    }
+    torch_mod.save(payload, path)
+
+
+def load_checkpoint(path) -> dict:
+    """Load a checkpoint written by :func:`save_checkpoint` on CPU."""
+    torch_mod, _, _, _ = _require_torch()
+    return torch_mod.load(path, map_location="cpu", weights_only=False)
+
+
+def build_from_checkpoint(payload: dict, in_channels: int):
+    """Rebuild the module described by a checkpoint payload."""
+    torch_mod, nn, _, _ = _require_torch()
+    params = payload["params"]
+    meta = payload["model_meta"]
+    blocks = int(meta.get("blocks") or blocks_for_window(int(params["window_size"])))
+    module = _build_tcn_module(
+        torch_mod, nn,
+        in_channels=in_channels,
+        tcn_channels=int(params["tcn_channels"]),
+        dropout=float(params["dropout"]),
+        blocks=blocks,
+    )
+    module.load_state_dict(payload["state_dict"])
+    module.eval()
+    return module
 
 
 def train(
@@ -180,19 +264,29 @@ def train(
     if not np.isfinite(np.asarray(y_train, dtype=float)).all():
         raise ValueError("training targets must be finite")
 
+    window_size = int(effective["window_size"])
+    blocks = int(config["num_blocks"]) if config["num_blocks"] is not None else blocks_for_window(window_size)
+    span = receptive_field(blocks)
+
     scaler = fit_zscore_scaler(X_train)
     x_train_scaled = apply_zscore_scaler(X_train, scaler)
     x_valid_scaled = apply_zscore_scaler(X_valid, scaler)
 
     train_windows, train_targets = build_unit_windows(
         x_train_scaled, y_train, train_groups,
-        window_size=effective["window_size"], rul_cap=config["rul_cap"],
+        window_size=window_size, rul_cap=config["rul_cap"],
     )
-    # Keep validation targets unclipped for honest evaluation.
+    # Final metrics always use unclipped labels; only the selection signal may be capped.
     valid_windows, valid_targets = build_unit_windows(
         x_valid_scaled, y_valid, valid_groups,
-        window_size=effective["window_size"], rul_cap=None,
+        window_size=window_size, rul_cap=None,
     )
+    if config["rul_cap"] is not None and config["clip_validation_targets"]:
+        selection_targets = np.minimum(valid_targets, np.float32(config["rul_cap"]))
+        target_mode = "capped_for_selection_uncapped_for_metrics"
+    else:
+        selection_targets = valid_targets
+        target_mode = "uncapped"
 
     np.random.seed(seed)
     torch_mod.manual_seed(seed)
@@ -201,8 +295,9 @@ def train(
     model = _build_tcn_module(
         torch_mod, nn,
         in_channels=train_windows.shape[1],
-        tcn_channels=effective["tcn_channels"],
+        tcn_channels=int(effective["tcn_channels"]),
         dropout=float(effective["dropout"]),
+        blocks=blocks,
     ).to(device)
 
     optimizer = torch_mod.optim.AdamW(model.parameters(), lr=float(effective["learning_rate"]))
@@ -243,8 +338,8 @@ def train(
         model.eval()
         with torch_mod.no_grad():
             val_preds = model(valid_tensor).detach().cpu().numpy()
-        val_rmse = float(np.sqrt(np.mean((val_preds - valid_targets) ** 2)))
-        val_mae = float(np.mean(np.abs(val_preds - valid_targets)))
+        val_rmse = float(np.sqrt(np.mean((val_preds - selection_targets) ** 2)))
+        val_mae = float(np.mean(np.abs(val_preds - selection_targets)))
         curve.append({"iteration": epoch, "rmse": val_rmse, "mae": val_mae})
 
         if resource_callback is not None:
@@ -286,6 +381,11 @@ def train(
         "best_iteration": best_epoch,
         "evaluated_iterations": len(curve),
         "device": str(device),
+        "window_size": window_size,
+        "tcn_blocks": blocks,
+        "receptive_field": span,
+        "window_fully_observed": bool(span >= window_size),
+        "validation_target_mode": target_mode,
         "validation_curve": curve,
     }
     check_limits()
@@ -293,7 +393,13 @@ def train(
         params=effective,
         metrics=metrics,
         duration_seconds=perf_counter() - started,
-        model={"module": model.cpu(), "scaler": scaler, "window_size": effective["window_size"]},
+        model={
+            "module": model.cpu(),
+            "scaler": scaler,
+            "window_size": window_size,
+            "blocks": blocks,
+            "receptive_field": span,
+        },
         best_iteration=best_epoch,
         diagnostics=diagnostics,
     )

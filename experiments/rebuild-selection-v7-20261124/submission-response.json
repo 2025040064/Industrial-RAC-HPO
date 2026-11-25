@@ -1,0 +1,23 @@
+{
+  "base_model_confirmed": false,
+  "compliance_reason": "",
+  "compliance_status": "unreviewed",
+  "created_at": "2026-11-24T14:01:13.776456Z",
+  "document_id": "f346e9406e8c3e0d66dd7bb14ef7f799",
+  "id": "da5f98ed998983cc0a10c523bec9d6b6",
+  "image_archive_id": "379139df1d676342123615848e717fed",
+  "image_retired_at": null,
+  "materials_complete": null,
+  "model": "trio://run_1fei9lfkoj70/sampler_weights/industrial-harness-lora-selection-v3-20261124",
+  "model_source": "sampler",
+  "records_complete": null,
+  "review_notes": "",
+  "selected": false,
+  "source_url": "https://github.com/2025040064/Industrial-RAC-HPO.git",
+  "status": "draft",
+  "team_id": "f7fc9c63cd252b69cd41713c9cf4b0c9",
+  "team_name": "2025040064",
+  "training_url": "https://swanlab.cn/@2025040064/industrial-harness-sft/runs/ax998s81",
+  "validation_error": "",
+  "version": 7
+}

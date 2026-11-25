@@ -1,0 +1,17 @@
+[archive] check 1: status=ready cleanup=cleaned local_bytes=0
+[validate] requested: {"base_model_confirmed": false, "compliance_reason": "", "compliance_status": "unreviewed", "created_at": "2026-11-24T06:08:02.290898Z", "document_id": "b255ac71a50540a236a387e91b2d594f", "id": "1407e09bf46aa798f23fde44fa77ba4e", "image_archive_id": "b982d566db383214c174b8ceab66bb9c", "image_retired
+[validate] check 1: status=valid error=-
+[trial] run_id=3bf441ab0f7dd7b3f3c15a46a3df0ac0 status=queued
+[run] 3bf441ab0f7dd7b3f3c15a46a3df0ac0 status=queued failure=-
+Traceback (most recent call last):
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/rebuild-selection-v5-20261124/platform_submit.py", line 222, in <module>
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/rebuild-selection-v5-20261124/platform_submit.py", line 206, in main
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/rebuild-selection-v5-20261124/platform_submit.py", line 77, in save_state
+  File "/Users/liujiale/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/pathlib/_local.py", line 555, in write_text
+  File "/Users/liujiale/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/pathlib/_abc.py", line 651, in write_text
+  File "/Users/liujiale/.workbuddy/binaries/python/versions/3.13.12/lib/python3.13/pathlib/_local.py", line 537, in open
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 710, in _brokered_io_open
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 679, in _brokered_open
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 541, in _broker_request_file_token
+  File "/Applications/WorkBuddy.app/Contents/Resources/app.asar.unpacked/cli/vendor/sandbox-center-runtime-kit/shim/sitecustomize.py", line 500, in _broker_send_request
+sitecustomize._BrokerProtocolError: execution capability 已过期

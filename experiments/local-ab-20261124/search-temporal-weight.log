@@ -1,0 +1,47 @@
+uniform_d0.4_lr0.003         MAE 37.3768 RMSE 51.4578 acc 3/10 BOTH
+uniform_d0.4_lr0.004         MAE 37.3645 RMSE 51.4327 acc 3/10 BOTH
+uniform_d0.6_lr0.003         MAE 37.4237 RMSE 51.4955 acc 3/10 BOTH
+uniform_d0.6_lr0.004         MAE 37.4291 RMSE 51.4448 acc 3/10 BOTH
+uniform_d0.8_lr0.003         MAE 37.1337 RMSE 51.2250 acc 10/10 BOTH
+uniform_d0.8_lr0.004         MAE 37.7038 RMSE 51.5679 acc 3/10 SPLIT
+late_linear_d0.4_lr0.003     MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+late_linear_d0.4_lr0.004     MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+late_linear_d0.6_lr0.003     MAE 37.4442 RMSE 52.7630 acc 1/10 BOTH
+late_linear_d0.6_lr0.004     MAE 36.8976 RMSE 51.7102 acc 4/10 BOTH
+late_linear_d0.8_lr0.003     MAE 37.5743 RMSE 52.4051 acc 1/10 BOTH
+late_linear_d0.8_lr0.004     MAE 37.5090 RMSE 52.3320 acc 1/10 BOTH
+late_strong_d0.4_lr0.003     MAE 37.5061 RMSE 52.7358 acc 1/10 BOTH
+late_strong_d0.4_lr0.004     MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+late_strong_d0.6_lr0.003     MAE 37.5673 RMSE 52.7053 acc 1/10 BOTH
+late_strong_d0.6_lr0.004     MAE 37.6917 RMSE 52.7893 acc 1/10 BOTH
+late_strong_d0.8_lr0.003     MAE 37.8001 RMSE 52.4696 acc 1/10 BOTH
+late_strong_d0.8_lr0.004     MAE 37.9312 RMSE 52.4895 acc 1/10 BOTH
+err_linear_d0.4_lr0.003      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+err_linear_d0.4_lr0.004      MAE 40.0484 RMSE 52.7875 acc 1/10 SPLIT
+err_linear_d0.6_lr0.003      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+err_linear_d0.6_lr0.004      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+err_linear_d0.8_lr0.003      MAE 39.7422 RMSE 52.6594 acc 1/10 SPLIT
+err_linear_d0.8_lr0.004      MAE 39.7557 RMSE 52.5480 acc 1/10 SPLIT
+err_strong_d0.4_lr0.003      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+err_strong_d0.4_lr0.004      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+err_strong_d0.6_lr0.003      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+err_strong_d0.6_lr0.004      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+err_strong_d0.8_lr0.003      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+err_strong_d0.8_lr0.004      MAE 38.8998 RMSE 52.8686 acc 0/10 SPLIT
+late_x_err_d0.4_lr0.003      MAE 38.3053 RMSE 51.7604 acc 1/10 SPLIT
+late_x_err_d0.4_lr0.004      MAE 38.3846 RMSE 51.8990 acc 1/10 SPLIT
+late_x_err_d0.6_lr0.003      MAE 38.2128 RMSE 51.7052 acc 1/10 SPLIT
+late_x_err_d0.6_lr0.004      MAE 38.2307 RMSE 51.7362 acc 1/10 SPLIT
+late_x_err_d0.8_lr0.003      MAE 38.1951 RMSE 51.8187 acc 1/10 SPLIT
+late_x_err_d0.8_lr0.004      MAE 38.1662 RMSE 51.7422 acc 1/10 SPLIT
+=== top 10 ===
+{"tag": "uniform_d0.8_lr0.003", "mae": 37.13365440762071, "rmse": 51.22503795069941, "accepted": 10, "half_mae": [38.9133, 35.3158], "both_halves_better": true}
+{"tag": "uniform_d0.4_lr0.004", "mae": 37.36449818154838, "rmse": 51.43267473332292, "accepted": 3, "half_mae": [38.9917, 35.7023], "both_halves_better": true}
+{"tag": "uniform_d0.6_lr0.004", "mae": 37.42908324052428, "rmse": 51.444783726390085, "accepted": 3, "half_mae": [39.0789, 35.7438], "both_halves_better": true}
+{"tag": "uniform_d0.4_lr0.003", "mae": 37.37683501914274, "rmse": 51.45782355304707, "accepted": 3, "half_mae": [39.1142, 35.6021], "both_halves_better": true}
+{"tag": "uniform_d0.6_lr0.003", "mae": 37.423677228940385, "rmse": 51.49554105370562, "accepted": 3, "half_mae": [39.2109, 35.5981], "both_halves_better": true}
+{"tag": "uniform_d0.8_lr0.004", "mae": 37.70375555199152, "rmse": 51.56791785317167, "accepted": 3, "half_mae": [39.3905, 35.9808], "both_halves_better": false}
+{"tag": "late_x_err_d0.6_lr0.003", "mae": 38.212829709414066, "rmse": 51.70517889195898, "accepted": 1, "half_mae": [39.9561, 36.4321], "both_halves_better": false}
+{"tag": "late_linear_d0.6_lr0.004", "mae": 36.89757260374994, "rmse": 51.71019900433014, "accepted": 4, "half_mae": [38.3811, 35.3822], "both_halves_better": true}
+{"tag": "late_x_err_d0.6_lr0.004", "mae": 38.23065853392287, "rmse": 51.73617353672253, "accepted": 1, "half_mae": [39.6586, 36.772], "both_halves_better": false}
+{"tag": "late_x_err_d0.8_lr0.004", "mae": 38.16621194347897, "rmse": 51.74222986026732, "accepted": 1, "half_mae": [39.9953, 36.2978], "both_halves_better": false}

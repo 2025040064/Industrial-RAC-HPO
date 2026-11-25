@@ -1,0 +1,31 @@
+teacher h32 e15: OOF MAE 37.8013 RMSE 52.7817
+  b0.2: MAE 37.2291 RMSE 51.3455 acc 4/30 BOTH
+  b0.3: MAE 36.8375 RMSE 51.1475 acc 6/30 BOTH
+  b0.4: MAE 37.6404 RMSE 51.7404 acc 2/30 BOTH
+teacher h32 e30: OOF MAE 38.2078 RMSE 53.3268
+  b0.2: MAE 37.2189 RMSE 51.3274 acc 4/30 BOTH
+  b0.3: MAE 36.8569 RMSE 51.1729 acc 6/30 BOTH
+  b0.4: MAE 37.7561 RMSE 51.7245 acc 2/30 BOTH
+teacher h64 e25: OOF MAE 37.8977 RMSE 52.6224
+  b0.2: MAE 37.3404 RMSE 51.3733 acc 4/30 BOTH
+  b0.3: MAE 36.9435 RMSE 51.1457 acc 6/30 BOTH
+  b0.4: MAE 36.9986 RMSE 51.2071 acc 6/30 BOTH
+teacher h64 e40: OOF MAE 37.4479 RMSE 52.3340
+  b0.2: MAE 37.2820 RMSE 51.3552 acc 4/30 BOTH
+  b0.3: MAE 36.8503 RMSE 51.1355 acc 6/30 BOTH
+  b0.4: MAE 37.7243 RMSE 51.7181 acc 2/30 BOTH
+teacher h96 e30: OOF MAE 38.4586 RMSE 53.4398
+  b0.2: MAE 37.2479 RMSE 51.3371 acc 4/30 BOTH
+  b0.3: MAE 36.8459 RMSE 51.1488 acc 6/30 BOTH
+  b0.4: MAE 36.8870 RMSE 51.2201 acc 6/30 BOTH
+=== top 10 ===
+{"tag": "strong_h64_e40_b0.3", "mae": 36.850309584716875, "rmse": 51.13551962680355, "accepted": 6, "half_mae": [38.6048, 35.0582], "half_rmse": [53.4324, 48.6775], "hidden": 64, "teacher_epochs": 40, "beta": 0.3, "teacher_oof_mae": 37.447935392117465, "both_halves_better": true}
+{"tag": "strong_h64_e25_b0.3", "mae": 36.943454064483596, "rmse": 51.14567309291511, "accepted": 6, "half_mae": [38.6803, 35.1693], "half_rmse": [53.4484, 48.6811], "hidden": 64, "teacher_epochs": 25, "beta": 0.3, "teacher_oof_mae": 37.89773945353724, "both_halves_better": true}
+{"tag": "strong_h32_e15_b0.3", "mae": 36.83751612866753, "rmse": 51.1475234675541, "accepted": 6, "half_mae": [38.5793, 35.0583], "half_rmse": [53.4324, 48.703], "hidden": 32, "teacher_epochs": 15, "beta": 0.3, "teacher_oof_mae": 37.80132320363079, "both_halves_better": true}
+{"tag": "strong_h96_e30_b0.3", "mae": 36.84586973334262, "rmse": 51.14880934537621, "accepted": 6, "half_mae": [38.5744, 35.0802], "half_rmse": [53.4397, 48.6976], "hidden": 96, "teacher_epochs": 30, "beta": 0.3, "teacher_oof_mae": 38.45862827057347, "both_halves_better": true}
+{"tag": "strong_h32_e30_b0.3", "mae": 36.85694583485904, "rmse": 51.1728865392503, "accepted": 6, "half_mae": [38.6438, 35.0317], "half_rmse": [53.4868, 48.6958], "hidden": 32, "teacher_epochs": 30, "beta": 0.3, "teacher_oof_mae": 38.20775129001334, "both_halves_better": true}
+{"tag": "strong_h64_e25_b0.4", "mae": 36.99855368914563, "rmse": 51.2071307963086, "accepted": 6, "half_mae": [38.8156, 35.1424], "half_rmse": [53.55, 48.6976], "hidden": 64, "teacher_epochs": 25, "beta": 0.4, "teacher_oof_mae": 37.89773945353724, "both_halves_better": true}
+{"tag": "strong_h96_e30_b0.4", "mae": 36.886963231994706, "rmse": 51.22014739285137, "accepted": 6, "half_mae": [38.6837, 35.0516], "half_rmse": [53.54, 48.7366], "hidden": 96, "teacher_epochs": 30, "beta": 0.4, "teacher_oof_mae": 38.45862827057347, "both_halves_better": true}
+{"tag": "strong_h32_e30_b0.2", "mae": 37.21885587681819, "rmse": 51.327438000893586, "accepted": 4, "half_mae": [38.6101, 35.7977], "half_rmse": [53.4942, 49.0153], "hidden": 32, "teacher_epochs": 30, "beta": 0.2, "teacher_oof_mae": 38.20775129001334, "both_halves_better": true}
+{"tag": "strong_h96_e30_b0.2", "mae": 37.24792549999201, "rmse": 51.33705185610697, "accepted": 4, "half_mae": [38.6159, 35.8505], "half_rmse": [53.4957, 49.034], "hidden": 96, "teacher_epochs": 30, "beta": 0.2, "teacher_oof_mae": 38.45862827057347, "both_halves_better": true}
+{"tag": "strong_h32_e15_b0.2", "mae": 37.229092966680966, "rmse": 51.345498656975415, "accepted": 4, "half_mae": [38.6, 35.8288], "half_rmse": [53.5049, 49.0416], "hidden": 32, "teacher_epochs": 15, "beta": 0.2, "teacher_oof_mae": 37.80132320363079, "both_halves_better": true}

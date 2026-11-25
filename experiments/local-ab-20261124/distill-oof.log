@@ -1,0 +1,22 @@
+parent halves MAE [41.7608, 35.9774]
+building OOF teacher predictions ...
+  fold 1/5:  24532 rows  MAE 39.9333  RMSE 56.9598
+  fold 2/5:  21900 rows  MAE 37.5360  RMSE 56.2331
+  fold 3/5:  19194 rows  MAE 39.5097  RMSE 53.8921
+  fold 4/5:  22472 rows  MAE 37.2354  RMSE 50.3947
+  fold 5/5:  24991 rows  MAE 37.3333  RMSE 49.5528
+  OOF teacher: MAE 38.2865  RMSE 53.4451  (in-sample was MAE 36.5966, residual std 51.36)
+  calibration y ~ 0.9911 * teacher + 0.7282
+  calibrated OOF: MAE 38.2019  RMSE 53.4406  residual std 53.4406
+raw         beta=0.1  MAE 37.3440 RMSE 51.3329 acc 4/10 halves [38.8775, 35.7776] BOTH BETTER
+raw         beta=0.2  MAE 37.1999 RMSE 51.3597 acc 4/10 halves [38.9366, 35.4259] BOTH BETTER
+raw         beta=0.3  MAE 37.0032 RMSE 51.2474 acc 6/10 halves [38.8217, 35.1455] BOTH BETTER
+raw         beta=0.4  MAE 37.6932 RMSE 51.7822 acc 2/10 halves [39.573, 35.773] BOTH BETTER
+raw         beta=0.5  MAE 37.1985 RMSE 51.4614 acc 4/10 halves [39.0444, 35.3129] BOTH BETTER
+calibrated  beta=0.1  MAE 37.3416 RMSE 51.3353 acc 4/10 halves [38.8729, 35.7775] BOTH BETTER
+calibrated  beta=0.2  MAE 37.1960 RMSE 51.3642 acc 4/10 halves [38.9247, 35.4302] BOTH BETTER
+calibrated  beta=0.3  MAE 36.9956 RMSE 51.2540 acc 6/10 halves [38.806, 35.1464] BOTH BETTER
+calibrated  beta=0.4  MAE 37.6843 RMSE 51.7948 acc 2/10 halves [39.5532, 35.7753] BOTH BETTER
+calibrated  beta=0.5  MAE 37.4035 RMSE 51.4762 acc 5/10 halves [39.3905, 35.3738] BOTH BETTER
+best by RMSE {"tag": "oof_raw_b0.3", "mae": 37.00317050081664, "rmse": 51.247391742880446, "accepted": 6, "half_mae": [38.8217, 35.1455], "half_rmse": [53.6034, 48.7232]}
+saved experiments/local-ab-20261124/distill-oof-results.json

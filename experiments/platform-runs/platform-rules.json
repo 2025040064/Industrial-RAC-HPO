@@ -1,0 +1,69 @@
+{
+  "blockers": [],
+  "contest_stage": "university",
+  "formal_ready": true,
+  "formal_usage": {
+    "best_score": null,
+    "limit": 3,
+    "remaining": 3,
+    "used": 0
+  },
+  "objective_score_maximum": 100,
+  "official_label_datasets": [
+    "A",
+    "B",
+    "C"
+  ],
+  "preparation_pending": [],
+  "rules": {
+    "allowed_models": [
+      "Qwen/Qwen3.5-4B",
+      "Qwen/Qwen3.8-27B"
+    ],
+    "approved": true,
+    "baseline": null,
+    "dataset_family": "uci-gas-drift",
+    "deadline": null,
+    "evaluation_config_id": "76e44dafec4225a250977eed7a48b811",
+    "evaluation_mode": "batch",
+    "execution_protocol": "contest.harness.workspace.v2",
+    "formula": "contest-objective-20261110-rul-v3",
+    "label_budget": 9628,
+    "metering_verified": true,
+    "metric": "macro_f1",
+    "metric_direction": "higher",
+    "records_policy": "工作区十轮记录：假设、代码变更、父模型与候选摘要、续训证据、验证指标和调用用量。",
+    "target_unit": "class",
+    "task": "classification",
+    "tie_policy": "block",
+    "token_budget": 8000000,
+    "training_budget": 0,
+    "trial_limit": 10,
+    "trial_unlimited": true,
+    "wall_seconds": 21600,
+    "workspace_suite": {
+      "datasets": [
+        {
+          "key": "A",
+          "label_status": "draft"
+        },
+        {
+          "key": "B",
+          "label_status": "approved"
+        },
+        {
+          "key": "C",
+          "label_status": "draft"
+        }
+      ],
+      "rounds": 10
+    }
+  },
+  "trial_blockers": [],
+  "trial_enabled": true,
+  "trial_usage": {
+    "limit": 10,
+    "remaining": 7,
+    "used": 3
+  }
+}

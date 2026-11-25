@@ -1,0 +1,19 @@
+{
+  "attempt": 1,
+  "created_at": "2026-11-24T14:01:19.332787Z",
+  "eligible": false,
+  "failure_detail": "",
+  "failure_kind": "",
+  "failure_reason": "",
+  "hard_deadline": null,
+  "id": "93386be28a70bdbf3f76dacfcbec5214",
+  "mode": "trial",
+  "score": null,
+  "status": "queued",
+  "submission_id": "da5f98ed998983cc0a10c523bec9d6b6",
+  "submission_version": 7,
+  "team_id": "f7fc9c63cd252b69cd41713c9cf4b0c9",
+  "team_name": "2025040064",
+  "trial_kind": "legacy",
+  "updated_at": "2026-11-24T14:01:19.332787Z"
+}

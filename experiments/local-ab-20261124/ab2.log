@@ -1,0 +1,64 @@
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: divide by zero encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: overflow encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: invalid value encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: divide by zero encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: overflow encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: invalid value encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: divide by zero encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: overflow encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: invalid value encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: divide by zero encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: overflow encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: invalid value encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+ema60_lr0.003_bs256        MAE 36.7811  RMSE 51.1374  accepted 9/10
+ema60_lr0.005_bs256        MAE 36.8842  RMSE 51.0250  accepted 8/10
+ema70_lr0.003_bs256        MAE 36.8630  RMSE 51.1542  accepted 9/10
+ema70_lr0.005_bs256        MAE 36.9737  RMSE 51.0779  accepted 8/10
+ema80_lr0.003_bs256        MAE 37.5534  RMSE 51.5038  accepted 5/10
+ema80_lr0.005_bs256        MAE 37.0975  RMSE 51.2867  accepted 6/10
+ema90_lr0.003_bs256        MAE 37.8377  RMSE 51.6909  accepted 5/10
+ema90_lr0.005_bs256        MAE 37.5280  RMSE 51.5431  accepted 6/10
+ema90_lr0.001_bs64         MAE 38.8998  RMSE 52.8686  accepted 0/10
+ema90_lr0.001_bs128        MAE 37.8458  RMSE 51.7601  accepted 5/10
+ema90_wd1e-4_bs256         MAE 37.9237  RMSE 51.8066  accepted 5/10
+ema90_widen64_bs256        MAE 38.1049  RMSE 51.6780  accepted 3/10
+plain_lr0.001_bs256_ep5    MAE 38.0240  RMSE 51.8419  accepted 1/10
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: divide by zero encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: overflow encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: invalid value encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: divide by zero encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: overflow encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: invalid value encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: divide by zero encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: overflow encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: invalid value encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: divide by zero encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: overflow encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: invalid value encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+scratch 24 features        MAE 38.8998  RMSE 52.8686
+scratch +temporal ( 87)     MAE 36.5966  RMSE 49.8372
+saved experiments/local-ab-20261124/ab-results-2.json

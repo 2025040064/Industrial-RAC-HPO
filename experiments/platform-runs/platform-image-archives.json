@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "cleanup_status": "cleaned",
+      "created_at": "2026-11-22T13:11:31.211439+00:00",
+      "error_code": "",
+      "id": "d8708751a35df2a8aedb594c7b29eae5",
+      "last_error": "",
+      "local_bytes": 0,
+      "size_bytes": 150218752,
+      "status": "ready"
+    },
+    {
+      "cleanup_status": "cleaned",
+      "created_at": "2026-11-18T11:55:19.035963+00:00",
+      "error_code": "",
+      "id": "428bde81fdd8d5757c8c9ed4323925d6",
+      "last_error": "",
+      "local_bytes": 0,
+      "size_bytes": 150210048,
+      "status": "ready"
+    },
+    {
+      "cleanup_status": "cleaned",
+      "created_at": "2026-11-17T14:42:14.915101+00:00",
+      "error_code": "",
+      "id": "1cbe47e47e3f7c7bd640b7110d3c1ee6",
+      "last_error": "",
+      "local_bytes": 0,
+      "size_bytes": 150192128,
+      "status": "ready"
+    },
+    {
+      "cleanup_status": "cleaned",
+      "created_at": "2026-11-16T13:44:18.57328+00:00",
+      "error_code": "",
+      "id": "78657cb5c864c5f3417492af9088e48d",
+      "last_error": "",
+      "local_bytes": 0,
+      "size_bytes": 70114816,
+      "status": "ready"
+    }
+  ]
+}

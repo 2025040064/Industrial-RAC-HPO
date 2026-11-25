@@ -1,0 +1,68 @@
+parent halves MAE [41.7608, 35.9774]
+  computing OOF w8_s42_e15_lr0.002_b256 ...
+  fold 1/5:  24532 rows  MAE 39.9982  RMSE 56.8120
+  fold 2/5:  21900 rows  MAE 38.2387  RMSE 57.0243
+  fold 3/5:  19194 rows  MAE 39.8538  RMSE 54.0141
+  fold 4/5:  22472 rows  MAE 38.3927  RMSE 51.5199
+  fold 5/5:  24991 rows  MAE 37.0889  RMSE 49.5374
+  calibration y ~ 0.9952 * teacher + 0.1641
+  computing OOF w15_s42_e15_lr0.002_b256 ...
+  fold 1/5:  24532 rows  MAE 39.9333  RMSE 56.9598
+  fold 2/5:  21900 rows  MAE 37.5360  RMSE 56.2331
+  fold 3/5:  19194 rows  MAE 39.5097  RMSE 53.8921
+  fold 4/5:  22472 rows  MAE 37.2354  RMSE 50.3947
+  fold 5/5:  24991 rows  MAE 37.3333  RMSE 49.5528
+  calibration y ~ 0.9911 * teacher + 0.7282
+  computing OOF w30_s42_e15_lr0.002_b256 ...
+  fold 1/5:  24532 rows  MAE 40.1775  RMSE 56.4334
+  fold 2/5:  21900 rows  MAE 37.5129  RMSE 56.2208
+  fold 3/5:  19194 rows  MAE 39.7216  RMSE 53.9324
+  fold 4/5:  22472 rows  MAE 37.7361  RMSE 50.7450
+  fold 5/5:  24991 rows  MAE 37.1785  RMSE 49.4498
+  calibration y ~ 0.9977 * teacher + 0.6030
+grid size 288
+[10/288] w8_raw_b0.1_d0.8_lr0.003_e5            MAE 37.5688 RMSE 51.5176 acc 5/10 BOTH
+[20/288] w8_raw_b0.2_d0.6_lr0.004_e5            MAE 37.2259 RMSE 51.3639 acc 4/10 BOTH
+[28/288] w8_raw_b0.3_d0.4_lr0.004_e5            MAE 36.9102 RMSE 51.1907 acc 6/10 BOTH
+[30/288] w8_raw_b0.3_d0.6_lr0.003_e5            MAE 37.4641 RMSE 51.4312 acc 4/10 BOTH
+[40/288] w8_raw_b0.4_d0.4_lr0.004_e5            MAE 37.7814 RMSE 51.8493 acc 2/10 BOTH
+[50/288] w8_cal_b0.1_d0.4_lr0.003_e5            MAE 37.5903 RMSE 51.3461 acc 4/10 SPLIT
+[60/288] w8_cal_b0.1_d0.8_lr0.004_e5            MAE 37.2862 RMSE 51.4000 acc 6/10 BOTH
+[70/288] w8_cal_b0.2_d0.8_lr0.003_e5            MAE 37.5099 RMSE 51.5011 acc 6/10 BOTH
+[76/288] w8_cal_b0.3_d0.4_lr0.004_e5            MAE 36.8950 RMSE 51.1944 acc 6/10 BOTH
+[80/288] w8_cal_b0.3_d0.6_lr0.004_e5            MAE 37.0120 RMSE 51.2764 acc 6/10 BOTH
+[90/288] w8_cal_b0.4_d0.6_lr0.003_e5            MAE 37.2335 RMSE 51.4024 acc 6/10 BOTH
+[100/288] w15_raw_b0.1_d0.4_lr0.004_e5           MAE 37.8649 RMSE 51.9695 acc 1/10 SPLIT
+[110/288] w15_raw_b0.2_d0.4_lr0.003_e5           MAE 37.5887 RMSE 51.3933 acc 4/10 SPLIT
+[120/288] w15_raw_b0.2_d0.8_lr0.004_e5           MAE 37.2937 RMSE 51.4180 acc 6/10 BOTH
+[124/288] w15_raw_b0.3_d0.4_lr0.004_e5           MAE 36.8890 RMSE 51.1736 acc 6/10 BOTH
+[130/288] w15_raw_b0.3_d0.8_lr0.003_e5           MAE 37.4777 RMSE 51.4837 acc 6/10 BOTH
+[140/288] w15_raw_b0.4_d0.6_lr0.004_e5           MAE 37.6932 RMSE 51.7822 acc 2/10 BOTH
+[150/288] w15_cal_b0.1_d0.6_lr0.003_e5           MAE 37.6201 RMSE 51.4073 acc 4/10 BOTH
+[160/288] w15_cal_b0.2_d0.4_lr0.004_e5           MAE 37.2209 RMSE 51.3325 acc 4/10 BOTH
+[170/288] w15_cal_b0.3_d0.4_lr0.003_e5           MAE 37.3922 RMSE 51.3678 acc 4/10 BOTH
+[172/288] w15_cal_b0.3_d0.4_lr0.004_e5           MAE 36.8824 RMSE 51.1803 acc 6/10 BOTH
+[180/288] w15_cal_b0.3_d0.8_lr0.004_e5           MAE 37.3619 RMSE 51.4980 acc 6/10 BOTH
+[190/288] w15_cal_b0.4_d0.8_lr0.003_e5           MAE 37.5110 RMSE 51.5589 acc 6/10 BOTH
+[200/288] w30_raw_b0.1_d0.6_lr0.004_e5           MAE 37.3378 RMSE 51.3316 acc 4/10 BOTH
+[210/288] w30_raw_b0.2_d0.6_lr0.003_e5           MAE 37.5425 RMSE 51.3900 acc 4/10 BOTH
+[220/288] w30_raw_b0.3_d0.4_lr0.004_e5           MAE 36.8541 RMSE 51.1703 acc 6/10 BOTH
+[230/288] w30_raw_b0.4_d0.4_lr0.003_e5           MAE 37.0805 RMSE 51.2717 acc 6/10 BOTH
+[240/288] w30_raw_b0.4_d0.8_lr0.004_e5           MAE 37.5425 RMSE 51.5942 acc 5/10 BOTH
+[250/288] w30_cal_b0.1_d0.8_lr0.003_e5           MAE 37.5594 RMSE 51.5116 acc 5/10 BOTH
+[260/288] w30_cal_b0.2_d0.6_lr0.004_e5           MAE 37.2034 RMSE 51.3626 acc 4/10 BOTH
+[268/288] w30_cal_b0.3_d0.4_lr0.004_e5           MAE 36.8726 RMSE 51.1711 acc 6/10 BOTH
+[270/288] w30_cal_b0.3_d0.6_lr0.003_e5           MAE 37.4355 RMSE 51.4240 acc 4/10 BOTH
+[280/288] w30_cal_b0.4_d0.4_lr0.004_e5           MAE 37.7249 RMSE 51.7693 acc 2/10 BOTH
+=== top 10 eligible by RMSE ===
+{"tag": "w30_raw_b0.3_d0.4_lr0.004_e5", "mae": 36.854056543743134, "rmse": 51.17026649175315, "accepted": 6, "half_mae": [38.6071, 35.0634], "half_rmse": [53.4663, 48.7133], "window": 30, "kind": "raw", "beta": 0.3, "decay": 0.4, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w30_cal_b0.3_d0.4_lr0.004_e5", "mae": 36.87259809779722, "rmse": 51.17110753685666, "accepted": 6, "half_mae": [38.6273, 35.0802], "half_rmse": [53.4692, 48.7119], "window": 30, "kind": "cal", "beta": 0.3, "decay": 0.4, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w15_raw_b0.3_d0.4_lr0.004_e5", "mae": 36.88899584961139, "rmse": 51.17360129552536, "accepted": 6, "half_mae": [38.6429, 35.0975], "half_rmse": [53.4719, 48.714], "window": 15, "kind": "raw", "beta": 0.3, "decay": 0.4, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w15_cal_b0.3_d0.4_lr0.004_e5", "mae": 36.88243635265916, "rmse": 51.18032474189832, "accepted": 6, "half_mae": [38.6289, 35.0984], "half_rmse": [53.4738, 48.7262], "window": 15, "kind": "cal", "beta": 0.3, "decay": 0.4, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w8_raw_b0.3_d0.4_lr0.004_e5", "mae": 36.91016178555037, "rmse": 51.19067590292614, "accepted": 6, "half_mae": [38.7001, 35.0818], "half_rmse": [53.5059, 48.7123], "window": 8, "kind": "raw", "beta": 0.3, "decay": 0.4, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w8_cal_b0.3_d0.4_lr0.004_e5", "mae": 36.89502191620985, "rmse": 51.19442312365419, "accepted": 6, "half_mae": [38.6783, 35.0734], "half_rmse": [53.5047, 48.7215], "window": 8, "kind": "cal", "beta": 0.3, "decay": 0.4, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w15_raw_b0.3_d0.6_lr0.004_e5", "mae": 37.00317050081664, "rmse": 51.247391742880446, "accepted": 6, "half_mae": [38.8217, 35.1455], "half_rmse": [53.6034, 48.7232], "window": 15, "kind": "raw", "beta": 0.3, "decay": 0.6, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w15_cal_b0.3_d0.6_lr0.004_e5", "mae": 36.995620105105, "rmse": 51.254045400394226, "accepted": 6, "half_mae": [38.806, 35.1464], "half_rmse": [53.6045, 48.7362], "window": 15, "kind": "cal", "beta": 0.3, "decay": 0.6, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w30_raw_b0.3_d0.6_lr0.004_e5", "mae": 36.97414115287191, "rmse": 51.25521552460892, "accepted": 6, "half_mae": [38.8009, 35.1081], "half_rmse": [53.6117, 48.7306], "window": 30, "kind": "raw", "beta": 0.3, "decay": 0.6, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+{"tag": "w30_cal_b0.3_d0.6_lr0.004_e5", "mae": 36.992470838503415, "rmse": 51.256171687956325, "accepted": 6, "half_mae": [38.8211, 35.1246], "half_rmse": [53.615, 48.7289], "window": 30, "kind": "cal", "beta": 0.3, "decay": 0.6, "lr": 0.004, "epochs": 5, "both_halves_better": true}
+saved experiments/local-ab-20261124/search-grid-results.json

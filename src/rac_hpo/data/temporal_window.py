@@ -43,13 +43,22 @@ def select_degradation_features(
     top_k: int | None = None,
     min_score: float = 0.0,
 ) -> list[str]:
-    """Rank features by 0.7 * |Correlation| + 0.3 * Monotonicity within training units."""
+    """Rank features by ``0.7 * |corr(feature, target)| + 0.3 * monotonicity``.
+
+    Both terms are computed strictly inside each independent unit so that no
+    cross-unit distribution shift leaks into the ranking. When a unit's target is
+    constant (degenerate RUL trace) the correlation term falls back to the
+    feature/time trend of that unit instead of contributing a hard zero.
+    """
     if X_train.empty:
         raise ValueError("X_train must be nonempty")
     values = X_train.to_numpy(dtype=float)
+    target = np.asarray(y_train, dtype=float)
     group_arr = np.asarray(groups_train, dtype=object)
-    if len(values) != len(group_arr) or len(values) != len(y_train):
+    if len(values) != len(group_arr) or len(values) != len(target):
         raise ValueError("X_train, y_train and groups_train must have equal length")
+    if not np.isfinite(target).all():
+        raise ValueError("y_train must contain only finite values")
 
     n_features = values.shape[1]
     corr_scores = np.zeros(n_features, dtype=float)
@@ -63,6 +72,7 @@ def select_degradation_features(
             continue
         valid_units += 1
         unit_x = values[idx]
+        unit_y = target[idx]
         t = np.arange(len(idx), dtype=float)
         t_centered = t - t.mean()
         t_norm = float(np.linalg.norm(t_centered))
@@ -75,9 +85,18 @@ def select_degradation_features(
 
         x_centered = unit_x - unit_x.mean(axis=0, keepdims=True)
         x_norms = np.linalg.norm(x_centered, axis=0)
-        safe = (x_norms > 1e-12) & (t_norm > 1e-12)
+        safe = x_norms > 1e-12
         unit_corr = np.zeros(n_features, dtype=float)
-        if safe.any():
+
+        y_centered = unit_y - unit_y.mean()
+        y_norm = float(np.linalg.norm(y_centered))
+        if y_norm > 1e-12:
+            if safe.any():
+                unit_corr[safe] = np.abs(
+                    (y_centered[:, None] * x_centered[:, safe]).sum(axis=0)
+                    / (y_norm * x_norms[safe])
+                )
+        elif t_norm > 1e-12 and safe.any():
             unit_corr[safe] = np.abs(
                 (t_centered[:, None] * x_centered[:, safe]).sum(axis=0)
                 / (t_norm * x_norms[safe])
@@ -102,17 +121,49 @@ def select_degradation_features(
     return selected if selected else [ranked[0][1]]
 
 
+def unit_sequence_order(
+    groups: pd.Series | np.ndarray,
+    time_values: pd.Series | np.ndarray,
+) -> dict[object, np.ndarray]:
+    """Return the chronological row positions of every unit.
+
+    Raises when two rows of the same unit share a timestamp, because a duplicated
+    timestamp makes the causal window order ambiguous.
+    """
+    group_arr = np.asarray(groups, dtype=object)
+    tv = np.asarray(time_values, dtype=float)
+    if tv.shape != group_arr.shape:
+        raise ValueError("time_values must align one-to-one with groups")
+    if not np.isfinite(tv).all():
+        raise ValueError("time_values must contain only finite values")
+
+    order: dict[object, np.ndarray] = {}
+    for unit in dict.fromkeys(group_arr.tolist()):
+        idx = np.flatnonzero(group_arr == unit)
+        sorted_idx = idx[np.argsort(tv[idx], kind="stable")]
+        if len(sorted_idx) > 1 and np.unique(tv[sorted_idx]).size != len(sorted_idx):
+            raise ValueError(f"duplicate timestamps inside unit {unit!r}; cannot order causally")
+        order[unit] = sorted_idx
+    return order
+
+
 def build_unit_windows(
     X_scaled: np.ndarray,
     y: pd.Series | np.ndarray,
     groups: pd.Series | np.ndarray,
     window_size: int,
     rul_cap: float | None = None,
+    time_values: pd.Series | np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Build causal sliding windows strictly inside each independent physical unit.
 
     Returns tensors of shape ``(N, C, L)`` ready for ``torch.nn.Conv1d``, preserving
     original row order and left-padding short prefixes with the unit's first row.
+
+    Row order is only trusted when ``time_values`` is omitted. Passing a timestamp
+    column makes the window order explicit: rows are sorted chronologically inside
+    each unit and every window is written back to its original row position, so a
+    frame that was shuffled upstream cannot silently produce backward windows.
     """
     if isinstance(window_size, bool) or not isinstance(window_size, int) or window_size < 1:
         raise ValueError("window_size must be a positive integer")
@@ -125,11 +176,16 @@ def build_unit_windows(
     if n_samples == 0 or len(y_arr) != n_samples or len(g_arr) != n_samples:
         raise ValueError("X_scaled, y and groups must be nonempty and have equal lengths")
 
+    if time_values is not None:
+        order_by_unit = unit_sequence_order(g_arr, time_values)
+    else:
+        order_by_unit = {
+            unit: np.flatnonzero(g_arr == unit) for unit in dict.fromkeys(g_arr.tolist())
+        }
+
     windows = np.empty((n_samples, n_channels, window_size), dtype=np.float32)
-    unique_units = list(dict.fromkeys(g_arr.tolist()))
-    for unit in unique_units:
-        unit_indices = np.flatnonzero(g_arr == unit)
-        unit_x = x_arr[unit_indices]  # (T, C)
+    for unit, unit_indices in order_by_unit.items():
+        unit_x = x_arr[unit_indices]  # (T, C), chronological
         for local_t, global_idx in enumerate(unit_indices):
             start = local_t - window_size + 1
             if start >= 0:

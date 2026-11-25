@@ -1,0 +1,71 @@
+[upload] 150251520 bytes
+[upload] archive_id=3eebd66f7541ab707ea56c0b3d00eaf6
+[archive] check 1: status=uploaded cleanup=pending local_bytes=150251520
+[archive] check 2: status=importing cleanup=pending local_bytes=150251520
+[archive] check 3: status=importing cleanup=pending local_bytes=150251520
+[archive] check 4: status=importing cleanup=pending local_bytes=150251520
+[archive] check 5: status=importing cleanup=pending local_bytes=150251520
+[archive] check 6: status=ready cleanup=cleaned local_bytes=0
+[archive] check 7: status=ready cleanup=cleaned local_bytes=0
+[archive] check 8: status=ready cleanup=cleaned local_bytes=0
+[archive] check 9: status=ready cleanup=cleaned local_bytes=0
+[archive] check 10: status=ready cleanup=cleaned local_bytes=0
+[archive] check 11: status=ready cleanup=cleaned local_bytes=0
+[archive] check 12: status=ready cleanup=cleaned local_bytes=0
+[archive] check 13: status=ready cleanup=cleaned local_bytes=0
+[archive] check 14: status=ready cleanup=cleaned local_bytes=0
+[archive] check 15: status=ready cleanup=cleaned local_bytes=0
+[archive] check 16: status=ready cleanup=cleaned local_bytes=0
+[archive] check 17: status=ready cleanup=cleaned local_bytes=0
+[archive] check 18: status=ready cleanup=cleaned local_bytes=0
+[archive] check 19: status=ready cleanup=cleaned local_bytes=0
+[archive] check 20: status=ready cleanup=cleaned local_bytes=0
+[archive] check 21: status=ready cleanup=cleaned local_bytes=0
+[archive] check 22: status=ready cleanup=cleaned local_bytes=0
+[archive] check 23: status=ready cleanup=cleaned local_bytes=0
+[archive] check 24: status=ready cleanup=cleaned local_bytes=0
+[archive] check 25: status=ready cleanup=cleaned local_bytes=0
+[archive] check 26: status=ready cleanup=cleaned local_bytes=0
+[archive] check 27: status=ready cleanup=cleaned local_bytes=0
+[archive] check 28: status=ready cleanup=cleaned local_bytes=0
+[archive] check 29: status=ready cleanup=cleaned local_bytes=0
+[archive] check 30: status=ready cleanup=cleaned local_bytes=0
+[archive] check 31: status=ready cleanup=cleaned local_bytes=0
+[archive] check 32: status=ready cleanup=cleaned local_bytes=0
+[archive] check 33: status=ready cleanup=cleaned local_bytes=0
+[archive] check 34: status=ready cleanup=cleaned local_bytes=0
+[archive] check 35: status=ready cleanup=cleaned local_bytes=0
+[archive] check 36: status=ready cleanup=cleaned local_bytes=0
+[archive] check 37: status=ready cleanup=cleaned local_bytes=0
+[archive] check 38: status=ready cleanup=cleaned local_bytes=0
+[archive] check 39: status=ready cleanup=cleaned local_bytes=0
+[archive] check 40: status=ready cleanup=cleaned local_bytes=0
+[archive] check 41: status=ready cleanup=cleaned local_bytes=0
+[archive] check 42: status=ready cleanup=cleaned local_bytes=0
+[archive] check 43: status=ready cleanup=cleaned local_bytes=0
+[archive] check 44: status=ready cleanup=cleaned local_bytes=0
+[archive] check 45: status=ready cleanup=cleaned local_bytes=0
+[archive] check 46: status=ready cleanup=cleaned local_bytes=0
+[archive] check 47: status=ready cleanup=cleaned local_bytes=0
+[archive] check 48: status=ready cleanup=cleaned local_bytes=0
+[archive] check 49: status=ready cleanup=cleaned local_bytes=0
+[archive] check 50: status=ready cleanup=cleaned local_bytes=0
+[archive] check 51: status=ready cleanup=cleaned local_bytes=0
+[archive] check 52: status=ready cleanup=cleaned local_bytes=0
+[archive] check 53: status=ready cleanup=cleaned local_bytes=0
+[archive] check 54: status=ready cleanup=cleaned local_bytes=0
+[archive] check 55: status=ready cleanup=cleaned local_bytes=0
+[archive] check 56: status=ready cleanup=cleaned local_bytes=0
+[archive] check 57: status=ready cleanup=cleaned local_bytes=0
+[archive] check 58: status=ready cleanup=cleaned local_bytes=0
+[archive] check 59: status=ready cleanup=cleaned local_bytes=0
+[archive] check 60: status=ready cleanup=cleaned local_bytes=0
+Traceback (most recent call last):
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/rebuild-image-20261124/platform_submit.py", line 194, in <module>
+    main()
+    ~~~~^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/rebuild-image-20261124/platform_submit.py", line 135, in main
+    archive = wait_archive(state["archive_id"])
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/rebuild-image-20261124/platform_submit.py", line 93, in wait_archive
+    raise TimeoutError("archive did not become ready in time")
+TimeoutError: archive did not become ready in time

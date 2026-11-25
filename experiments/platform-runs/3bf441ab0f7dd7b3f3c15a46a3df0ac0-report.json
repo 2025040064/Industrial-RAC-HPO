@@ -1,0 +1,2272 @@
+{
+  "dataset_family": "uci-gas-drift",
+  "metadata_complete": true,
+  "metric": "macro_f1",
+  "metric_direction": "higher",
+  "primary_dataset_key": "A",
+  "report": {
+    "costs": {
+      "completion_tokens": 660,
+      "prompt_tokens": 22485,
+      "total_tokens": 23145,
+      "training_seconds": 3705.1570580266416
+    },
+    "metrics": {
+      "accuracy": 0.8653295128939829,
+      "macro_f1": 0.8608224930084768
+    },
+    "model_identity": "sampler:ckpt_d6gjdn7qetuw",
+    "prediction_count": 4886,
+    "submission_id": "1407e09bf46aa798f23fde44fa77ba4e",
+    "training_complete": true,
+    "usage_settled": true,
+    "workspace_report": {
+      "datasets": [
+        {
+          "cpu_accounting_status": "measured",
+          "cpu_seconds": 1268.029155417,
+          "key": "A",
+          "metrics": {
+            "accuracy": 0.8653295128939829,
+            "macro_f1": 0.8608224930084768
+          },
+          "prediction_count": 4886,
+          "record_complete": true,
+          "rounds": [
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "baseline-cpu-a-guide-20261110-v1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.882636655948553,
+                    "macro_f1": 0.7166414061364518
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+              "model_call_ids": [
+                "d2839b7f-b20d-4ab1-b953-954026b3bbb7"
+              ],
+              "parent_artifact_id": "baseline-cpu-a-guide-20261110-v1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 1,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01-1",
+              "stage_id": "A-stage-01",
+              "validation_metrics": {
+                "accuracy": 0.882636655948553,
+                "macro_f1": 0.7166414061364518
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.8842443729903537,
+                    "macro_f1": 0.7176878592653492
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02",
+              "model_call_ids": [
+                "fb0fa90f-ed49-4952-bdbc-50430a420d2e"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 2,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02-1",
+              "stage_id": "A-stage-01",
+              "validation_metrics": {
+                "accuracy": 0.8842443729903537,
+                "macro_f1": 0.7176878592653492
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.9394602479941648,
+                    "macro_f1": 0.8296216412167485
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03",
+              "model_call_ids": [
+                "5c945e4e-4d99-48a9-9f87-5299d83d083d"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 3,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+              "stage_id": "A-stage-02",
+              "validation_metrics": {
+                "accuracy": 0.9394602479941648,
+                "macro_f1": 0.8296216412167485
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-04-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.9722830051057623,
+                    "macro_f1": 0.9124735668775409
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-04",
+              "model_call_ids": [
+                "36bdea80-74f1-4462-bb96-f3b735b9f839"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+              "reason": "Kept the platform parent because the local fixed robustness objective did not improve.",
+              "round_index": 4,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+              "stage_id": "A-stage-02",
+              "validation_metrics": {
+                "accuracy": 0.9394602479941648,
+                "macro_f1": 0.8296216412167485
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-05-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.9732658959537572,
+                    "macro_f1": 0.9072726455356127
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-04"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-05",
+              "model_call_ids": [
+                "009abe53-7751-47d5-a7c4-6c7644037771"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+              "reason": "Kept the platform parent because the local fixed robustness objective did not improve.",
+              "round_index": 5,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+              "stage_id": "A-stage-03",
+              "validation_metrics": {
+                "accuracy": 0.9378612716763006,
+                "macro_f1": 0.8250850713221297
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.9742857142857143,
+                    "macro_f1": 0.9098092838223509
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-05"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06",
+              "model_call_ids": [
+                "5a45514a-6269-4850-85e7-7777bdb075fb"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 6,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06-1",
+              "stage_id": "A-stage-04",
+              "validation_metrics": {
+                "accuracy": 0.9742857142857143,
+                "macro_f1": 0.9098092838223509
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-07-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.9728535353535354,
+                    "macro_f1": 0.9643368387472021
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-07",
+              "model_call_ids": [
+                "9c274e92-84f8-413e-92c3-3c02cedc724f"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 7,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-07-1",
+              "stage_id": "A-stage-05",
+              "validation_metrics": {
+                "accuracy": 0.9728535353535354,
+                "macro_f1": 0.9643368387472021
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-08-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-07-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.9711692471970101,
+                    "macro_f1": 0.9635007369010822
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-07"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-08",
+              "model_call_ids": [
+                "ecfed380-6035-48ce-85c4-e28e7733609a"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-07-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 8,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-08-1",
+              "stage_id": "A-stage-06",
+              "validation_metrics": {
+                "accuracy": 0.9711692471970101,
+                "macro_f1": 0.9635007369010822
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-09-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-08-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.9710068529256721,
+                    "macro_f1": 0.9637524842094852
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-07",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-08"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-09",
+              "model_call_ids": [
+                "75a17783-a192-41a7-b0e1-48aaed9bb51b"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-08-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 9,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-09-1",
+              "stage_id": "A-stage-07",
+              "validation_metrics": {
+                "accuracy": 0.9710068529256721,
+                "macro_f1": 0.9637524842094852
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-10-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-09-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "accuracy": 0.9803617571059432,
+                    "macro_f1": 0.9786289881417138
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-07",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-08",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-09"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-10",
+              "model_call_ids": [
+                "aebf2466-72a4-404e-bf9f-ed496ea9b30c"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-09-1",
+              "reason": "Kept the platform parent because the local fixed robustness objective did not improve.",
+              "round_index": 10,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-A-round-09-1",
+              "stage_id": "A-stage-08",
+              "validation_metrics": {
+                "accuracy": 0.9674418604651163,
+                "macro_f1": 0.9551350900709902
+              }
+            }
+          ],
+          "wall_seconds": 1699.3504891181365
+        },
+        {
+          "cpu_accounting_status": "measured",
+          "cpu_seconds": 675.3296258519999,
+          "key": "B",
+          "metrics": {
+            "mae": 455.5016231875542,
+            "rmse": 654.0049003902934
+          },
+          "prediction_count": 200,
+          "record_complete": true,
+          "rounds": [
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "baseline-cpu-b-rul-20261110-v1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 545.8605661979371,
+                    "rmse": 656.3517854118093
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+              "model_call_ids": [
+                "60eb2809-403b-4793-8f06-a7fd72931ff3"
+              ],
+              "parent_artifact_id": "baseline-cpu-b-rul-20261110-v1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 1,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01-1",
+              "stage_id": "B-stage-01",
+              "validation_metrics": {
+                "mae": 545.8605661979371,
+                "rmse": 656.3517854118093
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 544.113237267347,
+                    "rmse": 647.2394898137787
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02",
+              "model_call_ids": [
+                "84b80e01-d7eb-4a3b-8cc8-a680a9e1fa41"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 2,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02-1",
+              "stage_id": "B-stage-01",
+              "validation_metrics": {
+                "mae": 544.113237267347,
+                "rmse": 647.2394898137787
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 128.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.003,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 582.7220958606705,
+                    "rmse": 691.8523890533845
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 128.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.003,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03",
+              "model_call_ids": [
+                "cb3f7aee-b5f6-42bb-a18c-2296d6dabd66"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 3,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02-1",
+              "stage_id": "B-stage-01",
+              "validation_metrics": {
+                "mae": 544.113237267347,
+                "rmse": 647.2394898137787
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 106.0,
+                      "epochs": 1.0,
+                      "learning_rate": 0.004634517695960906,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 543.7373042405111,
+                    "rmse": 642.6172775316222
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 106.0,
+                  "epochs": 1.0,
+                  "learning_rate": 0.004634517695960906,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04",
+              "model_call_ids": [
+                "bf20949d-74ab-4092-9d6f-bfcf1ea1d95f"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 4,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "stage_id": "B-stage-01",
+              "validation_metrics": {
+                "mae": 543.7373042405111,
+                "rmse": 642.6172775316222
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-05-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 106.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.004634517695960906,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 590.0652048814906,
+                    "rmse": 687.7473365328018
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 106.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.004634517695960906,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-05",
+              "model_call_ids": [
+                "48f81858-62ef-4f32-8cea-04a02e85dd7e"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 5,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "stage_id": "B-stage-02",
+              "validation_metrics": {
+                "mae": 543.8558540168156,
+                "rmse": 642.7346567799273
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-06-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 469.0,
+                      "epochs": 1.0,
+                      "learning_rate": 1.0950537077805198e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 544.3704604585706,
+                    "rmse": 643.3733230962351
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 469.0,
+                  "epochs": 1.0,
+                  "learning_rate": 1.0950537077805198e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-05"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-06",
+              "model_call_ids": [
+                "9d1a250a-e288-4332-82da-c3ea17f6a622"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 6,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "stage_id": "B-stage-02",
+              "validation_metrics": {
+                "mae": 543.8558540168156,
+                "rmse": 642.7346567799273
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-07-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 351.0,
+                      "epochs": 1.0,
+                      "learning_rate": 1e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 544.6030727471468,
+                    "rmse": 643.6554948754488
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 351.0,
+                  "epochs": 1.0,
+                  "learning_rate": 1e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-06"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-07",
+              "model_call_ids": [
+                "7151ad2b-4057-40dd-96f4-4601bccd2fe4"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 7,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "stage_id": "B-stage-02",
+              "validation_metrics": {
+                "mae": 543.8558540168156,
+                "rmse": 642.7346567799273
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-08-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 106.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.004634517695960906,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 582.0864296772536,
+                    "rmse": 682.5300974626583
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 106.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.004634517695960906,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-07"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-08",
+              "model_call_ids": [
+                "b905f099-d33e-4a8a-b8f4-e1d0ca5d70a5"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 8,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "stage_id": "B-stage-03",
+              "validation_metrics": {
+                "mae": 543.8499819931035,
+                "rmse": 644.7662392181101
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-09-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 34.0,
+                      "epochs": 1.0,
+                      "learning_rate": 0.00015232631674230043,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 572.9035415984782,
+                    "rmse": 682.162460209147
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 34.0,
+                  "epochs": 1.0,
+                  "learning_rate": 0.00015232631674230043,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-07",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-08"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-09",
+              "model_call_ids": [
+                "baae43e7-ecd7-42bb-9beb-e3bd94d5cc89"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 9,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "stage_id": "B-stage-03",
+              "validation_metrics": {
+                "mae": 543.8499819931035,
+                "rmse": 644.7662392181101
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-10-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 18.0,
+                      "epochs": 1.0,
+                      "learning_rate": 0.0005323095414960109,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 571.8315017240117,
+                    "rmse": 679.1274875480943
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 18.0,
+                  "epochs": 1.0,
+                  "learning_rate": 0.0005323095414960109,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-07",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-08",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-09"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-10",
+              "model_call_ids": [
+                "6853418e-e615-4848-b3d0-c36fd5a9ba4f"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 10,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-B-round-04-1",
+              "stage_id": "B-stage-03",
+              "validation_metrics": {
+                "mae": 543.8499819931035,
+                "rmse": 644.7662392181101
+              }
+            }
+          ],
+          "wall_seconds": 1238.2789887683466
+        },
+        {
+          "cpu_accounting_status": "measured",
+          "cpu_seconds": 2804.575991796,
+          "key": "C",
+          "metrics": {
+            "mae": 41.17631385393615,
+            "nasa_score": 85127670710.02972,
+            "rmse": 56.320303333202176
+          },
+          "prediction_count": 9687,
+          "record_complete": true,
+          "rounds": [
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 256.0,
+                      "epochs": 2.0,
+                      "learning_rate": 0.002,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "baseline-cpu-c-guide-20261110-v1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 38.993129895296235,
+                    "nasa_score": 3730838307.998912,
+                    "rmse": 52.740935760756635
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 256.0,
+                  "epochs": 2.0,
+                  "learning_rate": 0.002,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+              "model_call_ids": [
+                "ae935169-f0b9-4d2c-aeff-f1691e137f6e"
+              ],
+              "parent_artifact_id": "baseline-cpu-c-guide-20261110-v1",
+              "reason": "Kept the platform parent because the local fixed robustness objective did not improve.",
+              "round_index": 1,
+              "seed": 42,
+              "selected_artifact_id": "baseline-cpu-c-guide-20261110-v1",
+              "stage_id": "C-stage-01",
+              "validation_metrics": {
+                "mae": 38.89982982666355,
+                "nasa_score": 5823439325.3424635,
+                "rmse": 52.86857256611151
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 131.0,
+                      "epochs": 1.0,
+                      "learning_rate": 1.1069645257167573e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "baseline-cpu-c-guide-20261110-v1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 38.06426738535299,
+                    "nasa_score": 4325391489.905263,
+                    "rmse": 51.884713422632906
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 131.0,
+                  "epochs": 1.0,
+                  "learning_rate": 1.1069645257167573e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02",
+              "model_call_ids": [
+                "58d5f653-c1c6-4da4-8fb5-ccc34009a89b"
+              ],
+              "parent_artifact_id": "baseline-cpu-c-guide-20261110-v1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 2,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02-1",
+              "stage_id": "C-stage-01",
+              "validation_metrics": {
+                "mae": 38.06426738535299,
+                "nasa_score": 4325391489.905263,
+                "rmse": 51.884713422632906
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 131.0,
+                      "epochs": 2.0,
+                      "learning_rate": 1.1069645257167573e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 38.05627296517801,
+                    "nasa_score": 4167572453.766672,
+                    "rmse": 51.871787268167395
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 131.0,
+                  "epochs": 2.0,
+                  "learning_rate": 1.1069645257167573e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03",
+              "model_call_ids": [
+                "5505467d-d0a7-4b8e-a3c1-d296694ab69f"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 3,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03-1",
+              "stage_id": "C-stage-01",
+              "validation_metrics": {
+                "mae": 38.05627296517801,
+                "nasa_score": 4167572453.766672,
+                "rmse": 51.871787268167395
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 131.0,
+                      "epochs": 2.0,
+                      "learning_rate": 1.1069645257167573e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 38.02348975339085,
+                    "nasa_score": 4173628044.4754944,
+                    "rmse": 51.79556629961159
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 131.0,
+                  "epochs": 2.0,
+                  "learning_rate": 1.1069645257167573e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "promote",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04",
+              "model_call_ids": [
+                "795554fb-aaf1-405f-a905-2092ddf79aa6"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03-1",
+              "reason": "Platform primary metric and local fixed robustness objective improved.",
+              "round_index": 4,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "stage_id": "C-stage-02",
+              "validation_metrics": {
+                "mae": 38.02348975339085,
+                "nasa_score": 4173628044.4754944,
+                "rmse": 51.79556629961159
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-05-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 131.0,
+                      "epochs": 2.0,
+                      "learning_rate": 1.1069645257167573e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 38.0368055822576,
+                    "nasa_score": 4314295531.506717,
+                    "rmse": 51.85544995080922
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 131.0,
+                  "epochs": 2.0,
+                  "learning_rate": 1.1069645257167573e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-05",
+              "model_call_ids": [
+                "78ddd774-e54d-4952-95ee-7edb7b0ae1a7"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 5,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "stage_id": "C-stage-02",
+              "validation_metrics": {
+                "mae": 38.02348975339085,
+                "nasa_score": 4173628044.4754944,
+                "rmse": 51.79556629961159
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-06-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 469.0,
+                      "epochs": 1.0,
+                      "learning_rate": 1.0950537077805198e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 38.05358529765302,
+                    "nasa_score": 4345855426.521365,
+                    "rmse": 51.86561492654541
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 469.0,
+                  "epochs": 1.0,
+                  "learning_rate": 1.0950537077805198e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-05"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-06",
+              "model_call_ids": [
+                "ad74910d-8fb9-4d34-8029-b24708b2e0d0"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 6,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "stage_id": "C-stage-02",
+              "validation_metrics": {
+                "mae": 38.02348975339085,
+                "nasa_score": 4173628044.4754944,
+                "rmse": 51.79556629961159
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-07-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 131.0,
+                      "epochs": 2.0,
+                      "learning_rate": 1.1069645257167573e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 37.93325669630465,
+                    "nasa_score": 4215049145.910362,
+                    "rmse": 51.63666876081052
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 131.0,
+                  "epochs": 2.0,
+                  "learning_rate": 1.1069645257167573e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-06"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-07",
+              "model_call_ids": [
+                "5668846d-1a7a-4ae0-85a8-a94a5763c2c8"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 7,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "stage_id": "C-stage-03",
+              "validation_metrics": {
+                "mae": 37.90518085397807,
+                "nasa_score": 4174294083.467628,
+                "rmse": 51.59382567649641
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-08-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 37.0,
+                      "epochs": 1.0,
+                      "learning_rate": 3.9981894780517796e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 37.79956778470759,
+                    "nasa_score": 4325698951.961159,
+                    "rmse": 51.60405421869704
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 37.0,
+                  "epochs": 1.0,
+                  "learning_rate": 3.9981894780517796e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-07"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-08",
+              "model_call_ids": [
+                "41f866f8-fa08-457b-ba1e-534b6d0dfb7b"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 8,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "stage_id": "C-stage-03",
+              "validation_metrics": {
+                "mae": 37.90518085397807,
+                "nasa_score": 4174294083.467628,
+                "rmse": 51.59382567649641
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-09-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "rac",
+                    "params": {
+                      "batch_size": 131.0,
+                      "epochs": 2.0,
+                      "learning_rate": 1.1069645257167573e-05,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 38.1039450953699,
+                    "nasa_score": 9062797382.364225,
+                    "rmse": 51.92741145099714
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "rac",
+                "params": {
+                  "batch_size": 131.0,
+                  "epochs": 2.0,
+                  "learning_rate": 1.1069645257167573e-05,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-07",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-08"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-09",
+              "model_call_ids": [
+                "2fce2bc2-a2b7-4922-9df8-13ece12ef531"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 9,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "stage_id": "C-stage-04",
+              "validation_metrics": {
+                "mae": 38.03015694788009,
+                "nasa_score": 9569692838.856167,
+                "rmse": 51.88063971436769
+              }
+            },
+            {
+              "candidates": [
+                {
+                  "artifact": {
+                    "checkpoint_paths": [
+                      "checkpoint.npz"
+                    ],
+                    "code_paths": [],
+                    "predict_argv": [
+                      "python3",
+                      "/app/harness.py",
+                      "predict"
+                    ]
+                  },
+                  "artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-10-1",
+                  "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+                  "configuration": {
+                    "cpu_threads": 1.0,
+                    "model_action": "conservative",
+                    "params": {
+                      "batch_size": 18.0,
+                      "epochs": 1.0,
+                      "learning_rate": 0.0005323095414960109,
+                      "sampling_level": 1.0
+                    },
+                    "strategy": "uniform"
+                  },
+                  "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+                  "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+                  "seed": 42,
+                  "validation_metrics": {
+                    "mae": 39.270399075043706,
+                    "nasa_score": 14970018664.50223,
+                    "rmse": 53.6918064927581
+                  }
+                }
+              ],
+              "change_summary": "Updated the existing checkpoint weights and Adam state on the current public training projection.",
+              "configuration": {
+                "cpu_threads": 1.0,
+                "model_action": "conservative",
+                "params": {
+                  "batch_size": 18.0,
+                  "epochs": 1.0,
+                  "learning_rate": 0.0005323095414960109,
+                  "sampling_level": 1.0
+                },
+                "strategy": "uniform"
+              },
+              "decision": "keep",
+              "history_ids": [
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-01",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-02",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-03",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-05",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-06",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-07",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-08",
+                "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-09"
+              ],
+              "hypothesis": "A small CPU continuation from the platform parent may improve public validation.",
+              "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-10",
+              "model_call_ids": [
+                "174477b8-9087-4c1d-9487-fce179956314"
+              ],
+              "parent_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "reason": "Kept the platform parent because the platform primary metric did not improve.",
+              "round_index": 10,
+              "seed": 42,
+              "selected_artifact_id": "model-3bf441ab0f7dd7b3f3c15a46a3df0ac0-C-round-04-1",
+              "stage_id": "C-stage-04",
+              "validation_metrics": {
+                "mae": 38.03015694788009,
+                "nasa_score": 9569692838.856167,
+                "rmse": 51.88063971436769
+              }
+            }
+          ],
+          "wall_seconds": 2812.1943255863152
+        }
+      ],
+      "selection_owner": "participant"
+    }
+  },
+  "run": {
+    "attempt": 1,
+    "created_at": "2026-11-24T06:08:13.670652Z",
+    "eligible": false,
+    "failure_detail": "",
+    "failure_kind": "",
+    "failure_reason": "",
+    "hard_deadline": null,
+    "id": "3bf441ab0f7dd7b3f3c15a46a3df0ac0",
+    "mode": "trial",
+    "score": null,
+    "status": "completed",
+    "submission_id": "1407e09bf46aa798f23fde44fa77ba4e",
+    "submission_version": 5,
+    "team_id": "f7fc9c63cd252b69cd41713c9cf4b0c9",
+    "team_name": "2025040064",
+    "trial_kind": "legacy",
+    "updated_at": "2026-11-24T06:58:44.456308Z"
+  },
+  "target_unit": "class",
+  "task": "classification",
+  "workspace_suite": {
+    "datasets": [
+      {
+        "key": "A",
+        "label_status": "draft"
+      },
+      {
+        "key": "B",
+        "label_status": "approved"
+      },
+      {
+        "key": "C",
+        "label_status": "draft"
+      }
+    ],
+    "rounds": 10
+  }
+}

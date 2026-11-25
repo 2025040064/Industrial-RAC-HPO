@@ -1,0 +1,44 @@
+{
+  "dataset_family": "uci-gas-drift",
+  "report": {
+    "status": "passed",
+    "steps": [
+      {
+        "detail": "隔离环境启动完成。",
+        "name": "startup",
+        "status": "passed"
+      },
+      {
+        "detail": "原生接口描述检查完成。",
+        "name": "describe",
+        "status": "passed"
+      },
+      {
+        "detail": "已分别使用 A、B、C 各一条公开输入检查父模型预测。",
+        "name": "prediction",
+        "status": "passed"
+      }
+    ]
+  },
+  "run": {
+    "attempt": 1,
+    "created_at": "2026-11-18T12:53:00.765197Z",
+    "eligible": false,
+    "failure_detail": "",
+    "failure_kind": "",
+    "failure_reason": "",
+    "hard_deadline": "2026-11-18T17:19:39.060741Z",
+    "id": "893a9207497b2b184ca6dafefbdcbcb1",
+    "mode": "trial",
+    "score": null,
+    "status": "completed",
+    "submission_id": "0627ffb02bea019ce27a012b5e81a9bd",
+    "submission_version": 2,
+    "team_id": "f7fc9c63cd252b69cd41713c9cf4b0c9",
+    "team_name": "2025040064",
+    "trial_kind": "feasibility",
+    "updated_at": "2026-11-18T17:14:46.60017Z"
+  },
+  "target_unit": "class",
+  "task": "classification"
+}

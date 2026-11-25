@@ -1,0 +1,19 @@
+parent  halves MAE [41.7608, 35.9774]  RMSE [55.9246, 49.5527]
+  teacher (87 dims): MAE 36.5966  RMSE 49.8372
+  teacher in-sample residual std 51.3636
+beta=0.0  MAE 37.1369 RMSE 51.3045 acc 5/10 halves [39.0197, 35.2136] BOTH BETTER
+beta=0.15 MAE 37.2669 RMSE 51.3299 acc 4/10 halves [38.8888, 35.6102] BOTH BETTER
+beta=0.3  MAE 37.1040 RMSE 51.3441 acc 6/10 halves [39.0532, 35.113] BOTH BETTER
+beta=0.45 MAE 37.9111 RMSE 51.9458 acc 2/10 halves [40.0596, 35.7165] BOTH BETTER
+beta=0.6  MAE 38.8998 RMSE 52.8686 acc 0/10 halves [41.7608, 35.9774] SPLIT
+beta=0.8  MAE 38.8998 RMSE 52.8686 acc 0/10 halves [41.7608, 35.9774] SPLIT
+beta=1.0  MAE 38.8998 RMSE 52.8686 acc 0/10 halves [41.7608, 35.9774] SPLIT
+calibrated variant
+  calibration y ~ 1.0348 * teacher + -5.5957
+beta=0.15 MAE 37.2157 RMSE 51.3162 acc 4/10 halves [38.8503, 35.5459]
+beta=0.3  MAE 37.0000 RMSE 51.3300 acc 6/10 halves [38.9523, 35.0057]
+beta=0.45 MAE 37.7614 RMSE 51.9119 acc 2/10 halves [39.9133, 35.5632]
+beta=0.6  MAE 37.4108 RMSE 51.5909 acc 5/10 halves [39.4661, 35.3114]
+beta=0.8  MAE 38.8998 RMSE 52.8686 acc 0/10 halves [41.7608, 35.9774]
+best by RMSE {"tag": "distill_b0", "mae": 37.13686975600732, "rmse": 51.30453493248086, "accepted": 5, "half_mae": [39.0197, 35.2136], "half_rmse": [53.7255, 48.7074]}
+saved experiments/local-ab-20261124/distill-results.json experiments/local-ab-20261124/distill-calibrated.json

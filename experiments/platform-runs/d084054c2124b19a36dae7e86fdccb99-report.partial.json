@@ -1,0 +1,68 @@
+{
+  "dataset_family": "uci-gas-drift",
+  "metadata_complete": true,
+  "metric": "macro_f1",
+  "metric_direction": "higher",
+  "primary_dataset_key": "A",
+  "report": null,
+  "run": {
+    "attempt": 1,
+    "created_at": "2026-11-24T04:14:40.348579Z",
+    "eligible": false,
+    "failure_detail": "",
+    "failure_kind": "",
+    "failure_reason": "",
+    "hard_deadline": null,
+    "id": "d084054c2124b19a36dae7e86fdccb99",
+    "mode": "trial",
+    "progress": {
+      "dataset": "A",
+      "dataset_index": 1,
+      "dataset_total": 3,
+      "datasets": {
+        "A": {
+          "phase": "predicting"
+        },
+        "B": {
+          "phase": "training",
+          "round": 9,
+          "round_total": 10
+        },
+        "C": {
+          "phase": "training",
+          "round": 4,
+          "round_total": 10
+        }
+      },
+      "parallel": true,
+      "phase": "predicting"
+    },
+    "score": null,
+    "status": "running",
+    "submission_id": "e601e62637960a06a30dbc1d8c2dfd8a",
+    "submission_version": 4,
+    "team_id": "f7fc9c63cd252b69cd41713c9cf4b0c9",
+    "team_name": "2025040064",
+    "trial_kind": "legacy",
+    "updated_at": "2026-11-24T04:51:43.007404Z"
+  },
+  "target_unit": "class",
+  "task": "classification",
+  "workspace_suite": {
+    "datasets": [
+      {
+        "key": "A",
+        "label_status": "draft"
+      },
+      {
+        "key": "B",
+        "label_status": "approved"
+      },
+      {
+        "key": "C",
+        "label_status": "draft"
+      }
+    ],
+    "rounds": 10
+  }
+}

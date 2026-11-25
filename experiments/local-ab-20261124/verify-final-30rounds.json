@@ -1,0 +1,138 @@
+[
+  {
+    "tag": "distill_fs42_d0.4",
+    "mae": 36.854056543743134,
+    "rmse": 51.17026649175315,
+    "accepted": 6,
+    "half_mae": [
+      38.6071,
+      35.0634
+    ],
+    "half_rmse": [
+      53.4663,
+      48.7133
+    ],
+    "fold_seed": 42,
+    "tag_full": "distill_fs42_d0.4",
+    "both_halves_better": true
+  },
+  {
+    "tag": "distill_fs42_d0.6",
+    "mae": 36.97414115287191,
+    "rmse": 51.25521552460892,
+    "accepted": 6,
+    "half_mae": [
+      38.8009,
+      35.1081
+    ],
+    "half_rmse": [
+      53.6117,
+      48.7306
+    ],
+    "fold_seed": 42,
+    "tag_full": "distill_fs42_d0.6",
+    "both_halves_better": true
+  },
+  {
+    "tag": "pure_fs42_d0.4",
+    "mae": 37.040325466925175,
+    "rmse": 51.269764118184746,
+    "accepted": 5,
+    "half_mae": [
+      38.866,
+      35.1754
+    ],
+    "half_rmse": [
+      53.6381,
+      48.7318
+    ],
+    "fold_seed": 42,
+    "tag_full": "pure_fs42_d0.4",
+    "both_halves_better": true
+  },
+  {
+    "tag": "pure_fs42_d0.6",
+    "mae": 37.13686975600732,
+    "rmse": 51.30453493248086,
+    "accepted": 5,
+    "half_mae": [
+      39.0197,
+      35.2136
+    ],
+    "half_rmse": [
+      53.7255,
+      48.7074
+    ],
+    "fold_seed": 42,
+    "tag_full": "pure_fs42_d0.6",
+    "both_halves_better": true
+  },
+  {
+    "tag": "distill_fs17_d0.4",
+    "mae": 36.829645117830744,
+    "rmse": 51.13842357717462,
+    "accepted": 6,
+    "half_mae": [
+      38.5165,
+      35.1066
+    ],
+    "half_rmse": [
+      53.408,
+      48.711
+    ],
+    "fold_seed": 17,
+    "tag_full": "distill_fs17_d0.4",
+    "both_halves_better": true
+  },
+  {
+    "tag": "distill_fs17_d0.6",
+    "mae": 36.926611350463475,
+    "rmse": 51.21283112212189,
+    "accepted": 6,
+    "half_mae": [
+      38.6709,
+      35.1448
+    ],
+    "half_rmse": [
+      53.5332,
+      48.7287
+    ],
+    "fold_seed": 17,
+    "tag_full": "distill_fs17_d0.6",
+    "both_halves_better": true
+  },
+  {
+    "tag": "pure_fs17_d0.4",
+    "mae": 37.040325466925175,
+    "rmse": 51.269764118184746,
+    "accepted": 5,
+    "half_mae": [
+      38.866,
+      35.1754
+    ],
+    "half_rmse": [
+      53.6381,
+      48.7318
+    ],
+    "fold_seed": 17,
+    "tag_full": "pure_fs17_d0.4",
+    "both_halves_better": true
+  },
+  {
+    "tag": "pure_fs17_d0.6",
+    "mae": 37.13686975600732,
+    "rmse": 51.30453493248086,
+    "accepted": 5,
+    "half_mae": [
+      39.0197,
+      35.2136
+    ],
+    "half_rmse": [
+      53.7255,
+      48.7074
+    ],
+    "fold_seed": 17,
+    "tag_full": "pure_fs17_d0.6",
+    "both_halves_better": true
+  }
+]

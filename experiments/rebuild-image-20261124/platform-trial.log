@@ -1,0 +1,5 @@
+[archive] check 1: status=ready cleanup=cleaned local_bytes=0
+[validate] requested: {"base_model_confirmed": false, "compliance_reason": "", "compliance_status": "unreviewed", "created_at": "2026-11-24T04:14:00.29734Z", "document_id": "47221482007a959c4b9c7de39e111ae0", "id": "e601e62637960a06a30dbc1d8c2dfd8a", "image_archive_id": "3eebd66f7541ab707ea56c0b3d00eaf6", "image_retired_
+[validate] check 1: status=valid error=-
+[trial] run_id=d084054c2124b19a36dae7e86fdccb99 status=queued
+[run] d084054c2124b19a36dae7e86fdccb99 status=queued failure=-

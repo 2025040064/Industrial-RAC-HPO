@@ -1,0 +1,91 @@
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: divide by zero encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: overflow encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:95: RuntimeWarning: invalid value encountered in matmul
+  hidden = np.tanh(x @ self.params["w1"] + self.params["b1"])
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: divide by zero encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: overflow encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:96: RuntimeWarning: invalid value encountered in matmul
+  return hidden, hidden @ self.params["w2"] + self.params["b2"]
+package checkpoint  MAE 38.8998  RMSE 52.8686
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: divide by zero encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: overflow encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:132: RuntimeWarning: invalid value encountered in matmul
+  gradients = {"w2": hidden.T @ delta, "b2": delta.sum(axis=0)}
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: divide by zero encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: overflow encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/workspace/contest_sampler/live-harness-20261117/C/package/baselines/model.py:134: RuntimeWarning: invalid value encountered in matmul
+  gradients.update(w1=batch.T @ hidden_delta, b1=hidden_delta.sum(axis=0))
+race_v5like          MAE 38.1450  RMSE 51.9922  accepted 1/10
+long_lr1e-3_ep5      MAE 38.0240  RMSE 51.8419  accepted 1/10
+long_lr3e-3_ep5      MAE 38.0130  RMSE 52.1424  accepted 1/10
+ema_lr1e-3_ep5       MAE 37.9219  RMSE 51.8049  accepted 5/10
+ema_lr3e-3_ep5       MAE 37.8377  RMSE 51.6909  accepted 5/10
+noise_lr1e-3_ep5     MAE 38.8998  RMSE 52.8686  accepted 0/10
+widen64_lr1e-3_ep5   MAE 37.8792  RMSE 51.7040
+** On entry to DLASCL, parameter number  4 had an illegal value
+Traceback (most recent call last):
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/local-ab-20261124/run_ab.py", line 222, in <module>
+    main()
+    ~~~~^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/local-ab-20261124/run_ab.py", line 206, in main
+    xtr, xva = temporal_features(train, valid)
+               ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/local-ab-20261124/run_ab.py", line 165, in temporal_features
+    return np.hstack([train["x"], build(train["x"], meta("train"))]), \
+                                  ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/local-ab-20261124/run_ab.py", line 157, in build
+    **{f"{c}__wslope": (roll.apply(lambda s: np.polyfit(np.arange(len(s)), s, 1)[0], raw=True))[c]
+                        ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/pandas/core/window/rolling.py", line 2240, in apply
+    return super().apply(
+           ~~~~~~~~~~~~~^
+        func,
+        ^^^^^
+    ...<4 lines>...
+        kwargs=kwargs,
+        ^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/pandas/core/window/rolling.py", line 1565, in apply
+    return self._apply(
+           ~~~~~~~~~~~^
+        apply_func,
+        ^^^^^^^^^^^
+        name="apply",
+        ^^^^^^^^^^^^^
+        numba_args=numba_args,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/pandas/core/window/rolling.py", line 595, in _apply
+    return self._apply_columnwise(homogeneous_func, name, numeric_only)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/pandas/core/window/rolling.py", line 475, in _apply_columnwise
+    res = homogeneous_func(arr)
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/pandas/core/window/rolling.py", line 590, in homogeneous_func
+    result = calc(values)
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/pandas/core/window/rolling.py", line 587, in calc
+    return func(x, start, end, min_periods, *numba_args)
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/pandas/core/window/rolling.py", line 1592, in apply_func
+    return window_func(values, begin, end, min_periods)
+  File "pandas/_libs/window/aggregations.pyx", line 1576, in pandas._libs.window.aggregations.roll_apply
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/experiments/local-ab-20261124/run_ab.py", line 157, in <lambda>
+    **{f"{c}__wslope": (roll.apply(lambda s: np.polyfit(np.arange(len(s)), s, 1)[0], raw=True))[c]
+                                             ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/numpy/lib/polynomial.py", line 669, in polyfit
+    c, resids, rank, s = lstsq(lhs, rhs, rcond)
+                         ~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/numpy/linalg/linalg.py", line 2326, in lstsq
+    x, resids, rank, s = gufunc(a, b, rcond, signature=signature, extobj=extobj)
+                         ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/liujiale/personalprojoct/personal compition/Industrial-RAC-HPO/.venv-temporal/lib/python3.13/site-packages/numpy/linalg/linalg.py", line 124, in _raise_linalgerror_lstsq
+    raise LinAlgError("SVD did not converge in Linear Least Squares")
+numpy.linalg.LinAlgError: SVD did not converge in Linear Least Squares

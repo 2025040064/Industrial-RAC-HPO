@@ -1,0 +1,501 @@
+{
+  "generated_at": "2026-11-24T09:48:42+0800",
+  "purpose": "Measure whether conservative_invalid_response fallback still occurs locally",
+  "path": "real model texts and candidate formats injected into production SDK callback",
+  "limits": [
+    "Not a platform run: no original 11-23 receipts exist, so platform 30/30 cannot be reproduced exactly.",
+    "No local LoRA weights: weights are remote trio:// pointers; no PyTRIO sampling or billable training was called.",
+    "measure=False skips candidate metric computation; it does not skip decision parsing, parameter choice or training."
+  ],
+  "source_sha256": {
+    "official_submission/contest_submission.py": "8102dad170282faccc7c253a70bb316361776b49734245e43c5e9ca272f774d6",
+    "src/rac_hpo/contest/stage3_controls.py": "d18a1d23f3c7198acf26e369ff2a562a529968b38faaddf44f4205a76fb060fb"
+  },
+  "sdk_source": ".cache/sdk-stage3-save.wBTnNxLa",
+  "rounds_per_task": 10,
+  "cases": {
+    "real-01-submitted-sampler": {
+      "reply_by_task": {
+        "A": "RAC<|im_end|>",
+        "B": "RAC<|im_end|>",
+        "C": "RAC<|im_end|>"
+      },
+      "rounds": 30,
+      "fallback_count": 0,
+      "fallback_rate": 0.0,
+      "actions": {
+        "rac": 30
+      },
+      "rejection_reasons": {},
+      "validity": {
+        "True": 30
+      },
+      "audit_samples": [
+        {
+          "task": "A",
+          "round": 1,
+          "model_response": "RAC<|im_end|>",
+          "normalized_response": "RAC",
+          "model_action": "rac",
+          "response_reason": null,
+          "final_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 2,
+          "model_response": "RAC<|im_end|>",
+          "normalized_response": "RAC",
+          "model_action": "rac",
+          "response_reason": null,
+          "final_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 3,
+          "model_response": "RAC<|im_end|>",
+          "normalized_response": "RAC",
+          "model_action": "rac",
+          "response_reason": null,
+          "final_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        }
+      ]
+    },
+    "real-03-sdk-selection-json": {
+      "reply_by_task": {
+        "A": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}<|im_end|>",
+        "B": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}<|im_end|>",
+        "C": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}<|im_end|>"
+      },
+      "rounds": 30,
+      "fallback_count": 0,
+      "fallback_rate": 0.0,
+      "actions": {
+        "conservative": 30
+      },
+      "rejection_reasons": {},
+      "validity": {
+        "True": 30
+      },
+      "audit_samples": [
+        {
+          "task": "A",
+          "round": 1,
+          "model_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}<|im_end|>",
+          "normalized_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}",
+          "model_action": "conservative",
+          "response_reason": null,
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 2,
+          "model_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}<|im_end|>",
+          "normalized_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}",
+          "model_action": "conservative",
+          "response_reason": null,
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 3,
+          "model_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}<|im_end|>",
+          "normalized_response": "{\n  \"selected_option\": \"conservative\",\n  \"reason_codes\": [\n    \"constraint\",\n    \"risk\"\n  ],\n  \"risk\": \"high\"\n}",
+          "model_action": "conservative",
+          "response_reason": null,
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        }
+      ]
+    },
+    "legacy-parameter-proposal-json": {
+      "reply_by_task": {
+        "A": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}",
+        "B": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}",
+        "C": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}"
+      },
+      "rounds": 30,
+      "fallback_count": 30,
+      "fallback_rate": 1.0,
+      "actions": {
+        "conservative_invalid_response": 30
+      },
+      "rejection_reasons": {
+        "parameter_proposal_json": 30
+      },
+      "validity": {
+        "False": 30
+      },
+      "audit_samples": [
+        {
+          "task": "A",
+          "round": 1,
+          "model_response": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}",
+          "normalized_response": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "parameter_proposal_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 2,
+          "model_response": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}",
+          "normalized_response": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "parameter_proposal_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 3,
+          "model_response": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}",
+          "normalized_response": "{\"learning_rate\": 0.001, \"batch_size\": 128, \"epochs\": 2, \"strategy\": \"uniform\", \"reason\": \"Measure a conservative continuation step.\"}",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "parameter_proposal_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        }
+      ]
+    },
+    "truncated-selection-json": {
+      "reply_by_task": {
+        "A": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]",
+        "B": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]",
+        "C": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]"
+      },
+      "rounds": 30,
+      "fallback_count": 30,
+      "fallback_rate": 1.0,
+      "actions": {
+        "conservative_invalid_response": 30
+      },
+      "rejection_reasons": {
+        "truncated_json": 30
+      },
+      "validity": {
+        "False": 30
+      },
+      "audit_samples": [
+        {
+          "task": "A",
+          "round": 1,
+          "model_response": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]",
+          "normalized_response": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "truncated_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 2,
+          "model_response": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]",
+          "normalized_response": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "truncated_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 3,
+          "model_response": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]",
+          "normalized_response": "{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"]",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "truncated_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        }
+      ]
+    },
+    "fenced-selection-json": {
+      "reply_by_task": {
+        "A": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```",
+        "B": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```",
+        "C": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```"
+      },
+      "rounds": 30,
+      "fallback_count": 30,
+      "fallback_rate": 1.0,
+      "actions": {
+        "conservative_invalid_response": 30
+      },
+      "rejection_reasons": {
+        "fenced_json": 30
+      },
+      "validity": {
+        "False": 30
+      },
+      "audit_samples": [
+        {
+          "task": "A",
+          "round": 1,
+          "model_response": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```",
+          "normalized_response": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "fenced_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 2,
+          "model_response": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```",
+          "normalized_response": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "fenced_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 3,
+          "model_response": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```",
+          "normalized_response": "```json\n{\"selected_option\":\"conservative\",\"reason_codes\":[\"risk\"],\"risk\":\"medium\"}\n```",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "fenced_json",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        }
+      ]
+    },
+    "unknown-terminal-marker": {
+      "reply_by_task": {
+        "A": "RAC<|unknown|>",
+        "B": "RAC<|unknown|>",
+        "C": "RAC<|unknown|>"
+      },
+      "rounds": 30,
+      "fallback_count": 30,
+      "fallback_rate": 1.0,
+      "actions": {
+        "conservative_invalid_response": 30
+      },
+      "rejection_reasons": {
+        "invalid_terminal_marker": 30
+      },
+      "validity": {
+        "False": 30
+      },
+      "audit_samples": [
+        {
+          "task": "A",
+          "round": 1,
+          "model_response": "RAC<|unknown|>",
+          "normalized_response": "RAC<|unknown|>",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "invalid_terminal_marker",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 2,
+          "model_response": "RAC<|unknown|>",
+          "normalized_response": "RAC<|unknown|>",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "invalid_terminal_marker",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        },
+        {
+          "task": "A",
+          "round": 3,
+          "model_response": "RAC<|unknown|>",
+          "normalized_response": "RAC<|unknown|>",
+          "model_action": "conservative_invalid_response",
+          "response_reason": "invalid_terminal_marker",
+          "final_params": {
+            "learning_rate": 0.0015,
+            "batch_size": 128,
+            "epochs": 1,
+            "sampling_level": 1
+          },
+          "recommended_params": {
+            "learning_rate": 0.003,
+            "batch_size": 128,
+            "epochs": 2,
+            "sampling_level": 1
+          }
+        }
+      ]
+    }
+  },
+  "elapsed_seconds": 341.65
+}
