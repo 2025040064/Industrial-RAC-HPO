@@ -14,8 +14,8 @@ from rac_hpo.contest.continuation import EMA_DECAY, fit_epochs
 class FakeModel:
     """Minimal stand-in exposing exactly what fit_epochs touches."""
 
-    def __init__(self, task, start=0.0):
-        self.meta = {"task": task, "epochs": 0, "seed": 42}
+    def __init__(self, task, profile=None, start=0.0):
+        self.meta = {"task": task, "profile": profile, "epochs": 0, "seed": 42}
         self.params = {"w": np.array([start], dtype=float)}
 
     def fit(self, x, y, epochs):
@@ -38,7 +38,7 @@ def expected_average(epochs, start=0.0):
 
 class ContinuationAveragingTest(unittest.TestCase):
     def test_regression_averages_epoch_end_weights(self):
-        model = FakeModel("regression")
+        model = FakeModel("regression", profile="C")  # C keeps EMA (v8-B)
         data = {"x": np.zeros((4, 1)), "y": np.zeros(4)}
         losses = fit_epochs(model, data, 3, {"strategy": "uniform"}, None)
         self.assertEqual(losses, [1.0, 2.0, 3.0])
@@ -47,13 +47,13 @@ class ContinuationAveragingTest(unittest.TestCase):
         self.assertEqual(model.meta["epochs"], 3)
 
     def test_classification_keeps_the_last_weights(self):
-        model = FakeModel("classification")
+        model = FakeModel("classification", profile="A")
         data = {"x": np.zeros((4, 1)), "y": np.zeros(4)}
         fit_epochs(model, data, 3, {"strategy": "uniform"}, None)
         self.assertEqual(float(model.params["w"][0]), 3.0)
 
     def test_unit_balanced_regression_is_averaged_too(self):
-        model = FakeModel("regression")
+        model = FakeModel("regression", profile="C")
         data = {"x": np.zeros((6, 1)), "y": np.zeros(6)}
         groups = np.array(["u1", "u1", "u1", "u2", "u2", "u2"])
         fit_epochs(model, data, 2, {"strategy": "unit_balanced"}, groups)
@@ -61,10 +61,17 @@ class ContinuationAveragingTest(unittest.TestCase):
         self.assertLess(float(model.params["w"][0]), 2.0)
 
     def test_single_epoch_average_is_a_convex_combination(self):
-        model = FakeModel("regression")
+        model = FakeModel("regression", profile="C")
         data = {"x": np.zeros((2, 1)), "y": np.zeros(2)}
         fit_epochs(model, data, 1, {"strategy": "uniform"}, None)
         self.assertAlmostEqual(float(model.params["w"][0]), 1 - EMA_DECAY)
+
+    def test_b_task_disables_ema_in_v8_b(self):
+        """v8-B: the B task skips EMA and keeps the direct epoch-end weights."""
+        model = FakeModel("regression", profile="B")
+        data = {"x": np.zeros((4, 1)), "y": np.zeros(4)}
+        fit_epochs(model, data, 3, {"strategy": "uniform"}, None)
+        self.assertEqual(float(model.params["w"][0]), 3.0)  # no averaging
 
 
 if __name__ == "__main__":

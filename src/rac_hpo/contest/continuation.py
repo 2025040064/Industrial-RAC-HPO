@@ -49,7 +49,9 @@ def _fit_averaged(model, x, y, epochs):
 def fit_epochs(model, train, epochs, proposal, groups):
     import numpy as np
     strategy = proposal.get("strategy", "uniform")
-    averaged = model.meta["task"] == "regression"
+    # v8-B: disable EMA averaging for the B task only (S2 G2 strategy: EMA off +
+    # lr floor 3e-3 won public-validation RMSE). C keeps the v6 averaged kernel.
+    averaged = model.meta["task"] == "regression" and model.meta["profile"] != "B"
     if strategy == "uniform":
         if averaged:
             return _fit_averaged(model, train["x"], train["y"], epochs)
