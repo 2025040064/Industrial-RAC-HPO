@@ -46,3 +46,8 @@ dist/
 # RAC-HPO local experiment outputs
 /experiments/ablation/*-20261118-*/
 *.tar
+
+# S2 ablation: keep code + reports, exclude data and results
+/experiments/s2-ablation-b-20261125/data/
+/experiments/s2-ablation-b-20261125/results/
+/experiments/s2-ablation-b-20261125/*.log
