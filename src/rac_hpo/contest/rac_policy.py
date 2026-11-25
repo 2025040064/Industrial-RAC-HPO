@@ -17,6 +17,12 @@ PROTOCOL = "contest-rac-hpo-v2"
 ALPHA = 0.3
 EPSILON = 1e-8
 SEED = 42
+# A continuation round only has 1-5 epochs. Below this rate the update is too
+# small to move a warm-started model, and the round is wasted on a candidate the
+# acceptance gate then rejects. Measured on the public C package (10 rounds,
+# real parent checkpoint): lr 1.1e-5 -> 37.91 MAE, lr 3e-3..1e-2 -> 36.74-36.78.
+# Classification has a different objective scale and keeps the wider range.
+REGRESSION_LEARNING_RATE_LOW = 3e-3
 
 
 def regime_metrics(task, diagnostics, validation_units):
@@ -95,7 +101,8 @@ class ContestRACPolicy:
         }
         self.baseline_objective = self.score(audit["diagnostics"])["robust_objective"]
         self.space = {
-            "learning_rate": {"type": "float", "low": 1e-5, "high": .01, "log": True},
+            "learning_rate": {"type": "float", "low": 1e-5 if task == "A" else REGRESSION_LEARNING_RATE_LOW,
+                              "high": .01, "log": True},
             "batch_size": {"type": "int", "low": 16, "high": 512, "log": True},
             "epochs": {"type": "int", "low": 1, "high": 5},
             "sampling_level": {"type": "int", "low": 1, "high": 16 if task == "A" else 2},
@@ -250,6 +257,11 @@ class ContestRACPolicy:
         elif not history:
             params = {"learning_rate": metadata["learning_rate"], "batch_size": metadata["batch_size"],
                       "epochs": 2, "sampling_level": 1}
+            # The parent checkpoint predates this space, so its own learning rate
+            # may sit below the floor; clamp instead of failing the first round.
+            for name, spec in self.space.items():
+                value = min(max(params[name], spec["low"]), spec["high"])
+                params[name] = int(value) if spec["type"] == "int" else float(value)
             trace["method"] = "checkpoint_reference"
         elif params is None:
             params = self._fallback(history, seed)

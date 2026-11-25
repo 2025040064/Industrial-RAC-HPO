@@ -9,13 +9,14 @@ from rac_hpo.optimization.rac_hpo.surrogate import TrialSurrogate
 
 class ContestRACHistoryTest(unittest.TestCase):
     def setUp(self):
-        self.metadata = {"learning_rate": 0.001, "batch_size": 64}
+        # Inside the regression search space (learning rate floor is 3e-3).
+        self.metadata = {"learning_rate": 0.004, "batch_size": 64}
         self.diagnostics = {"groups": {"FD001/1": {"mae": 4.0, "samples": 20}}}
         self.policy = ContestRACPolicy("C", {
             "diagnostics": self.diagnostics, "units": {"validation": 1},
         })
         self.record = {
-            "round": 1, "rac_params": {**self.metadata, "epochs": 2, "sampling_level": 1},
+            "round": 1, "rac_params": {**self.metadata, "epochs": 4, "sampling_level": 1},
             "diagnostics": self.diagnostics, "robust_objective": self.policy.baseline_objective,
             "training_seconds": 1.0,
         }
@@ -38,7 +39,7 @@ class ContestRACHistoryTest(unittest.TestCase):
                  "configuration": {"strategy": "uniform"}}
         second = deepcopy(first)
         second.update(round=2, training_seconds=4.0)
-        second["rac_params"]["epochs"] = 3
+        second["rac_params"]["epochs"] = 5
         with patch.object(self.policy, "_fallback", return_value=first["rac_params"]) as fallback:
             _, trace = self.policy.propose(self.metadata, [], transfer_records=[first, second], round_index=3)
         observations = fallback.call_args.args[0]
@@ -52,7 +53,7 @@ class ContestRACHistoryTest(unittest.TestCase):
                  "configuration": {"strategy": "uniform"}}
         second = deepcopy(first)
         second.update(round=2, training_seconds=4.0)
-        second["rac_params"]["epochs"] = 3
+        second["rac_params"]["epochs"] = 5
         with patch.object(policy, "_fallback", return_value=first["rac_params"]) as fallback:
             _, trace = policy.propose(self.metadata, [], transfer_records=[first, second], round_index=3)
         observations = fallback.call_args.args[0]
@@ -72,7 +73,7 @@ class ContestRACHistoryTest(unittest.TestCase):
         trials = []
         for index in range(9):
             record = deepcopy(self.record)
-            record["rac_params"]["epochs"] = 1 + index % 5
+            record["rac_params"]["epochs"] = 4 + index % 2
             trials.append({
                 "params": record["rac_params"], "duration_seconds": 1 if index < 8 else 100,
                 "metrics": {"regimes": {"FD001": {"mae": 4.0, "samples": 20}}},

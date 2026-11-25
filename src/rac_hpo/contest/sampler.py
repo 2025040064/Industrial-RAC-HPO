@@ -4,6 +4,7 @@ import re
 
 from rac_hpo.contest.packages import write_json
 from rac_hpo.contest.policy import validate
+from rac_hpo.contest.stage3_controls import parse_decision
 
 BASE_MODEL = "Qwen/Qwen3.5-4B"
 SYSTEM = (
@@ -21,6 +22,78 @@ SYSTEM = (
 ACTION_KEYS = {"learning_rate", "batch_size", "epochs", "strategy",
                "target_class", "sampling_multiplier"}
 CLASSES = {"Ethanol", "Ethylene", "Ammonia", "Acetaldehyde", "Acetone", "Toluene"}
+
+# Contract for the submitted Sampler (official_submission/decision_contract.md).
+# SYSTEM/parse_action above remain the legacy parameter-proposal path for local CLI use only.
+SELECTION_SYSTEM = (
+    "You choose between RAC and conservative for an industrial model continuation. "
+    "Use the supplied public validation history. Preserve checkpoint architecture and data splits. "
+    "A maximizes Macro-F1. B and C minimize RMSE. B must keep every bearing's RMSE "
+    "at or below its initial value. "
+    "RAC applies the searched continuation step and is the default choice while history shows "
+    "improvement or mixed outcomes. Choose conservative only when the recent history shows "
+    "consecutive rejected rounds, a constraint at risk, or a clearly safer smaller step. "
+    "The same output for every task and every history is wrong: let the evidence decide. "
+    "Return one JSON object only with exactly three keys: "
+    "selected_option, reason_codes, risk. selected_option must be RAC or conservative. "
+    "reason_codes is an array of 0 to 5 unique codes from history, risk, constraint, cost, "
+    "uncertainty, conservative, other. risk must be one of low, medium, high, unknown. "
+    'Example: {"selected_option":"RAC","reason_codes":["history"],"risk":"low"}'
+)
+REASON_CODE_ORDER = ["history", "risk", "constraint", "cost", "uncertainty", "conservative", "other"]
+RISK_ORDER = ["low", "medium", "high", "unknown"]
+
+
+def selection_payload(context):
+    """Single canonical payload shared by training and the submitted runtime.
+
+    Accepts both shapes of history rows: offline round records (`proposal`,
+    `metrics`) and runtime audit records (`rac_params`, `candidate_metric`).
+    """
+    task = context["task"]
+    metric = "macro_f1" if task == "A" else "rmse"
+    selected = context.get("selected_metric")
+    if isinstance(selected, dict):
+        selected = selected.get(metric)
+    history = []
+    for row in context.get("history", [])[-3:]:
+        action = row.get("proposal") or row.get("training_proposal") or row.get("rac_params") or {}
+        value = row.get("metrics", {}).get(metric) if isinstance(row.get("metrics"), dict) else None
+        if value is None:
+            value = row.get("candidate_metric")
+        history.append({
+            "round": row.get("round"),
+            "action": {key: action[key] for key in ACTION_KEYS if key in action},
+            "value": value, "accepted": bool(row.get("accepted")),
+        })
+    return {
+        "request": "Select only RAC or conservative. Return JSON with selected_option, reason_codes and risk.",
+        "allowed_reason_codes": REASON_CODE_ORDER,
+        "allowed_risk": RISK_ORDER,
+        "task": task, "round": context["round"], "metric": metric,
+        "metric_direction": "higher" if task == "A" else "lower",
+        "platform_parent_metric": selected,
+        "history": history,
+        "rac": {key: context["rac"][key] for key in ("learning_rate", "batch_size", "epochs")},
+        "conservative": {key: context["conservative"][key]
+                         for key in ("learning_rate", "batch_size", "epochs")},
+    }
+
+
+def selection_messages(context):
+    """Prompt in the production decision contract, identical in training and runtime."""
+    return [{"role": "system", "content": SELECTION_SYSTEM},
+            {"role": "user", "content": json.dumps(selection_payload(context),
+                                                   ensure_ascii=False, allow_nan=False)}]
+
+
+def parse_selection_reply(text):
+    """Validate a submitted Sampler reply against the production decision contract."""
+    parsed = parse_decision(text)
+    if not parsed['valid']:
+        raise ValueError(f"Invalid decision reply: {parsed['reason']}")
+    return {"selected_option": parsed['action'], "reason_codes": parsed['reason_codes'],
+            "risk": parsed['risk']}
 
 
 def decision_messages(context):

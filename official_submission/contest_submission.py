@@ -17,7 +17,8 @@ from rac_hpo._io import atomic_text
 from rac_hpo.contest.continuation import evaluate_diagnostics, evaluate_primary, fit_epochs
 from rac_hpo.contest.packages import digest, write_json
 from rac_hpo.contest.policy import accept_candidate
-from rac_hpo.contest.rac_policy import ContestRACPolicy
+from rac_hpo.contest.rac_policy import ContestRACPolicy, REGRESSION_LEARNING_RATE_LOW
+from rac_hpo.contest.sampler import selection_messages
 from rac_hpo.contest.stage3_controls import bearing_deltas, controls, normalize_decision_text, parse_decision
 from rac_hpo.contest.surrogate_evidence import shadow_evidence
 
@@ -33,6 +34,8 @@ STATE_FILE = "rac-round.json"
 AUDIT_FILE = "selection-audit.jsonl"
 WORKSPACE = Path("/workspace")
 HISTORY_PROTOCOL = "contest-sdk-history-v2"
+# The conservative fallback may not step below what the search space allows.
+LEARNING_RATE_FLOOR = {"A": 1e-5, "B": REGRESSION_LEARNING_RATE_LOW, "C": REGRESSION_LEARNING_RATE_LOW}
 
 
 def checkpoint_name(paths):
@@ -224,7 +227,6 @@ def train(rnd):
     sdk_cpu = time.process_time() - sdk_cpu_started
     # Read the host's completed round numbers for the model. Numeric search
     # observations come from the state bound to the exact parent and split.
-    history_summary = [{"id": row["id"], "round_index": row.get("round_index")} for row in history]
     old = platform_metric(rnd.frame.get("current_validation"), metric)
 
     with threadpool_limits(limits=1):
@@ -263,31 +265,17 @@ def train(rnd):
         params = trace["params"].copy()
         recommended_params = params.copy()
         recommended_proposal = proposal.copy()
-        alternative = {**params, "learning_rate": max(1e-5, params["learning_rate"] / 2), "sampling_level": 1,
+        alternative = {**params, "learning_rate": max(LEARNING_RATE_FLOOR[dataset],
+                                                       params["learning_rate"] / 2), "sampling_level": 1,
                        "epochs": 1}
-        prompt_payload = {
-                "request": "Select only RAC or conservative. Return JSON with selected_option, reason_codes and risk.",
-                "allowed_reason_codes": ["history", "risk", "constraint", "cost", "uncertainty", "conservative", "other"],
-                "allowed_risk": ["low", "medium", "high", "unknown"],
-                "task": dataset, "metric": metric, "metric_direction": direction,
-                "platform_parent_metric": old,
-                "history": history_summary, "same_parent_observations": [
-                    {"round": row["round"], "objective": row["robust_objective"],
-                     "training_seconds": row["training_seconds"], "params": row["rac_params"]}
-                    for row in records
-                ],
-                "transfer_history_rounds": trace["transfer_history_rounds"],
-                "parent_regime_errors": policy.objective_config["baseline_errors"],
-                "surrogate_quality": trace.get("forward_validation"),
-                "constraint_risks": {"bearing_guard_available": dataset == "B" and validation_groups is not None,
-                                     "predictions_are_not_acceptance": True},
-                "rac": params, "conservative": alternative, "search": trace["method"],
-            }
-        prompt_text = json.dumps(prompt_payload, allow_nan=False)
+        messages = selection_messages({
+            "task": dataset, "round": rnd.round_index, "history": records,
+            "selected_metric": old, "rac": params, "conservative": alternative,
+        })
+        prompt_text = messages[-1]["content"]
         model_started, model_cpu_started = time.monotonic(), time.process_time()
         receipt = rnd.model(
-            [{"role": "user", "content": prompt_text}],
-            temperature=0, enable_thinking=False, max_tokens=min(128, rnd.max_output_tokens),
+            messages, temperature=0, enable_thinking=False, max_tokens=min(128, rnd.max_output_tokens),
         )
         model_latency = time.monotonic() - model_started
         sdk_cpu += time.process_time() - model_cpu_started
@@ -384,6 +372,7 @@ def train(rnd):
                 "model_response": raw_answer, "normalized_response": normalize_decision_text(raw_answer),
                 "model_response_valid": parsed["valid"],
                 "reason_codes": parsed["reason_codes"], "risk": parsed["risk"], "response_format": parsed["format"],
+                "response_reason": parsed.get("reason"),
                 "model_id": model_name, "token_usage": token_usage, "cost": reported_cost,
                 "model_latency_seconds": model_latency,
                 "prompt_sha256": hashlib.sha256(prompt_text.encode('utf-8')).hexdigest(),

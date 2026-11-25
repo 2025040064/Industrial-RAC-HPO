@@ -1,0 +1,52 @@
+{
+  "baseline": "v6",
+  "frozen_at": "2026-11-25T11:45:00+08:00",
+  "git": {
+    "commit": "cb33167",
+    "tag": "baseline-v6-20261125",
+    "branch": "main",
+    "pushed": false
+  },
+  "image": {
+    "image_tag": "industrial-rac-hpo:selection-v6-20261124",
+    "image_id": "sha256:877248e2e7bb98757748b0cf2ab51817cf71605cb554438f4fcc9b69b77b9a38",
+    "parent_image_id": "sha256:51de921fbb41c042437317756df9f35b4b9b1b94bf5c995df9d88c72b022d6f5",
+    "parent_config_id": "sha256:0363095e0ec71dddbad19d03069064677417ca6c13b40eaa24fc2427b23e5236",
+    "platform": "linux/amd64",
+    "overlay_layer_sha256": "sha256:c81edaabc4df355e38fd658952038ca72442e97adc36056e1c838ae251cf3067",
+    "overlay_diff_id": "sha256:1e802b55bf9ecaa69d7f89384547d4cf6439831bef78ae1c03260532fb417a5b"
+  },
+  "archive": {
+    "sha256": "b7526832252200c13b6f98829a3309d1e7bf77e1dbecb115ed245aef05f57a67",
+    "bytes": 150312960,
+    "local_path": "experiments/rebuild-selection-v6-20261124/harness-selection-v6.tar"
+  },
+  "build_context": {
+    "dir": "experiments/rebuild-selection-v6-20261124/context",
+    "build_validation": "experiments/rebuild-selection-v6-20261124/build-validation.json",
+    "source_files_manifest": "experiments/rebuild-selection-v6-20261124/context/source-files.json",
+    "core_source_files_verified": 21,
+    "core_source_files_mismatch": 0
+  },
+  "dependencies": {
+    "requirements_lock": "experiments/rebuild-selection-v6-20261124/context/requirements.lock",
+    "requirements_contest_txt": "numpy 1.26.4 / optuna 4.5.0 / scikit-learn 1.7.2 / scipy 1.16.3",
+    "note": "requirements-contest.txt 不可改（无 torch）"
+  },
+  "sampler": {
+    "path": "trio://run_1fei9lfkoj70/sampler_weights/industrial-harness-lora-selection-v3-20261124",
+    "model_source": "sampler",
+    "training_record_url": "https://swanlab.cn/@2025040064/industrial-harness-sft/runs/ax998s81"
+  },
+  "platform_run": {
+    "submission_id": "07d126ada6e9ef1d2733ceda0036edf2",
+    "archive_id": "730e2392439ba35765e43a049eaeb137",
+    "document_id": "4b8a159796d21bf42a9df13b7c07a0e6",
+    "trial_run_id": "82522846a0d57928a16292b2c4ad183a",
+    "version": 6,
+    "report_path": "experiments/platform-runs/82522846a0d57928a16292b2c4ad183a-report.json"
+  },
+  "changes": "epoch-averaged continuation (EMA_DECAY=0.6) + regression learning-rate floor (3e-3)",
+  "epochs_low": 1,
+  "regression_epochs_low_4_candidate": "S3 待验证，未启用"
+}

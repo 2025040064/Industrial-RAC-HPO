@@ -282,6 +282,8 @@ class SDKCallbacksTest(unittest.TestCase):
                 self.assertIn("history_usage", audit)
 
     def test_terminal_marker_decisions_drive_training_and_preserve_audit(self):
+        from contest_submission import LEARNING_RATE_FLOOR
+
         for dataset in ("A", "B", "C"):
             for option, expected in (("RAC<|im_end|>", "rac"),
                                      ("conservative<|im_end|>", "conservative"),
@@ -300,7 +302,8 @@ class SDKCallbacksTest(unittest.TestCase):
                     else:
                         self.assertEqual(decision["final_params"]["epochs"], 1)
                         self.assertEqual(decision["final_params"]["learning_rate"],
-                                         max(1e-5, decision["recommended_params"]["learning_rate"] / 2))
+                                         max(LEARNING_RATE_FLOOR[dataset],
+                                             decision["recommended_params"]["learning_rate"] / 2))
                     self.assertEqual(audit["accepted"], all((
                         audit["gates"]["parent_metric_matches"], audit["gates"]["candidate_metric_matches"],
                         audit["gates"]["platform_primary_improved"], audit["gates"]["local_primary_improved"],
@@ -347,7 +350,10 @@ class SDKCallbacksTest(unittest.TestCase):
             for response, expected in choices:
                 with self.subTest(dataset=dataset, expected=expected):
                     state, sent = self.run_round(dataset, option=response)
-                    request = json.loads(sent["model_request"]["messages"][0]["content"])
+                    messages = sent["model_request"]["messages"]
+                    self.assertEqual(messages[0]["role"], "system")
+                    self.assertIn("selected_option", messages[0]["content"])
+                    request = json.loads(messages[-1]["content"])
                     self.assertIn("selected_option, reason_codes and risk", request["request"])
                     self.assertIn("history", request["allowed_reason_codes"])
                     self.assertIn("low", request["allowed_risk"])

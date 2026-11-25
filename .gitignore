@@ -25,6 +25,9 @@ dist/
 
 .venv-pytrio/
 
+.venv-temporal/
+.venv-temporal-install.log
+
 /harness.tar
 
 /训练集/
