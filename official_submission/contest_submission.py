@@ -17,7 +17,12 @@ from rac_hpo._io import atomic_text
 from rac_hpo.contest.continuation import evaluate_diagnostics, evaluate_primary, fit_epochs
 from rac_hpo.contest.packages import digest, write_json
 from rac_hpo.contest.policy import accept_candidate
-from rac_hpo.contest.rac_policy import ContestRACPolicy, REGRESSION_LEARNING_RATE_LOW
+from rac_hpo.contest.rac_policy import (
+    ContestRACPolicy,
+    REGRESSION_LEARNING_RATE_LOW,
+    TASK_LEARNING_RATE_LOW,
+    conservative_alternative,
+)
 from rac_hpo.contest.sampler import selection_messages
 from rac_hpo.contest.stage3_controls import bearing_deltas, controls, normalize_decision_text, parse_decision
 from rac_hpo.contest.surrogate_evidence import shadow_evidence
@@ -35,7 +40,7 @@ AUDIT_FILE = "selection-audit.jsonl"
 WORKSPACE = Path("/workspace")
 HISTORY_PROTOCOL = "contest-sdk-history-v2"
 # The conservative fallback may not step below what the search space allows.
-LEARNING_RATE_FLOOR = {"A": 1e-5, "B": REGRESSION_LEARNING_RATE_LOW, "C": REGRESSION_LEARNING_RATE_LOW}
+LEARNING_RATE_FLOOR = dict(TASK_LEARNING_RATE_LOW)
 
 
 def checkpoint_name(paths):
@@ -255,19 +260,30 @@ def train(rnd):
                     and isinstance(prior.get("objective_config"), dict)):
                 copy["parent_regime_errors"] = prior["objective_config"].get("baseline_errors")
             enriched_transfer.append(copy)
+        # For C (where stage shifts are gentle around the same basin), skip params already
+        # rejected on this exact parent; for A/B, only exclude within the same stage split.
+        rejected_on_parent = [
+            row["configuration"]["params"]
+            for row in prior_rows
+            if isinstance(row, dict)
+            and row.get("task") == dataset
+            and row.get("parent_sha256") == parent_sha
+            and row.get("accepted") is False
+            and (dataset == "C" or row.get("train_sha256") == context["train_sha256"])
+            and isinstance(row.get("configuration"), dict)
+            and isinstance(row["configuration"].get("params"), dict)
+        ]
         search_started = time.process_time()
         proposal, trace = policy.propose(
             model.meta, records, transfer_records=enriched_transfer if transfer_enabled else (),
-            round_index=rnd.round_index,
+            round_index=rnd.round_index, excluded_params=rejected_on_parent,
         )
         trace["shadow_activation_evidence"] = proof
         search_cpu = time.process_time() - search_started
         params = trace["params"].copy()
         recommended_params = params.copy()
         recommended_proposal = proposal.copy()
-        alternative = {**params, "learning_rate": max(LEARNING_RATE_FLOOR[dataset],
-                                                       params["learning_rate"] / 2), "sampling_level": 1,
-                       "epochs": 1}
+        alternative = conservative_alternative(dataset, params, model.meta["batch_size"])
         messages = selection_messages({
             "task": dataset, "round": rnd.round_index, "history": records,
             "selected_metric": old, "rac": params, "conservative": alternative,

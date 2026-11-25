@@ -86,3 +86,71 @@ class ContestRACHistoryTest(unittest.TestCase):
         quality = surrogate.forward_check()["cost_validation"]
         self.assertFalse(quality["passed"])
         self.assertGreater(quality["log_mae"], 0.0)
+
+    def test_task_specific_lr_floor_and_stage_aware_checkpoint_reference(self):
+        policy_a = ContestRACPolicy("A", {"diagnostics": {"classes": {"c0": {"f1": 0.8, "samples": 10}}}})
+        policy_b = ContestRACPolicy("B", {"diagnostics": {"groups": {"b1": {"mae": 100.0, "rmse": 120.0, "samples": 10}}}})
+        policy_c = ContestRACPolicy("C", {"diagnostics": self.diagnostics})
+        self.assertEqual(policy_a.space["learning_rate"]["low"], 1e-5)
+        self.assertEqual(policy_b.space["learning_rate"]["low"], 3e-3)
+        self.assertEqual(policy_c.space["learning_rate"]["low"], 1e-4)
+
+        # C: round 1 uses 2-epoch lr=3e-3 warm step; later stage resets step down at 1 epoch
+        p_c1, t_c1 = policy_c.propose({"learning_rate": 0.002, "batch_size": 256}, [], round_index=1)
+        p_c2, t_c2 = policy_c.propose({"learning_rate": 0.003, "batch_size": 256}, [], round_index=2)
+        p_c4, _ = policy_c.propose({"learning_rate": 0.003, "batch_size": 256}, [], round_index=4)
+        p_c7, _ = policy_c.propose({"learning_rate": 0.003, "batch_size": 256}, [], round_index=7)
+        self.assertEqual(t_c1["method"], "checkpoint_reference")
+        self.assertEqual(t_c2["method"], "checkpoint_reference")
+        self.assertEqual((p_c1["learning_rate"], p_c1["batch_size"], p_c1["epochs"]), (3e-3, 256, 2))
+        self.assertEqual(p_c2["epochs"], 1)
+        self.assertLess(p_c2["learning_rate"], 3e-3)
+        self.assertLess(p_c4["learning_rate"], p_c2["learning_rate"])
+        self.assertLess(p_c7["learning_rate"], p_c4["learning_rate"])
+
+        # Excluded prior same-parent rejected params are skipped instead of repeated
+        p_c2_dedup, _ = policy_c.propose(
+            {"learning_rate": 0.003, "batch_size": 256}, [], round_index=2,
+            excluded_params=[{**t_c2["params"]}],
+        )
+        self.assertNotEqual(
+            (p_c2_dedup["learning_rate"], p_c2_dedup["batch_size"], p_c2_dedup["epochs"]),
+            (p_c2["learning_rate"], p_c2["batch_size"], p_c2["epochs"]),
+        )
+
+        # B: preserves v8-B reference momentum on fresh parent, and steps down to 1-epoch if excluded
+        p_b2, _ = policy_b.propose({"learning_rate": 0.003, "batch_size": 128}, [], round_index=2)
+        p_b5_fresh, t_b5_fresh = policy_b.propose({"learning_rate": 0.0049, "batch_size": 106}, [], round_index=5)
+        p_b8_dedup, _ = policy_b.propose(
+            {"learning_rate": 0.0049, "batch_size": 106}, [], round_index=8,
+            excluded_params=[{**t_b5_fresh["params"]}],
+        )
+        self.assertEqual(p_b2["epochs"], 2)
+        self.assertEqual(p_b5_fresh["epochs"], 2)
+        self.assertAlmostEqual(p_b5_fresh["learning_rate"], 0.0049)
+        self.assertEqual(p_b5_fresh["batch_size"], 106)
+        self.assertEqual(p_b8_dedup["epochs"], 1)
+
+    def test_conservative_alternative_stabilizes_batch_and_halves_c_lr(self):
+        from rac_hpo.contest.rac_policy import conservative_alternative
+
+        alt_c = conservative_alternative(
+            "C", {"learning_rate": 0.003, "batch_size": 18, "epochs": 2, "sampling_level": 1}, 256
+        )
+        self.assertEqual(alt_c["epochs"], 1)
+        self.assertEqual(alt_c["batch_size"], 256)
+        self.assertAlmostEqual(alt_c["learning_rate"], 0.0015)
+
+        alt_b = conservative_alternative(
+            "B", {"learning_rate": 0.005, "batch_size": 34, "epochs": 2, "sampling_level": 1}, 106
+        )
+        self.assertEqual(alt_b["epochs"], 1)
+        self.assertEqual(alt_b["batch_size"], 34)
+        self.assertAlmostEqual(alt_b["learning_rate"], 0.003)
+
+        alt_a = conservative_alternative(
+            "A", {"learning_rate": 0.003, "batch_size": 32, "epochs": 3, "sampling_level": 4}, 128
+        )
+        self.assertEqual(alt_a["batch_size"], 32)
+        self.assertEqual(alt_a["sampling_level"], 1)
+        self.assertAlmostEqual(alt_a["learning_rate"], 0.0015)

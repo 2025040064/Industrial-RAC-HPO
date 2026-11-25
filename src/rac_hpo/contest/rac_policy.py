@@ -23,6 +23,26 @@ SEED = 42
 # real parent checkpoint): lr 1.1e-5 -> 37.91 MAE, lr 3e-3..1e-2 -> 36.74-36.78.
 # Classification has a different objective scale and keeps the wider range.
 REGRESSION_LEARNING_RATE_LOW = 3e-3
+C_LEARNING_RATE_LOW = 1e-4
+TASK_LEARNING_RATE_LOW = {
+    "A": 1e-5,
+    "B": REGRESSION_LEARNING_RATE_LOW,
+    "C": C_LEARNING_RATE_LOW,
+}
+
+
+def conservative_alternative(dataset, params, parent_batch_size):
+    """Build a conservative 1-epoch step; prevent tiny-batch step explosion on large C."""
+    batch_size = int(params["batch_size"])
+    if dataset == "C":
+        batch_size = min(512, max(batch_size, int(parent_batch_size), 256))
+    return {
+        **params,
+        "learning_rate": max(TASK_LEARNING_RATE_LOW[dataset], params["learning_rate"] / 2),
+        "batch_size": batch_size,
+        "sampling_level": 1,
+        "epochs": 1,
+    }
 
 
 def regime_metrics(task, diagnostics, validation_units):
@@ -101,7 +121,7 @@ class ContestRACPolicy:
         }
         self.baseline_objective = self.score(audit["diagnostics"])["robust_objective"]
         self.space = {
-            "learning_rate": {"type": "float", "low": 1e-5 if task == "A" else REGRESSION_LEARNING_RATE_LOW,
+            "learning_rate": {"type": "float", "low": TASK_LEARNING_RATE_LOW.get(task, REGRESSION_LEARNING_RATE_LOW),
                               "high": .01, "log": True},
             "batch_size": {"type": "int", "low": 16, "high": 512, "log": True},
             "epochs": {"type": "int", "low": 1, "high": 5},
@@ -133,9 +153,10 @@ class ContestRACPolicy:
             "baseline_objective": self.baseline_objective, "search_config": self.search_config,
         }
 
-    def propose(self, metadata, records, *, transfer_records=(), round_index=None):
+    def propose(self, metadata, records, *, transfer_records=(), round_index=None, excluded_params=()):
         if round_index is not None and (type(round_index) is not int or round_index < 1):
             raise ValueError("Invalid current round")
+        prior_excluded = self._normalize_excluded_params(excluded_params)
         history, history_rounds, excluded = [], [], []
         seen = set()
         for position, record in enumerate(records, start=1):
@@ -179,7 +200,7 @@ class ContestRACPolicy:
             trace = {"method": "tpe_fallback", "reason": "surrogate_error", "error_type": type(error).__name__}
 
         seen = [trial["params"] for trial in history]
-        if params in seen:
+        if params in seen or self._matches_any(params, prior_excluded):
             params = None
             trace.update(method="tpe_fallback", reason="duplicate_candidate")
         transfer_gate = {"reason": "disabled", "used": False, "eligible_count": 0, "excluded": []}
@@ -249,22 +270,16 @@ class ContestRACPolicy:
             for item in observations:
                 log_cost = math.log(item["duration_seconds"]) - math.log(median_cost)
                 item["objective"] += effective_weight * max(-2.0, min(2.0, log_cost))
-            params = self._fallback(observations, seed, startup_trials=2)
+            params = self._fallback(observations, seed, startup_trials=2, extra_seen=prior_excluded)
             trace.update(method="transfer_tpe", reason="parent_normalized_history_cost_heuristic",
                          transfer_cost_method="bounded_log_relative_seconds", transfer_cost_weight=effective_weight,
                          transfer_cost_median_seconds=median_cost, tpe_observations=len(observations),
                          tpe_startup_trials=2, tpe_model_ready=len(observations) >= 2)
         elif not history:
-            params = {"learning_rate": metadata["learning_rate"], "batch_size": metadata["batch_size"],
-                      "epochs": 2, "sampling_level": 1}
-            # The parent checkpoint predates this space, so its own learning rate
-            # may sit below the floor; clamp instead of failing the first round.
-            for name, spec in self.space.items():
-                value = min(max(params[name], spec["low"]), spec["high"])
-                params[name] = int(value) if spec["type"] == "int" else float(value)
+            params = self._checkpoint_reference(metadata, round_index, prior_excluded)
             trace["method"] = "checkpoint_reference"
         elif params is None:
-            params = self._fallback(history, seed)
+            params = self._fallback(history, seed, extra_seen=prior_excluded)
             trace.update(tpe_observations=len(history), tpe_startup_trials=4,
                          tpe_model_ready=len(history) >= 4)
             if self.bearing_rmse:
@@ -352,7 +367,107 @@ class ContestRACPolicy:
     def _diagnostic_counts(self, diagnostics):
         return {name: row["samples"] for name, row in self._diagnostic_rows(diagnostics).items()}
 
-    def _fallback(self, history, seed, startup_trials=None):
+    def _clamp_params(self, raw):
+        clamped = {}
+        for name, spec in self.space.items():
+            value = min(max(raw[name], spec["low"]), spec["high"])
+            clamped[name] = int(value) if spec["type"] == "int" else float(value)
+        return clamped
+
+    def _normalize_excluded_params(self, excluded_params):
+        normalized = []
+        for item in excluded_params or ():
+            if not isinstance(item, dict) or not set(self.space).issubset(item):
+                continue
+            try:
+                cand = {}
+                for name, spec in self.space.items():
+                    val = item[name]
+                    if isinstance(val, bool) or not isinstance(val, (int, float)) or not math.isfinite(val):
+                        raise ValueError("invalid param")
+                    cand[name] = int(round(val)) if spec["type"] == "int" else float(val)
+                normalized.append(self._clamp_params(cand))
+            except (TypeError, ValueError):
+                continue
+        return normalized
+
+    @staticmethod
+    def _matches_any(params, candidates):
+        if params is None:
+            return False
+        for item in candidates:
+            if (params["batch_size"] == item["batch_size"]
+                    and params["epochs"] == item["epochs"]
+                    and params["sampling_level"] == item["sampling_level"]
+                    and math.isclose(params["learning_rate"], item["learning_rate"], rel_tol=1e-9, abs_tol=1e-12)):
+                return True
+        return False
+
+    def _checkpoint_reference(self, metadata, round_index, prior_excluded=()):
+        base_lr = float(metadata["learning_rate"])
+        base_batch = int(metadata["batch_size"])
+        default = self._clamp_params({
+            "learning_rate": base_lr, "batch_size": base_batch, "epochs": 2, "sampling_level": 1,
+        })
+        if self.task == "A" or round_index is None:
+            schedule = [
+                default,
+                self._clamp_params({"learning_rate": base_lr, "batch_size": base_batch, "epochs": 1, "sampling_level": 1}),
+                self._clamp_params({"learning_rate": base_lr * 0.5, "batch_size": base_batch * 2, "epochs": 1, "sampling_level": 1}),
+            ]
+        elif self.task == "B":
+            # Preserve v8-B's winning checkpoint_reference momentum on B, falling back
+            # to 1-epoch gentle steps only if the exact tuple is already excluded.
+            schedule = [
+                default,
+                self._clamp_params({
+                    "learning_rate": REGRESSION_LEARNING_RATE_LOW,
+                    "batch_size": max(128, base_batch),
+                    "epochs": 1,
+                    "sampling_level": 1,
+                }),
+                self._clamp_params({
+                    "learning_rate": REGRESSION_LEARNING_RATE_LOW,
+                    "batch_size": 192,
+                    "epochs": 1,
+                    "sampling_level": 1,
+                }),
+            ]
+        else:
+            if round_index == 1:
+                schedule = [
+                    self._clamp_params({
+                        "learning_rate": max(base_lr, REGRESSION_LEARNING_RATE_LOW),
+                        "batch_size": base_batch, "epochs": 2, "sampling_level": 1,
+                    }),
+                ]
+            else:
+                # On C, R1 at lr=3e-3, epochs=2 reaches the basin, after which repeating
+                # (3e-3, 256, 2) at stage resets (R2/R4/R7/R9) overshot every time.
+                c_pool = [
+                    {"learning_rate": 1.0e-3, "batch_size": max(256, base_batch), "epochs": 1, "sampling_level": 1},
+                    {"learning_rate": 5.0e-4, "batch_size": max(256, base_batch), "epochs": 1, "sampling_level": 1},
+                    {"learning_rate": 2.5e-4, "batch_size": max(256, base_batch), "epochs": 1, "sampling_level": 1},
+                    {"learning_rate": 1.5e-4, "batch_size": max(384, base_batch), "epochs": 1, "sampling_level": 1},
+                    {"learning_rate": 1.0e-4, "batch_size": max(256, base_batch), "epochs": 1, "sampling_level": 1},
+                    {"learning_rate": 7.5e-4, "batch_size": max(384, base_batch), "epochs": 1, "sampling_level": 1},
+                ]
+                if round_index <= 3:
+                    offset = 0
+                elif round_index <= 6:
+                    offset = 1
+                elif round_index <= 8:
+                    offset = 2
+                else:
+                    offset = 3
+                ordered = c_pool[offset:] + c_pool[:offset]
+                schedule = [self._clamp_params(item) for item in ordered]
+        for candidate in schedule:
+            if not self._matches_any(candidate, prior_excluded):
+                return candidate
+        return schedule[0]
+
+    def _fallback(self, history, seed, startup_trials=None, extra_seen=()):
         distributions = {}
         for name, spec in self.space.items():
             distribution = optuna.distributions.IntDistribution if spec["type"] == "int" else (
@@ -371,6 +486,12 @@ class ContestRACPolicy:
                 params=trial["params"], distributions=distributions, value=objective,
             ))
         seen = [trial["params"] for trial in history]
+        blocked = [*seen, *extra_seen]
+        for _ in range(32):
+            trial = study.ask(fixed_distributions=distributions)
+            if not self._matches_any(trial.params, blocked):
+                return trial.params
+            study.tell(trial, state=optuna.trial.TrialState.FAIL)
         for _ in range(32):
             trial = study.ask(fixed_distributions=distributions)
             if trial.params not in seen:
