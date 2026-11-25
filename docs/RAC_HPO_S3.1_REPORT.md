@@ -43,14 +43,25 @@ def _sampler(self, seed):
 - `n_startup_trials=4` 的含义：前 4 次 `ask` 用**随机采样**（TPE 尚未建立后验），第 5 次起才用**真实 TPE 后验**采样。
 - 但注意：`_fallback` 每次调用都是**新建 study**（`optuna.create_study`），只喂入当前轮之前的 `history` 作为已完成 trial，然后 `ask` 一次。因此**每次 `_fallback` 只做 1 次有效 `ask`**，且该 `ask` 是在"历史样本数 = completed 数"的 study 上进行的。
 
-### 1.2 数据级真实采样次数（120 轮）
+### 1.2 数据级真实采样次数（120 轮，已区分随机启动 vs 真实 TPE）
+
+**核验方法**：Optuna `TPESampler._sample_relative` 的精确语义是 `if len(trials) < n_startup_trials: return {}`（空 dict → Optuna 走随机采样）。`_fallback` 每次新建 study，先 `add_trial` 全部历史（n 条 completed），再 `ask` 一次。因此**历史样本数 n < 4 → 随机启动采样；n ≥ 4 → 真实 TPE 后验采样**。此边界已用 optuna 4.5.0 实测验证（n=0..3 随机、n=4..9 真实 TPE）。
 
 | 搜索方法 | 触发次数 | 说明 |
 |---|---|---|
 | `checkpoint_reference` | 12 | round1（12 组，无历史） |
-| `tpe_fallback` | 108 | round2-10（12 组 × 9 轮） |
+| `tpe_fallback` | 108 | round2-10（12 组 × 9 轮），**内部再分两类（见下）** |
 | `rac_acquisition` | **0** | 代理辅助搜索从未启动 |
-| `global_exploration` | **0** | 随机探索从未触发（在 `rac_acquisition` 内部才可能触发，而后者从未进入） |
+| `global_exploration` | **0** | 随机探索从未触发 |
+
+**`tpe_fallback`（108 次）内部的真实采样类型**：
+
+| 采样类型 | 次数 | 判定条件 | 覆盖轮次 |
+|---|---|---|---|
+| **随机启动采样** | **36** | 历史样本数 n < 4（`n_startup_trials=4`） | round2-4（每轮 12 组） |
+| **真实 TPE 概率采样** | **72** | 历史样本数 n ≥ 4 | round5-10（每轮 12 组） |
+
+> **关键修正**：S3.1 报告初版只统计了 `tpe_fallback` 调用次数（108 次），未区分"随机启动采样"与"真实 TPE 后验采样"。实际上 108 次中有 **36 次是随机采样**（前 4 条历史内），只有 **72 次是真实 TPE**。这直接回答了用户"分别统计随机启动采样次数、真实 TPE 概率搜索次数"的要求。
 
 **逐轮 `search_reason` 分布**（12 组）：
 
@@ -137,11 +148,12 @@ record = {"rac_params": params, "robust_objective": score["robust_objective"], .
 | 异常（`KeyError`/`TypeError`/`ValueError`/`ArithmeticError`） | `_trial()` 解析失败（如 `Invalid historical training time`、`Historical objective differs` 等） | 否 |
 | `duplicate_candidate` | 同父历史中 `params` 键重复（`seen` 去重） | 否 |
 
-### 3.2 跨父可比性
+### 3.2 跨父可比性（已修正：SHA 连续 ≠ 指标可混合）
 
 - `_trial()` 的 `record["diagnostics"]` 需满足 `_diagnostic_counts == validation_counts`（同任务、同验证集规模），`robust_objective` 需与 `score(diagnostics)` 一致（`rel_tol=1e-10`）。
-- **跨父可比性由父链 SHA 保证**：`record_from_state`（平台）校验 `records[-1].selected_sha256 == context.parent_sha256`；本地 S2 校验 `parent_sha == chain[-1]`。
-- 因此进入 `history` 的 trial **全部来自同一父链、同一验证集口径**，具备可比性。
+- **父链 SHA 连续**：`record_from_state`（平台）校验 `records[-1].selected_sha256 == context.parent_sha256`；本地 S2 校验 `parent_sha == chain[-1]`。这保证的是**因果链完整**（每轮父 = 上轮选中）。
+- **但 SHA 连续 ≠ 不同父模型的绝对指标可混合**（用户要求核验，已确认）：G2 seed2024 的 10 轮跨越 3 个父模型（父A 681.16 → 父B 657.65 → 父C 617.46，见 S3.0 §5.5）。每条 record 的 `robust_objective` 是**该候选相对其自身父模型的绝对 J 值**，不同父模型起点的绝对 J **不可直接比较**。
+- **结论**：进入 `history` 的 trial 满足"同父链 + 同验证集口径"的**结构可比性**，但**不满足"绝对指标可比性"**（不同父模型起点不同）。原始 `_trial` 直接用绝对 `objective` 混合进 `completed` 列表做代理拟合，存在跨父可比性隐患。**S3.2 要求 4 的相对收益目标 R = (E_parent − E_candidate)/(E_parent + ε) 正是为消除此隐患而设计。**
 
 ### 3.3 数据级核验（120 轮历史样本数）
 
