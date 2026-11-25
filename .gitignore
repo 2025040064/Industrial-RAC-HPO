@@ -50,4 +50,5 @@ dist/
 # S2 ablation: keep code + reports, exclude data and results
 /experiments/s2-ablation-b-20261125/data/
 /experiments/s2-ablation-b-20261125/results/
+/experiments/s2-ablation-b-20261125/replay/
 /experiments/s2-ablation-b-20261125/*.log

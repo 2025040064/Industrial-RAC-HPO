@@ -13,7 +13,7 @@
   └─> contest_submission.train(rnd)                 # official_submission/contest_submission.py:166
         ├─ 校验任务契约 (CONTRACTS / Unsupported frozen task contract)
         ├─ 读父检查点 parent = rnd.parent.path(...)  # 校验 parent_sha256 一致
-        ├─ load_model(parent) → model                # 24→32→1 / 833 参数
+        ├─ load_model(parent) → model                # B 任务：34→24→1 / 865 参数
         ├─ read_dataset(train_path, validation_path) # 固定 expected_paths=父 paths
         ├─ projection_groups → train_groups / validation_groups  # 按 unit/bearing/batch 分组
         ├─ evaluate_diagnostics(model, validation) → baseline       # 父模型公开验证诊断

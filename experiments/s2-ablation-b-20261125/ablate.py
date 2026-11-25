@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import math
 import os
@@ -102,15 +103,48 @@ def score_rmse(model, data):
     return float(np.sqrt(np.mean(err ** 2)))
 
 
+def model_sha(model):
+    """Deterministic digest of the model weights (local stand-in for the
+    platform artifact id, used only to audit parent/candidate/selected chain
+    continuity)."""
+    h = hashlib.sha256()
+    for name in sorted(model.params):
+        h.update(name.encode())
+        h.update(model.params[name].tobytes())
+    return h.hexdigest()[:16]
+
+
+def bearing_rmse_diag(model, valid, groups):
+    """Independent per-bearing RMSE (generalization-research口径, NOT the
+    platform口径 which has validation_groups=None). Recorded separately."""
+    pred = model.predict(valid["x"])
+    err = pred - valid["y"]
+    out = {}
+    for g in sorted(set(groups)):
+        mask = np.array([x == g for x in groups])
+        e = err[mask]
+        out[g] = float(np.sqrt(np.mean(e ** 2)))
+    return out
+
+
 # ---------------------------------------------------------------- PyTRIO decision
 class LocalDecisionClient:
-    """Real PyTRIO sampling client for the selection contract (rac/conservative)."""
+    """Real PyTRIO sampling client for the selection contract (rac/conservative).
 
-    def __init__(self):
+    Tracks per-call wall latency, call count, and failure/retry count for the
+    strict CPU-budget protocol (network latency is wall-clock, not CPU).
+    """
+
+    def __init__(self, max_retries=3):
         import pytrio as trio
         self.trio = trio
         self.client = None
         self.tokenizer = None
+        self.max_retries = max_retries
+        self.calls = 0
+        self.failures = 0
+        self.retries = 0
+        self.total_latency = 0.0
 
     def _ensure(self):
         if self.client is None:
@@ -119,21 +153,46 @@ class LocalDecisionClient:
             self.tokenizer = self.client.get_tokenizer()
 
     def decide(self, context):
-        """Return parsed decision dict from the production selection contract."""
+        """Return parsed decision dict from the production selection contract.
+
+        Retries up to max_retries on transient network/sampling errors.
+        """
         self._ensure()
         messages = selection_messages(context)
         prompt = self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True, enable_thinking=False)
         ids = self.tokenizer.encode(prompt, add_special_tokens=False)
-        seq = self.client.sample(
-            prompt=self.trio.ModelInput.from_ints(ids),
-            sampling_params=self.trio.SamplingParams(max_tokens=128, temperature=0, seed=42,
-                                                     stop=["<|im_end|>"]),
-            num_samples=1,
-        ).result().sequences[0]
-        raw = seq.text
-        parsed = parse_decision(raw)
-        return {"raw": raw, "parsed": parsed}
+        last_err = None
+        for attempt in range(self.max_retries):
+            t0 = time.monotonic()
+            try:
+                seq = self.client.sample(
+                    prompt=self.trio.ModelInput.from_ints(ids),
+                    sampling_params=self.trio.SamplingParams(max_tokens=128, temperature=0, seed=42,
+                                                             stop=["<|im_end|>"]),
+                    num_samples=1,
+                ).result().sequences[0]
+                latency = time.monotonic() - t0
+                self.calls += 1
+                self.total_latency += latency
+                raw = seq.text
+                parsed = parse_decision(raw)
+                if parsed["valid"]:
+                    return {"raw": raw, "parsed": parsed, "_latency": latency}
+                # invalid parse counts as a soft failure -> retry
+                self.failures += 1
+                self.retries += 1
+                last_err = f"invalid_decision_parse: {raw[:80]}"
+            except Exception as e:  # noqa: BLE001
+                self.failures += 1
+                self.retries += 1
+                self.total_latency += time.monotonic() - t0
+                last_err = f"{type(e).__name__}: {str(e)[:120]}"
+        # exhausted retries: fall back to rac (the documented default)
+        self.calls += 1
+        return {"raw": f"<retry_exhausted: {last_err}>", "_latency": 0.0,
+                "parsed": {"action": "rac", "valid": False, "reason_codes": ["retry_exhausted"],
+                           "risk": None, "format": None, "reason": last_err}}
 
 
 # ---------------------------------------------------------------- round driver
@@ -167,19 +226,25 @@ def run_group(base, train, valid, groups, *, ema_on, lr_low, rounds, seed, tag):
     client = LocalDecisionClient()
     records = []  # platform history rows
     audit = []
+    chain = [model_sha(base)]  # parent chain root = parent checkpoint
 
     for rnd in range(1, rounds + 1):
         t0 = time.monotonic()
         cpu0 = time.process_time()
 
+        # --- validation (parent diagnostics) ---
+        val_cpu0 = time.process_time()
         baseline_diag = evaluate_diagnostics(model, valid, groups_for_diag)
         local_parent = evaluate_primary(model, valid)
+        validation_cpu = time.process_time() - val_cpu0
         # NOTE: policy.baseline_objective stays FROZEN at the parent-checkpoint J
         # (set in __init__), exactly like contest_submission.py which never
         # updates it across rounds. Do NOT overwrite it here.
 
-        # propose: RAC-HPO dynamic search
+        # --- search (RAC-HPO dynamic propose) ---
+        search_cpu0 = time.process_time()
         proposal, trace = policy.propose(model.meta, records, transfer_records=(), round_index=rnd)
+        search_cpu = time.process_time() - search_cpu0
         params = trace["params"].copy()
         recommended_lr = float(params["learning_rate"])
 
@@ -187,7 +252,7 @@ def run_group(base, train, valid, groups, *, ema_on, lr_low, rounds, seed, tag):
         conservative_lr = max(lr_low, recommended_lr / 2)
         alternative = {**params, "learning_rate": conservative_lr, "sampling_level": 1, "epochs": 1}
 
-        # real PyTRIO decision
+        # --- real PyTRIO decision (wall-clock latency, not CPU) ---
         selected_metric = local_parent
         decision = client.decide({
             "task": "B", "round": rnd, "history": records,
@@ -203,7 +268,7 @@ def run_group(base, train, valid, groups, *, ema_on, lr_low, rounds, seed, tag):
         final_lr = float(params["learning_rate"])
         floor_triggered = final_lr <= lr_low + 1e-12
 
-        # apply params and fit
+        # --- training ---
         model.meta["learning_rate"] = final_lr
         model.meta["batch_size"] = int(params["batch_size"])
         model.validate()
@@ -212,9 +277,12 @@ def run_group(base, train, valid, groups, *, ema_on, lr_low, rounds, seed, tag):
         kernel(model, train["x"], train["y"], epochs)
         train_cpu = time.process_time() - train_cpu0
 
+        # --- candidate validation ---
+        val_cpu0 = time.process_time()
         candidate_diag = evaluate_diagnostics(model, valid, groups_for_diag)
         score = policy.score(candidate_diag)
         local_candidate = evaluate_primary(model, valid)
+        validation_cpu += time.process_time() - val_cpu0
 
         # acceptance gate (mirror contest_submission.train, but local-only metric).
         # v6 platform: validation_groups is None -> bearing_gate is None (never
@@ -228,11 +296,17 @@ def run_group(base, train, valid, groups, *, ema_on, lr_low, rounds, seed, tag):
         accepted = (improved and parent_matches and candidate_matches and locally_improved
                     and bearing_gate is not False and objective_improved)
 
+        # parent/candidate/selected chain SHA (local stand-in)
+        parent_sha = chain[-1]
+        candidate_sha = model_sha(model)
         if accepted:
             best = copy.deepcopy(model)
             best_rmse = local_candidate
+            selected_sha = candidate_sha
         else:
             model = copy.deepcopy(best)
+            selected_sha = parent_sha
+        chain.append(selected_sha)
 
         # record the round as platform-style history for the next proposal
         record = {
@@ -260,12 +334,14 @@ def run_group(base, train, valid, groups, *, ema_on, lr_low, rounds, seed, tag):
             "search_reason": trace.get("reason"),
             "surrogate_mode": trace.get("surrogate_mode"),
             "surrogate_activation_reason": trace.get("surrogate_activation_reason"),
+            "surrogate_actual_proposal": trace.get("surrogate_actual_proposal"),
             "candidate_count": trace.get("candidate_count"),
             "eligible_candidate_count": trace.get("eligible_candidate_count"),
             "predicted_overall_mae": trace.get("predicted_overall_mae"),
             "predicted_cost_seconds": trace.get("predicted_cost_seconds"),
             "acquisition": trace.get("acquisition"),
             "forward_validation": trace.get("forward_validation"),
+            "history_rounds": trace.get("history_rounds"),
             "parent_rmse": local_parent,
             "candidate_rmse": local_candidate,
             "accepted": accepted,
@@ -273,17 +349,41 @@ def run_group(base, train, valid, groups, *, ema_on, lr_low, rounds, seed, tag):
             "objective_improved": objective_improved,
             "epochs": epochs,
             "samples": int(train["x"].shape[0]),
+            "parent_sha": parent_sha,
+            "candidate_sha": candidate_sha,
+            "selected_sha": selected_sha,
+            "bearing_rmse_diag": bearing_rmse_diag(model, valid, groups),
+            # CPU breakdown
+            "search_cpu_seconds": search_cpu,
             "train_cpu_seconds": train_cpu,
+            "validation_cpu_seconds": validation_cpu,
+            "decision_latency_seconds": decision.get("_latency", 0.0),
             "wall_seconds": time.monotonic() - t0,
             "process_cpu_seconds": time.process_time() - cpu0,
         })
 
+    # aggregate stats
+    actions = [a["action"] for a in audit]
+    methods = [a["search_method"] for a in audit]
     return {
         "tag": tag, "ema_on": ema_on, "lr_low": lr_low, "seed": seed,
         "final_rmse": best_rmse,
         "baseline_rmse": score_rmse(base, valid),
         "accepted_rounds": sum(a["accepted"] for a in audit),
         "floor_triggered_rounds": sum(a["floor_triggered"] for a in audit),
+        "rac_decisions": sum(1 for a in actions if a == "rac"),
+        "conservative_decisions": sum(1 for a in actions if a != "rac"),
+        "search_method_counts": {m: methods.count(m) for m in set(methods)},
+        "surrogate_actual_proposal_count": sum(1 for a in audit if a.get("surrogate_actual_proposal")),
+        "pytrio_calls": client.calls,
+        "pytrio_failures": client.failures,
+        "pytrio_retries": client.retries,
+        "pytrio_total_latency_seconds": client.total_latency,
+        "total_cpu_seconds": sum(a["process_cpu_seconds"] for a in audit),
+        "total_search_cpu_seconds": sum(a["search_cpu_seconds"] for a in audit),
+        "total_train_cpu_seconds": sum(a["train_cpu_seconds"] for a in audit),
+        "total_validation_cpu_seconds": sum(a["validation_cpu_seconds"] for a in audit),
+        "total_wall_seconds": sum(a["wall_seconds"] for a in audit),
         "audit": audit,
     }
 
@@ -302,7 +402,8 @@ def main():
     base = Model.load(CKPT)
     train = read_dataset(DATA / "public/train.jsonl", "regression", base.meta["classes"], base.meta["paths"])
     valid = read_dataset(DATA / "public/validation.jsonl", "regression", base.meta["classes"], base.meta["paths"])
-    # B groups by bearing
+    # B groups by bearing (independent generalization-research口径 only; the
+    # platform口径 has validation_groups=None and is reproduced separately).
     groups = []
     for line in (DATA / "public/validation.jsonl").read_text().splitlines():
         if line.strip():
@@ -327,9 +428,18 @@ def main():
                             ema_on=spec["ema_on"], lr_low=spec["lr_low"],
                             rounds=args.rounds, seed=seed, tag=tag)
             all_results[tag] = res
+            # Save each group/seed result to its OWN file (never overwritten by
+            # later runs of a different config).
+            per_run = args.out / f"run-{gname}-seed{seed}-r{args.rounds}.json"
+            per_run.write_text(json.dumps(res, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8")
             print(f"  final RMSE {res['final_rmse']:.4f} (base {res['baseline_rmse']:.4f}), "
                   f"accepted {res['accepted_rounds']}/{args.rounds}, "
-                  f"floor-triggered {res['floor_triggered_rounds']}/{args.rounds}", flush=True)
+                  f"floor-triggered {res['floor_triggered_rounds']}/{args.rounds}, "
+                  f"rac={res['rac_decisions']} cons={res['conservative_decisions']}, "
+                  f"methods={res['search_method_counts']}, "
+                  f"cpu={res['total_cpu_seconds']:.1f}s pytrio_lat={res['pytrio_total_latency_seconds']:.1f}s",
+                  flush=True)
+            del res  # free the full audit before the next run
 
     (args.out / "ablation-results.json").write_text(
         json.dumps(all_results, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8")
